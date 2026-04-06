@@ -418,18 +418,22 @@ for secret_name in "${!KV_SECRETS[@]}"; do
 done
 log_ok "HMAC keys and webhook secrets stored in Key Vault"
 
-# Print generated secrets (one-time display)
-echo ""
-echo "   ============================================================"
-echo "   GENERATED SECRETS (save these — not displayed again)"
-echo "   ============================================================"
-echo "   HUB-AUDIT-HMAC-KEY:       ${HMAC_AUDIT}"
-echo "   HUB-AUDIT-HASH-SALT:      ${HMAC_SALT}"
-echo "   MCP-WEBHOOK-SECRET-ADR:   ${WEBHOOK_ADR}"
-echo "   MCP-WEBHOOK-SECRET-ARC:   ${WEBHOOK_ARC}"
-echo "   MCP-WEBHOOK-SECRET-TRIAGE:${WEBHOOK_TRIAGE}"
-echo "   ============================================================"
-echo ""
+# Print generated secrets to terminal only (excluded from log file).
+# Redirect directly to /dev/tty to avoid the tee that captures stdout.
+{
+    echo ""
+    echo "   ============================================================"
+    echo "   GENERATED SECRETS (save these — not displayed again)"
+    echo "   ============================================================"
+    echo "   HUB-AUDIT-HMAC-KEY:       ${HMAC_AUDIT}"
+    echo "   HUB-AUDIT-HASH-SALT:      ${HMAC_SALT}"
+    echo "   MCP-WEBHOOK-SECRET-ADR:   ${WEBHOOK_ADR}"
+    echo "   MCP-WEBHOOK-SECRET-ARC:   ${WEBHOOK_ARC}"
+    echo "   MCP-WEBHOOK-SECRET-TRIAGE:${WEBHOOK_TRIAGE}"
+    echo "   ============================================================"
+    echo ""
+} > /dev/tty 2>/dev/null || true
+echo "   (secrets printed to terminal — excluded from log file)"
 
 ################################################################################
 # SECTION 7: Storage Account + Containers + WORM
@@ -571,22 +575,36 @@ for param in "${!PG_PARAMS[@]}"; do
 done
 log_ok "Server parameters applied"
 
-# Enable extensions
+# Enable extensions — must be set as a single comma-separated value;
+# each call overwrites the previous, so individual calls won't work.
 echo "   Enabling PostgreSQL extensions..."
-for ext in pgvector pg_stat_statements pgcrypto pg_trgm; do
-    az postgres flexible-server parameter set \
-        --resource-group "$EEOC_RG" \
-        --server-name "$EEOC_PG_SERVER" \
-        --name "azure.extensions" \
-        --value "$ext" \
-        -o none 2>/dev/null || true
-done
+az postgres flexible-server parameter set \
+    --resource-group "$EEOC_RG" \
+    --server-name "$EEOC_PG_SERVER" \
+    --name "azure.extensions" \
+    --value "pgvector,pg_stat_statements,pgcrypto,pg_trgm" \
+    -o none 2>/dev/null || log_skip "Extensions parameter may not be settable"
 log_ok "Extensions enabled: pgvector, pg_stat_statements, pgcrypto, pg_trgm"
+
+# Create the udip database (Flexible Server only creates "postgres" by default)
+PG_HOST="${EEOC_PG_SERVER}.postgres.database.usgovcloudapi.net"
+echo "   Creating udip database..."
+PGPASSWORD="$PG_ADMIN_PASS" psql \
+    -h "$PG_HOST" \
+    -U "$PG_ADMIN_USER" \
+    -d "postgres" \
+    -c "SELECT 'exists' FROM pg_database WHERE datname = 'udip'" \
+    --tuples-only 2>/dev/null | grep -q "exists" || \
+    PGPASSWORD="$PG_ADMIN_PASS" psql \
+        -h "$PG_HOST" \
+        -U "$PG_ADMIN_USER" \
+        -d "postgres" \
+        -c "CREATE DATABASE udip;" 2>/dev/null || true
+log_ok "Database: udip"
 
 # Run schema scripts if the directory exists
 if [[ -d "$SCHEMA_DIR" ]]; then
     echo "   Running schema scripts from ${SCHEMA_DIR}..."
-    PG_HOST="${EEOC_PG_SERVER}.postgres.database.usgovcloudapi.net"
 
     SCHEMA_FILES=(
         "001-extensions.sql"
@@ -648,10 +666,10 @@ step_header 7 "$TOTAL_STEPS" "PgBouncer Connection Pooler" "~2 minutes"
 # Flexible Server pgbouncer, because we need transaction-mode pooling
 # with custom pool sizes for the UDIP workload.
 
-PG_HOST="${EEOC_PG_SERVER}.postgres.database.usgovcloudapi.net"
+# PG_HOST already set in Section 8
 
-# We create this after the CAE is provisioned (section 14).
-# For now, just note the config values.
+# Deployed as a Container App in step 13 (Section 15).
+# Config values set here, referenced by the deployment loop below.
 PGBOUNCER_MAX_CLIENT=3000
 PGBOUNCER_DEFAULT_POOL=80
 PGBOUNCER_MAX_DB_CONN=200
@@ -965,7 +983,17 @@ for app_spec in "${APPS[@]}"; do
     log_ok "Container App: ${app_name} (${app_cpu} CPU, ${app_mem}, ${app_min}-${app_max} replicas)"
 done
 
-# PgBouncer gets special config
+# PgBouncer gets special config.
+# The DATABASE_URL contains a credential — store it in Key Vault and
+# reference it via secretref once managed identity is wired up.
+# For initial provisioning, use placeholder; replace post-deploy.
+PG_BOUNCER_DB_URL="postgres://${PG_ADMIN_USER}@${EEOC_PG_SERVER}:REPLACE_WITH_KV_REF@${PG_HOST}:5432/udip"
+az keyvault secret set \
+    --vault-name "$EEOC_KV" \
+    --name "PGBOUNCER-DATABASE-URL" \
+    --value "postgres://${PG_ADMIN_USER}@${EEOC_PG_SERVER}:${PG_ADMIN_PASS}@${PG_HOST}:5432/udip" \
+    -o none 2>/dev/null || true
+
 az containerapp create \
     --name "ca-pgbouncer" \
     --resource-group "$EEOC_RG" \
@@ -978,7 +1006,7 @@ az containerapp create \
     --ingress internal \
     --target-port 6432 \
     --env-vars \
-        "DATABASE_URL=postgres://${PG_ADMIN_USER}@${EEOC_PG_SERVER}:${PG_ADMIN_PASS}@${PG_HOST}:5432/udip" \
+        "DATABASE_URL=${PG_BOUNCER_DB_URL}" \
         "POOL_MODE=transaction" \
         "MAX_CLIENT_CONN=${PGBOUNCER_MAX_CLIENT}" \
         "DEFAULT_POOL_SIZE=${PGBOUNCER_DEFAULT_POOL}" \
@@ -989,6 +1017,7 @@ az containerapp create \
     --tags $TAGS \
     -o none 2>/dev/null || log_skip "ca-pgbouncer may already exist"
 log_ok "Container App: ca-pgbouncer (3000 client / 80 pool / 200 max)"
+log_info "Post-deploy: update ca-pgbouncer DATABASE_URL with Key Vault secret ref"
 
 ################################################################################
 # SECTION 16: Azure Functions (ADR + Triage)
@@ -1470,6 +1499,7 @@ KEY VAULT SECRETS (names only):
   OPENAI-API-KEY
   SearchServiceAdminKey
   APPINSIGHTS-INSTRUMENTATIONKEY
+  PGBOUNCER-DATABASE-URL
 
 CONTAINER APPS DEPLOYED:
   ca-udip-ai            (2 CPU, 4Gi, 2-6 replicas)
