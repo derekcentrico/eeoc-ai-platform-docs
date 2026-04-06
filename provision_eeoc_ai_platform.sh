@@ -562,7 +562,7 @@ declare -A PG_PARAMS=(
     ["idle_in_transaction_session_timeout"]="30000"
     ["statement_timeout"]="60000"
     ["log_min_duration_statement"]="1000"
-    ["shared_preload_libraries"]="pg_stat_statements,pgcrypto"
+    ["shared_preload_libraries"]="pg_stat_statements,pgcrypto,pgvector,pg_trgm"
 )
 
 for param in "${!PG_PARAMS[@]}"; do
@@ -586,19 +586,20 @@ az postgres flexible-server parameter set \
     -o none 2>/dev/null || log_skip "Extensions parameter may not be settable"
 log_ok "Extensions enabled: pgvector, pg_stat_statements, pgcrypto, pg_trgm"
 
-# Create the udip database (Flexible Server only creates "postgres" by default)
+# Create the udip database (Flexible Server only creates "postgres" by default).
+# Use .pgpass file instead of PGPASSWORD env var — avoids leaking creds in
+# /proc/<pid>/environ on shared hosts.
 PG_HOST="${EEOC_PG_SERVER}.postgres.database.usgovcloudapi.net"
+PGPASS_FILE=$(mktemp)
+chmod 600 "$PGPASS_FILE"
+echo "${PG_HOST}:5432:*:${PG_ADMIN_USER}:${PG_ADMIN_PASS}" > "$PGPASS_FILE"
+export PGPASSFILE="$PGPASS_FILE"
+
 echo "   Creating udip database..."
-PGPASSWORD="$PG_ADMIN_PASS" psql \
-    -h "$PG_HOST" \
-    -U "$PG_ADMIN_USER" \
-    -d "postgres" \
+psql -h "$PG_HOST" -U "$PG_ADMIN_USER" -d "postgres" \
     -c "SELECT 'exists' FROM pg_database WHERE datname = 'udip'" \
     --tuples-only 2>/dev/null | grep -q "exists" || \
-    PGPASSWORD="$PG_ADMIN_PASS" psql \
-        -h "$PG_HOST" \
-        -U "$PG_ADMIN_USER" \
-        -d "postgres" \
+    psql -h "$PG_HOST" -U "$PG_ADMIN_USER" -d "postgres" \
         -c "CREATE DATABASE udip;" 2>/dev/null || true
 log_ok "Database: udip"
 
@@ -631,7 +632,7 @@ if [[ -d "$SCHEMA_DIR" ]]; then
     for sql_file in "${SCHEMA_FILES[@]}"; do
         full_path="${SCHEMA_DIR}/${sql_file}"
         if [[ -f "$full_path" ]]; then
-            PGPASSWORD="$PG_ADMIN_PASS" psql \
+            psql \
                 -h "$PG_HOST" \
                 -U "$PG_ADMIN_USER" \
                 -d "udip" \
@@ -645,6 +646,10 @@ if [[ -d "$SCHEMA_DIR" ]]; then
 else
     log_skip "Schema directory not found: ${SCHEMA_DIR} (run manually after cloning repos)"
 fi
+
+# clean up .pgpass
+rm -f "$PGPASS_FILE"
+unset PGPASSFILE
 
 # Create read replica
 echo "   Creating read replica..."
@@ -941,6 +946,7 @@ log_ok "Container Apps Environment: ${EEOC_CAE} (internal-only)"
 step_header 13 "$TOTAL_STEPS" "Container Apps" "~10 minutes"
 
 KV_URI="https://${EEOC_KV}.vault.usgovcloudapi.net/"
+EEOC_TENANT_ID=$(az account show --query tenantId -o tsv)
 
 # Each app: name, image, cpu, memory, min_replicas, max_replicas, cpu_scale_pct
 # Images reference ACR; push images before first deploy.
@@ -973,7 +979,7 @@ for app_spec in "${APPS[@]}"; do
         --target-port 8000 \
         --env-vars \
             "KEY_VAULT_URI=${KV_URI}" \
-            "AZURE_TENANT_ID=PLACEHOLDER" \
+            "AZURE_TENANT_ID=${EEOC_TENANT_ID}" \
             "REDIS_URL=rediss://${EEOC_REDIS}.redis.cache.usgovcloudapi.net:6380" \
         --scale-rule-name "cpu-scaling" \
         --scale-rule-type "cpu" \
@@ -987,7 +993,8 @@ done
 # The DATABASE_URL contains a credential — store it in Key Vault and
 # reference it via secretref once managed identity is wired up.
 # For initial provisioning, use placeholder; replace post-deploy.
-PG_BOUNCER_DB_URL="postgres://${PG_ADMIN_USER}@${EEOC_PG_SERVER}:REPLACE_WITH_KV_REF@${PG_HOST}:5432/udip"
+# actual credential — Container Apps secret refs replace this once managed identity is wired
+PG_BOUNCER_DB_URL="postgres://${PG_ADMIN_USER}@${EEOC_PG_SERVER}:${PG_ADMIN_PASS}@${PG_HOST}:5432/udip"
 az keyvault secret set \
     --vault-name "$EEOC_KV" \
     --name "PGBOUNCER-DATABASE-URL" \
@@ -1099,7 +1106,7 @@ for func_app in "$EEOC_FUNC_ADR" "$EEOC_FUNC_TRIAGE"; do
         --resource-group "$EEOC_RG" \
         --settings \
             "KEY_VAULT_URI=${KV_URI}" \
-            "AZURE_TENANT_ID=PLACEHOLDER" \
+            "AZURE_TENANT_ID=${EEOC_TENANT_ID}" \
         -o none 2>/dev/null || true
 done
 log_ok "Function App settings configured with Key Vault references"
@@ -1123,7 +1130,7 @@ az network front-door waf-policy managed-rules add \
     --policy-name "$EEOC_WAF_POLICY" \
     --resource-group "$EEOC_RG" \
     --type DefaultRuleSet \
-    --version "1.0" \
+    --version "2.1" \
     -o none 2>/dev/null || true
 
 # Bot manager ruleset
@@ -1235,7 +1242,7 @@ if [[ -n "$PG_RESOURCE_ID" && -n "$LOG_WS_RESOURCE_ID" ]]; then
         --name "pg-diagnostics" \
         --resource "$PG_RESOURCE_ID" \
         --workspace "$LOG_WS_RESOURCE_ID" \
-        --logs '[{"category": "PostgreSQLLogs", "enabled": true}]' \
+        --logs '[{"category": "PostgreSQLFlexLogs", "enabled": true}]' \
         --metrics '[{"category": "AllMetrics", "enabled": true}]' \
         -o none 2>/dev/null || true
     log_ok "PostgreSQL diagnostic settings enabled"
@@ -1335,7 +1342,7 @@ if [[ -n "$LOG_WS_RESOURCE_ID" && -n "$AG_ID" ]]; then
         --name "alert-worm-breach-attempt" \
         --resource-group "$EEOC_RG" \
         --scopes "$LOG_WS_RESOURCE_ID" \
-        --condition "count 'Heartbeat' > 0" \
+        --condition "count > 0" \
         --condition-query "StorageBlobLogs | where OperationName == 'DeleteBlob' and Uri contains 'hub-audit-archive' | where TimeGenerated > ago(5m)" \
         --window-size 5m \
         --evaluation-frequency 5m \
@@ -1385,14 +1392,14 @@ if [[ -n "$LOG_WS_RESOURCE_ID" ]]; then
         --resource-group "$EEOC_RG" \
         --workspace-name "$EEOC_SENTINEL_WS" \
         --rule-id "brute-force-detection" \
-        --scheduled \
-            display-name="Brute-Force Sign-In Detection" \
-            query="SigninLogs | where ResultType != '0' | summarize FailureCount=count() by UserPrincipalName, IPAddress, bin(TimeGenerated, 5m) | where FailureCount > 10" \
-            severity="High" \
-            query-frequency="PT5M" \
-            query-period="PT5M" \
-            trigger-operator="GreaterThan" \
-            trigger-threshold=0 \
+        --kind Scheduled \
+        --display-name "Brute-Force Sign-In Detection" \
+        --query "SigninLogs | where ResultType != '0' | summarize FailureCount=count() by UserPrincipalName, IPAddress, bin(TimeGenerated, 5m) | where FailureCount > 10" \
+        --severity "High" \
+        --query-frequency "PT5M" \
+        --query-period "PT5M" \
+        --trigger-operator "GreaterThan" \
+        --trigger-threshold 0 \
         -o none 2>/dev/null || log_skip "Analytics rule may need manual setup via portal"
     log_ok "Sentinel analytics rule: brute-force detection"
 else
@@ -1563,9 +1570,8 @@ COMPLIANCE:
   6. Configure APIM for MCP Hub:
      See: Azure_MCP_Hub_Setup_Guide.md
 
-  7. Update Container App env vars with real values:
-     - AZURE_TENANT_ID (replace PLACEHOLDER)
-     - App-specific settings per deployment guide
+  7. Update Container App env vars with app-specific settings:
+     See deployment guide for per-app configuration
 
   8. Enable feature flags per application:
      - ADR: ENABLE_UDIP_INTEGRATION, ENABLE_HUB_INTEGRATION
