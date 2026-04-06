@@ -1,0 +1,20 @@
+# repo subdirectories are their own repos
+eeoc-arc-integration-api/
+eeoc-arc-payloads/
+eeoc-data-analytics-and-dashboard/
+eeoc-mcp-hub-functions/
+eeoc-ofs-adr/
+eeoc-ofs-adr-clean/
+eeoc-ofs-triage/
+eeoc-ogc-trialtool/
+
+# other workspace dirs
+ai-business-metalpren/
+ai-business-mje/
+ai-business-search-peru/
+
+# OS/editor
+.DS_Store
+*.swp
+*.swo
+*~
