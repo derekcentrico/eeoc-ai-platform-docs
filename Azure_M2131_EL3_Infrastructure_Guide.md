@@ -793,9 +793,9 @@ Add a **Query** tile to track audit record integrity. This queries the applicati
 // check for audit write failures (proxy for HMAC issues)
 ContainerAppConsoleLogs
 | where TimeGenerated > ago(24h)
-| where Log_s contains "Audit write failed" or Log_s contains "audit_write_failure" or Log_s contains "RecordHMAC"
+| where Log_s contains "Audit write failed" or Log_s contains "audit_write_failure" or Log_s contains "audit_event_failed" or Log_s contains "RecordHMAC"
 | summarize
-    WriteFailures = countif(Log_s contains "Audit write failed" or Log_s contains "audit_write_failure"),
+    WriteFailures = countif(Log_s contains "Audit write failed" or Log_s contains "audit_write_failure" or Log_s contains "audit_event_failed"),
     HMACRecords = countif(Log_s contains "RecordHMAC")
 | extend IntegrityStatus = iff(WriteFailures == 0, "All writes succeeded", strcat(WriteFailures, " failures detected"))
 ```
