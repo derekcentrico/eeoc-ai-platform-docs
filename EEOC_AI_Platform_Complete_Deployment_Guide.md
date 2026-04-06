@@ -282,9 +282,9 @@ After creation, add these inbound rules:
 |----------|------|--------|-------------|------|----------|--------|
 | 100 | AllowFrontDoor | Service Tag: AzureFrontDoor.Backend | Any | 443 | TCP | Allow |
 | 110 | AllowVnetInternal | VirtualNetwork | VirtualNetwork | 443,8000,8088,5000 | TCP | Allow |
-| 120 | AllowRedis | `10.100.3.0/24` | Any | 6380 | TCP | Allow |
-| 130 | AllowPostgres | `10.100.2.0/24` | Any | 6432 | TCP | Allow |
 | 4096 | DenyAllInbound | Any | Any | * | Any | Deny |
+
+> NSG is stateful — outbound connections from apps to Redis (6380) and PgBouncer (6432) automatically allow return traffic. No inbound rules needed for those flows on this NSG.
 
 Associate `nsg-eeoc-apps-prod` with `snet-apps`: Go to NSG > Settings > Subnets > + Associate > select VNet and subnet.
 
@@ -585,10 +585,10 @@ Navigate to Server > Settings > Server parameters. Set each value:
 
 | Parameter | Value | Notes |
 |-----------|-------|-------|
-| `shared_buffers` | `33554432` (32 GB) | 25% of RAM |
-| `effective_cache_size` | `100663296` (96 GB) | 75% of RAM |
-| `work_mem` | `65536` (64 MB) | per-operation sort/hash |
-| `maintenance_work_mem` | `2097152` (2 GB) | vacuum/index builds |
+| `shared_buffers` | `4194304` | 32 GB (25% of RAM); unit is 8 KB pages |
+| `effective_cache_size` | `12582912` | 96 GB (75% of RAM); unit is 8 KB pages |
+| `work_mem` | `65536` | 64 MB; unit is kB |
+| `maintenance_work_mem` | `2097152` | 2 GB; unit is kB |
 | `max_connections` | `250` | PgBouncer pools; direct connections are rare |
 | `max_parallel_workers` | `16` | match vCores |
 | `max_parallel_workers_per_gather` | `4` | |
@@ -596,7 +596,7 @@ Navigate to Server > Settings > Server parameters. Set each value:
 | `random_page_cost` | `1.1` | SSD storage |
 | `effective_io_concurrency` | `200` | SSD |
 | `checkpoint_completion_target` | `0.9` | spread I/O |
-| `wal_buffers` | `65536` (64 MB) | |
+| `wal_buffers` | `8192` | 64 MB; unit is 8 KB pages |
 | `wal_level` | `logical` | required for CDC/Debezium |
 | `max_replication_slots` | `10` | CDC + replica |
 | `max_wal_senders` | `10` | CDC + replica |
@@ -1537,6 +1537,18 @@ This gives you a domain: `adr-eeoc.azurefd.net`
 
 Associate the WAF policy with the `adr-eeoc` endpoint.
 
+#### Lock Down Backend to Your Front Door Instance
+
+The `AzureFrontDoor.Backend` service tag allows traffic from any Front Door profile. To restrict to only your profile:
+
+1. After Front Door creation, navigate to Overview and copy the **Front Door ID** (a GUID).
+2. In the ADR Container App ingress settings, add a header-based access restriction:
+   - Header name: `X-Azure-FDID`
+   - Header value: `{your Front Door ID}`
+   - Action: Allow (reject all other Front Door traffic)
+
+This prevents another Azure tenant's Front Door from reaching your backend.
+
 #### Custom Domain
 
 1. Navigate to Front Door > Domains > + Add
@@ -2246,7 +2258,7 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 | `GUNICORN_TIMEOUT` | `120` | Manual |
 | `AI_MODEL_PROVIDER` | `azure_openai` | Manual |
 | `AZURE_OPENAI_ENDPOINT` | `https://oai-eeoc-ai-prod.openai.azure.us/` | Manual |
-| `AZURE_OPENAI_API_VERSION` | `2024-02-15-preview` | Manual |
+| `AZURE_OPENAI_API_VERSION` | `2024-02-01` | Manual |
 | `AZURE_OPENAI_DEPLOYMENT_CHAT` | `gpt-4o` | Manual |
 
 ### Triage Function App
@@ -2257,8 +2269,8 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 | `ARC_INTEGRATION_API_URL` | ARC Integration API internal URL | Manual |
 | `UDIP_INGEST_URL` | UDIP ingest internal URL | Manual |
 | `MCP_HUB_URL` | APIM internal URL | Manual |
-| `AZURE_OPENAI_API_VERSION` | `2024-02-15-preview` | Manual |
-| `DISPOSITION_RETENTION_DAYS` | `2557` | Manual |
+| `AZURE_OPENAI_API_VERSION` | `2024-02-01` | Manual |
+| `DISPOSITION_RETENTION_DAYS` | `2555` | Manual |
 | `METRICS_ROLLUP_TIMEZONE` | `Eastern Standard Time` | Manual |
 
 ### ARC Integration API
