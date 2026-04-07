@@ -617,6 +617,22 @@ psql -h "$PG_HOST" -U "$PG_ADMIN_USER" -d "postgres" \
         -c "CREATE DATABASE udip;" 2>/dev/null || true
 log_ok "Database: udip"
 
+# Create application roles used by spoke services (idempotent)
+log_info "Creating application roles..."
+psql -h "$PG_HOST" -U "$PG_ADMIN_USER" -d udip -c "
+  DO \$\$ BEGIN
+    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'adr_app') THEN
+      CREATE ROLE adr_app NOLOGIN;
+    END IF;
+    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'triage_app') THEN
+      CREATE ROLE triage_app NOLOGIN;
+    END IF;
+    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'ogc_app') THEN
+      CREATE ROLE ogc_app NOLOGIN;
+    END IF;
+  END \$\$;
+" || log_skip "Role creation had issues (may already exist)"
+
 # Run schema scripts if the directory exists
 if [[ -d "$SCHEMA_DIR" ]]; then
     echo "   Running schema scripts from ${SCHEMA_DIR}..."
@@ -634,6 +650,7 @@ if [[ -d "$SCHEMA_DIR" ]]; then
         "016-cdc-target-tables.sql"
         "020-vector-tables.sql"
         "030-document-tables.sql"
+        "039-application-roles.sql"
         "040-rls-policies.sql"
         "050-search-functions.sql"
         "060-adr-operational-tables.sql"
@@ -1403,6 +1420,7 @@ fi
 
 ################################################################################
 # SECTION 20: Azure Sentinel (M-21-31 EL3)
+# Detailed portal instructions: Azure_M2131_EL3_Infrastructure_Guide.md
 ################################################################################
 
 step_header 18 "$TOTAL_STEPS" "Azure Sentinel (M-21-31)" "~3 minutes"

@@ -52,101 +52,34 @@ PrEPA (ARC's PostgreSQL system of record) streams all database changes via WAL/C
 
 ---
 
-## Prompt Status (51 Prompts)
+## Prompt Status (65 Prompts)
 
-### Completed and pushed (Prompts 1-38): ALL DONE
+### Completed and pushed (Prompts 1-64): ALL DONE
 
 - Prompts 1-26: Executed 2026-04-03 (core infrastructure, integration, security, scaling, AI assistant, CI/CD)
 - Prompts 27-38: Executed 2026-04-05 (tests, K8s manifests, scaling fix-ups, graceful degradation, AI fix-ups, FOIA retention, data layer migration)
+- Prompts 39-58: Executed 2026-04-06 (FOIA/NARA retention, export, litigation holds, M-21-31 compliance, license remediation, supply chain, FoundryModelProvider, deployment guide, provisioning script, auto-schema, multi-tenancy, OFP pipeline, ARC write-back, decision letters, RAG library, submission window)
+- Prompts 59-64: Executed 2026-04-07 (MCP Hub M-21-31 compliance, OGC remediation, Triage source reconstruction, M-21-31 EL3 guide, cross-cutting HMAC/508/retention fixes, wiring fixes)
 
-### Pending (Prompts 39-52): NOT YET RUN
+### In Progress: Prompt 65
 
-| Prompt | Repo | What | Priority |
-|--------|------|------|----------|
-| ~~27~~ | All repos | Unit tests for 14 uncovered modules | **DONE** |
-| ~~28~~ | ADR | Production K8s + Front Door WAF | **DONE** |
-| ~~29~~ | Triage | Production K8s + HPA | **DONE** |
-| ~~30~~ | ARC Integration API | Production K8s + HPA | **DONE** |
-| ~~31~~ | Triage | Scaling fix-up: OpenAI retry wiring, repartition, ZIP streaming | **DONE** |
-| ~~32~~ | ADR | Graceful degradation: standalone operation | **DONE** |
-| ~~33~~ | UDIP | Read replica routing | **DONE** |
-| ~~34~~ | UDIP | AI Assistant fix-up: get_messages→get_history, tiktoken, error refinement | **DONE** |
-| ~~35~~ | Triage | MSAL token cache to Redis | **DONE** |
-| ~~36~~ | UDIP | Schema for ADR + Triage operational tables | **DONE** |
-| ~~37~~ | ADR | Data layer migration: Table Storage → PostgreSQL | **DONE** |
-| ~~38~~ | Triage | Data layer migration: Table Storage → PostgreSQL | **DONE** |
-| **39** | UDIP | **FOIA/NARA: conversation history 7-year retention (currently 90-day TTL)** | **Critical** |
-| **40** | All repos | FOIA export API: /api/foia-export with ZIP + chain-of-custody | High |
-| **41** | All repos | Litigation hold mechanism: centralized hold table, FinalizeDisposal integration | High |
-| **42** | ARC Integration API | M-21-31/FedRAMP: HMAC audit logging, retention policy, audit table | High |
-| **43** | MCP Hub Functions | M-21-31/FedRAMP: HMAC audit, PII hashing, correlation IDs | High |
-| **44** | OGC Trial Tool | M-21-31/FedRAMP: Structured JSON logging, HMAC, correlation IDs | High |
-| **45** | Infrastructure | M-21-31 EL3: Azure Sentinel, NSG flow logs, DNS Analytics, UBA, SOAR | Medium |
-| **46** | OGC Trial Tool | License remediation: remove poppler/GPL, replace python-jose, pin deps | High |
-| **47** | All repos | Supply chain: Trivy container scanning, Dependabot, system dep SBOM | High |
-| **48** | OGC Trial Tool | **Replace Ollama with FoundryModelProvider (default Azure OpenAI GA)** | High |
-| **49** | Triage | Adopt FoundryModelProvider pattern (default Azure OpenAI GA, Foundry optional) | High |
-| **50** | Workspace root | **Complete deployment guide (zero-assumption, 1500-2000 lines)** | High |
-| **51** | Workspace root | **Provisioning script (provision_eeoc_ai_platform.sh, 800-1200 lines)** | High |
-| **52** | UDIP | Auto-schema detection: new tables auto-created, labeled via column registry, dbt models generated, AI-discoverable | Medium |
-| **53** | Triage | Multi-tenancy: OFS/OFP sector, office hierarchy, district scoping, 3-layer access control, 508 compliance | High |
-| **54** | Triage | OFP intake pipeline: CDC case detection, configurable 5-day delay, OFP system prompt, scoring, document refresh | High |
-| **55** | Triage + ARC API | ARC write-back: classification routing endpoints, NRTS trigger, configurable field mapping, approval workflow | High |
-| **56** | Triage | OFS Rank C decision letter: AI-assisted DOCX generation, attorney review, ARC closure (disabled by default) | Medium |
-| **57** | Triage | RAG library expansion: SEP, Compliance Manual, Commission Guidance categories, OFS/OFP sector filtering | High |
-| **58** | Triage | OFS submission window: configurable timer, extension handling, CDC monitoring, manual early review | High |
+| Prompt | Repo | What | Status |
+|--------|------|------|--------|
+| **65** | All repos | Final hardening: tests, K8s PDBs, HMAC ConfigMap fix, SQL roles, search function ordering, startup probes, doc cross-refs | **IN PROGRESS** |
 
-### Recommended Execution Order (from Prompt 39 onward)
+### Execution History (Prompts 39-65)
 
-**Prompts 27-38 are DONE.** Start from here:
+All prompts executed in the following order:
 
-**Run first (FOIA/NARA — legal compliance):**
-```
-Prompt 39 (Conversation 7-year retention — currently 90-day TTL)
-Prompt 40 (FOIA export API — all repos)
-Prompt 41 (Litigation hold mechanism)
-```
-
-**Run second (compliance logging — M-21-31 / FedRAMP):**
-```
-Prompt 42 (ARC Integration API HMAC audit logging)
-Prompt 43 (MCP Hub Functions HMAC audit logging)
-Prompt 44 (OGC Trial Tool structured JSON + HMAC logging)
-```
-
-**Run third (OGC remediation — license + Ollama removal):**
-```
-Prompt 46 (OGC license: remove poppler/GPL, replace python-jose, pin deps)
-Prompt 48 (OGC replace Ollama with FoundryModelProvider / Azure OpenAI GA)
-```
-
-**Run fourth (supply chain + Triage provider):**
-```
-Prompt 47 (supply chain hardening all repos — Trivy, Dependabot, SBOM)
-Prompt 49 (Triage adopt FoundryModelProvider)
-```
-
-**Run fifth (infrastructure + deployment):**
-```
-Prompt 45 (Azure Sentinel, NSG flow logs, DNS Analytics, UBA, SOAR)
-Prompt 50 (complete deployment guide — zero-assumption)
-Prompt 51 (provisioning script — provision_eeoc_ai_platform.sh)
-```
-
-**Run sixth (automation):**
-```
-Prompt 52 (auto-schema detection, column registry, AI discovery)
-```
-
-**Run seventh (Triage OFP expansion — Prompts 53-58):**
-```
-Prompt 53 (multi-tenancy foundation: hierarchy, scoping, 508) ← must be first
-Prompt 57 (RAG library expansion: new categories, sector filtering) ← before 54
-Prompt 58 (OFS submission window timer and CDC monitoring)
-Prompt 54 (OFP intake pipeline: case pull, classification, document refresh)
-Prompt 55 (ARC write-back: classification routing — run in BOTH repos)
-Prompt 56 (OFS Rank C decision letter — optional, disabled by default)
-```
+- **Batch 1** (FOIA/NARA): Prompts 39-41 — 2026-04-06
+- **Batch 2** (M-21-31): Prompts 42-44 — 2026-04-06
+- **Batch 3** (OGC remediation): Prompts 46, 48 — 2026-04-06
+- **Batch 4** (Supply chain + Triage): Prompts 47, 49 — 2026-04-06
+- **Batch 5** (Infrastructure + deployment): Prompts 45, 50, 51 — 2026-04-06
+- **Batch 6** (Automation): Prompt 52 — 2026-04-06
+- **Batch 7** (Triage OFP): Prompts 53, 57, 58, 54, 55, 56 — 2026-04-06
+- **Batch 8** (Audit remediation): Prompts 59-64 — 2026-04-07
+- **Batch 9** (Final hardening): Prompt 65 — 2026-04-07 (in progress)
 
 ### How to Run Prompts
 
@@ -177,7 +110,7 @@ Prompts targeting multiple repos (27, 40, 41, 47) should be run once per repo.
 |-----|------|--------|--------|
 | `chat.py` calls `store.get_messages()` but method is `get_history()` | UDIP | **FIXED** (Prompt 34 ran) | 34 |
 | No tiktoken context window management | UDIP | **FIXED** (Prompt 34 ran) | 34 |
-| Conversation history 90-day TTL (FOIA requires 7 years) | UDIP | **UNFIXED** — Prompt 39 NOT YET RUN | 39 |
+| Conversation history 90-day TTL (FOIA requires 7 years) | UDIP | **FIXED** (Prompt 39 ran) | 39 |
 | `call_openai_with_retry()` not wired to actual calls | Triage | **FIXED** (Prompt 31 ran) | 31 |
 | Cases table `PartitionKey = "cases"` hot partition | Triage | **FIXED** (Prompt 31 ran) | 31 |
 | CaseFileProcessor ZIP `io.BytesIO(myblob.read())` OOM risk | Triage | **FIXED** (Prompt 31 ran) | 31 |
@@ -185,7 +118,7 @@ Prompts targeting multiple repos (27, 40, 41, 47) should be run once per repo.
 | MCP Hub protocol version 2024-11-05 | Hub | **FIXED** (direct push) | — |
 | Triage UDIP ingest payload key `target_table` | Triage | **FIXED** (direct push) | — |
 
-**Only remaining unfixed bug:** Conversation 90-day TTL (Prompt 39 — next to run).
+**All known bugs fixed.** Conversation 90-day TTL resolved by Prompt 39.
 
 ---
 

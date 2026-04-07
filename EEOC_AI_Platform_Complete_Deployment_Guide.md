@@ -1563,6 +1563,10 @@ This prevents another Azure tenant's Front Door from reaching your backend.
 
 ### 2.19 Azure Sentinel (M-21-31 EL3)
 
+> For step-by-step implementation with KQL queries, retention configurations, SOAR playbook
+> definitions, and M-21-31 control mappings, refer to Azure_M2131_EL3_Infrastructure_Guide.md.
+> This section provides a summary; the infrastructure guide is the authoritative reference.
+
 M-21-31 Event Logging Tier 3 (Advanced) requires centralized SIEM with analytics, UEBA, and automated response.
 
 **Portal Navigation:** Home > Microsoft Sentinel > + Create
