@@ -276,13 +276,13 @@ Click **Create**.
 AppTraces
 | where Message has "pii_tier_3" or Message has "charging_party_ssn"
     or Message has "respondent_ein" or Message has "medical_records"
-| extend HourOfDay = hourofday(TimeGenerated)
-| where HourOfDay < 7 or HourOfDay > 19  // Outside 07:00-19:00 ET
-| extend DayOfWeek = dayofweek(TimeGenerated)
-| where DayOfWeek == 0d or DayOfWeek == 6d  // Saturday or Sunday
-    or HourOfDay < 7 or HourOfDay > 19
+| extend LocalTime = datetime_utc_to_local(TimeGenerated, 'US/Eastern')
+| extend HourOfDay = hourofday(LocalTime)
+| extend DayOfWeek = dayofweek(LocalTime)
+| where DayOfWeek == 0d or DayOfWeek == 6d  // Weekend
+    or HourOfDay < 7 or HourOfDay > 19      // Outside 07:00-19:00 ET
 | extend UserPrincipal = tostring(Properties["user_id"])
-| project TimeGenerated, UserPrincipal, Message
+| project TimeGenerated, LocalTime, UserPrincipal, Message
 ```
 
 **Entity mapping:**

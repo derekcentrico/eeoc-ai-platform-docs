@@ -184,6 +184,20 @@ if ! command -v az &>/dev/null; then
 fi
 log_ok "Azure CLI found: $(az version --query '\"azure-cli\"' -o tsv)"
 
+# 3a-2. psql must be installed (used for database initialization)
+if ! command -v psql &>/dev/null; then
+    log_fail "psql not found. Install postgresql-client for database setup."
+    exit 1
+fi
+log_ok "psql found: $(psql --version | head -1)"
+
+# 3a-3. openssl must be installed (used for secret generation)
+if ! command -v openssl &>/dev/null; then
+    log_fail "openssl not found. Install openssl for credential generation."
+    exit 1
+fi
+log_ok "openssl found: $(openssl version)"
+
 # 3b. Must be logged in
 if ! az account show &>/dev/null; then
     log_fail "Not logged in. Run: az cloud set --name AzureUSGovernment && az login"
@@ -1012,8 +1026,9 @@ az containerapp create \
     --max-replicas 4 \
     --ingress internal \
     --target-port 6432 \
+    --secrets "db-url=${PG_BOUNCER_DB_URL}" \
     --env-vars \
-        "DATABASE_URL=${PG_BOUNCER_DB_URL}" \
+        "DATABASE_URL=secretref:db-url" \
         "POOL_MODE=transaction" \
         "MAX_CLIENT_CONN=${PGBOUNCER_MAX_CLIENT}" \
         "DEFAULT_POOL_SIZE=${PGBOUNCER_DEFAULT_POOL}" \
@@ -1024,7 +1039,6 @@ az containerapp create \
     --tags $TAGS \
     -o none 2>/dev/null || log_skip "ca-pgbouncer may already exist"
 log_ok "Container App: ca-pgbouncer (3000 client / 80 pool / 200 max)"
-log_info "Post-deploy: update ca-pgbouncer DATABASE_URL with Key Vault secret ref"
 
 ################################################################################
 # SECTION 16: Azure Functions (ADR + Triage)
@@ -1246,6 +1260,39 @@ if [[ -n "$PG_RESOURCE_ID" && -n "$LOG_WS_RESOURCE_ID" ]]; then
         --metrics '[{"category": "AllMetrics", "enabled": true}]' \
         -o none 2>/dev/null || true
     log_ok "PostgreSQL diagnostic settings enabled"
+fi
+
+# Enable diagnostic settings on Key Vault (M-21-31 EL3 audit trail)
+KV_RESOURCE_ID=$(az keyvault show \
+    --name "$EEOC_KV" \
+    --query id -o tsv 2>/dev/null || echo "")
+
+if [[ -n "$KV_RESOURCE_ID" && -n "$LOG_WS_RESOURCE_ID" ]]; then
+    az monitor diagnostic-settings create \
+        --name "kv-diagnostics" \
+        --resource "$KV_RESOURCE_ID" \
+        --workspace "$LOG_WS_RESOURCE_ID" \
+        --logs '[{"category": "AuditEvent", "enabled": true}]' \
+        --metrics '[{"category": "AllMetrics", "enabled": true}]' \
+        -o none 2>/dev/null || true
+    log_ok "Key Vault diagnostic settings enabled (AuditEvent)"
+fi
+
+# Enable diagnostic settings on Storage Account (M-21-31 EL3 audit trail)
+STORAGE_RESOURCE_ID=$(az storage account show \
+    --name "$EEOC_STORAGE" \
+    --resource-group "$EEOC_RG" \
+    --query id -o tsv 2>/dev/null || echo "")
+
+if [[ -n "$STORAGE_RESOURCE_ID" && -n "$LOG_WS_RESOURCE_ID" ]]; then
+    az monitor diagnostic-settings create \
+        --name "storage-diagnostics" \
+        --resource "${STORAGE_RESOURCE_ID}/blobServices/default" \
+        --workspace "$LOG_WS_RESOURCE_ID" \
+        --logs '[{"category": "StorageRead", "enabled": true}, {"category": "StorageWrite", "enabled": true}, {"category": "StorageDelete", "enabled": true}]' \
+        --metrics '[{"category": "AllMetrics", "enabled": true}]' \
+        -o none 2>/dev/null || true
+    log_ok "Storage Account diagnostic settings enabled"
 fi
 
 ################################################################################
