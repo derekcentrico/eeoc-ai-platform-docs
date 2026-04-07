@@ -631,7 +631,7 @@ psql -h "$PG_HOST" -U "$PG_ADMIN_USER" -d udip -c "
       CREATE ROLE ogc_app NOLOGIN;
     END IF;
   END \$\$;
-" || log_warn "Role creation had issues (may already exist)"
+" || log_skip "Role creation had issues (may already exist)"
 
 # Run schema scripts if the directory exists
 if [[ -d "$SCHEMA_DIR" ]]; then

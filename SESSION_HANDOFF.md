@@ -52,7 +52,7 @@ PrEPA (ARC's PostgreSQL system of record) streams all database changes via WAL/C
 
 ---
 
-## Prompt Status (51 Prompts)
+## Prompt Status (65 Prompts)
 
 ### Completed and pushed (Prompts 1-64): ALL DONE
 
