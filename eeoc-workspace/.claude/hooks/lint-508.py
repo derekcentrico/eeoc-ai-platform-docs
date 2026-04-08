@@ -67,7 +67,7 @@ _RE_REQUIRED = re.compile(r"\brequired\b", re.IGNORECASE)
 _RE_ARIA_REQUIRED = re.compile(r"aria-required", re.IGNORECASE)
 
 
-def _get_tag_text(lines: list[str], start: int, lookahead: int = 5) -> str:
+def _get_tag_text(lines: list[str], start: int, lookahead: int = 15) -> str:
     """Join lines from start through the closing '>' or lookahead limit."""
     buf = lines[start]
     if ">" in buf:
@@ -113,7 +113,10 @@ def check_e002(filepath: str, lines: list[str]) -> list[tuple[int, str]]:
         if not _RGBA_CHART_KEYWORDS.search(ctx):
             continue
         for m in _RGBA_FULL.finditer(line):
-            opacity = float(m.group(1))
+            try:
+                opacity = float(m.group(1))
+            except ValueError:
+                continue
             if opacity < 1.0:
                 hits.append(
                     (i + 1, f"rgba() with opacity {opacity} in chart context — use solid rgb()")
@@ -126,6 +129,8 @@ def check_e003(filepath: str, lines: list[str]) -> list[tuple[int, str]]:
     """508-E003: <img> missing alt attribute."""
     hits = []
     for i, line in enumerate(lines):
+        if _is_comment(line):
+            continue
         if _RE_IMG.search(line):
             tag = _get_tag_text(lines, i)
             if not _RE_ALT.search(tag):
@@ -140,6 +145,8 @@ def check_e004(filepath: str, lines: list[str]) -> list[tuple[int, str]]:
     """508-E004: Form element without label association."""
     hits = []
     for i, line in enumerate(lines):
+        if _is_comment(line):
+            continue
         m = _RE_FORM_EL.search(line)
         if not m:
             continue
@@ -164,6 +171,8 @@ def check_e005(filepath: str, lines: list[str]) -> list[tuple[int, str]]:
     """508-E005: <th> missing scope attribute."""
     hits = []
     for i, line in enumerate(lines):
+        if _is_comment(line):
+            continue
         if _RE_TH.search(line):
             tag = _get_tag_text(lines, i)
             if not _RE_SCOPE.search(tag):
@@ -175,6 +184,8 @@ def check_e006(filepath: str, lines: list[str]) -> list[tuple[int, str]]:
     """508-E006: Font Awesome icon missing aria-hidden."""
     hits = []
     for i, line in enumerate(lines):
+        if _is_comment(line):
+            continue
         if _RE_FA_ICON.search(line):
             tag = _get_tag_text(lines, i)
             if not _RE_ARIA_HIDDEN.search(tag):
@@ -186,6 +197,8 @@ def check_e007(filepath: str, lines: list[str]) -> list[tuple[int, str]]:
     """508-E007: target='_blank' without visually-hidden SR indicator."""
     hits = []
     for i, line in enumerate(lines):
+        if _is_comment(line):
+            continue
         if _RE_BLANK.search(line):
             ctx = _context_window(lines, i, radius=3)
             if not _RE_VH.search(ctx):
@@ -197,6 +210,8 @@ def check_e008(filepath: str, lines: list[str]) -> list[tuple[int, str]]:
     """508-E008: <canvas> missing role='img'."""
     hits = []
     for i, line in enumerate(lines):
+        if _is_comment(line):
+            continue
         if _RE_CANVAS.search(line):
             tag = _get_tag_text(lines, i)
             if not _RE_ROLE_IMG.search(tag):
@@ -208,6 +223,8 @@ def check_e009(filepath: str, lines: list[str]) -> list[tuple[int, str]]:
     """508-E009: required attribute without aria-required."""
     hits = []
     for i, line in enumerate(lines):
+        if _is_comment(line):
+            continue
         if _RE_REQUIRED.search(line):
             tag = _get_tag_text(lines, i)
             if not _RE_ARIA_REQUIRED.search(tag):
