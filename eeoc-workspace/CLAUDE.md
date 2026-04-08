@@ -99,6 +99,7 @@ Read the relevant skill before starting work in that domain.
 | Any Azure resource, Terraform, Bicep, container, CI/CD | `.claude/skills/fedramp/SKILL.md` |
 | Any new document | `.claude/skills/doc-style/SKILL.md` |
 | Any ARC integration code | `.claude/skills/arc/SKILL.md` |
+| Any comment, docstring, markdown, or prose review | `.claude/skills/human-tone/SKILL.md` |
 
 ---
 
@@ -130,6 +131,35 @@ source, and show the diagnosis before writing any fix.
 
 ---
 
+## Post-Implementation Verification (MANDATORY)
+
+After completing any code change and before creating a PR, delegate to the
+`post-impl-verifier` agent. Do not skip any pass. Do not ask whether to run
+them. Run them automatically.
+
+The verifier runs five passes on the changeset:
+1. **Docs accuracy** (2 loops) — verify `docs/` references match changed code
+2. **AI-language tone** (2 loops) — eliminate AI-generated prose patterns
+3. **Security** — OWASP Top 10, secrets scan, injection review
+4. **Functionality** (4 loops) — parse, trace, callers, tests
+5. **SCA/SAST/DAST compliance** — license, lint, CSP, eval/exec
+
+If any pass fails and cannot be auto-fixed, stop and report. Do not create a
+PR with outstanding failures.
+
+### AI-Language Quick Reference
+
+These terms are banned in all comments, docstrings, docs, and templates:
+`leverage`, `utilize`, `streamline`, `robust`, `comprehensive`, `seamless`,
+`empower`, `innovative`, `cutting-edge`, `delve`, `paradigm`, `synergy`,
+`holistic`, `pivotal`, `cornerstone`, `foster`, `harness`, `testament`
+
+Replace with plain words: `use`, `reliable`, `full`, `simplify`, `improve`.
+Start docstrings with imperative verbs, not "This function/class...".
+No conclusion sections in markdown. No pedagogical framing.
+
+---
+
 ## Hard Limits
 
 1. Never modify `eeoc-arc-payloads/` — it is a read-only ARC contract repository
@@ -137,3 +167,4 @@ source, and show the diagnosis before writing any fix.
 3. Never log PII in any form in any repo
 4. Never skip AI audit logging on any AI generation
 5. Never disable or bypass 508 accessibility requirements
+6. Never skip post-implementation verification before PR creation
