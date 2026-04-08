@@ -159,7 +159,7 @@ Every `<canvas>` chart requires all three:
       </tr>
     </thead>
     <tbody>
-      <tr><td>Category A</td><td>42</td></tr>
+      <tr><th scope="row">Category A</th><td>42</td></tr>
       <!-- ... -->
     </tbody>
   </table>
@@ -226,7 +226,7 @@ replaced in POA&M A-18. Use "Chart data is available in the table below."
 ## Modal Pattern
 
 ```html
-<div class="modal" tabindex="-1" role="dialog" aria-labelledby="modalTitle">
+<div class="modal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-modal="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -430,10 +430,10 @@ Status color mapping (matches CSS overrides):
 
 ```bash
 # Missing alt text on images
-grep -rn '<img ' templates/ | grep -v 'alt='
+grep -rin '<img ' templates/ | grep -vi 'alt='
 
 # Missing form labels
-grep -rn '<input\|<select\|<textarea' templates/ | grep -v 'aria-label\|<label\|aria-labelledby'
+grep -rinE '<input|<select|<textarea' templates/ | grep -viE 'aria-label|<label|aria-labelledby'
 
 # Unsafe use of | safe filter on potentially user-controlled data
 grep -rn '| safe' templates/
@@ -460,7 +460,7 @@ grep -rn '\.on.*change.*submit\|addEventListener.*change.*submit' templates/ sta
 grep -rn 'required' templates/ | grep -v 'aria-required'
 
 # Sortable column headers missing aria-sort
-grep -rn 'sort_by\|sort_order' templates/ | grep '<th' | grep -v 'aria-sort'
+grep -rinE 'sort_by|sort_order' templates/ | grep -i '<th' | grep -vi 'aria-sort'
 
 # Chat windows using innerHTML clear without SR announcer
 grep -rn 'innerHTML.*=' templates/ static/ | grep -i 'chat\|message'
