@@ -665,6 +665,41 @@ behind a feature flag; existing behavior must be preserved when the flag is off.
 | 56 | `eeoc-ofs-triage/` | OFS Rank C decision letter: AI-assisted generation, DOCX template, attorney review workflow (disabled by default) | Phase 3 | PENDING |
 | 57 | `eeoc-ofs-triage/` | RAG library expansion: SEP, Compliance Manual, Commission Guidance categories, sector filtering for OFS/OFP | Phase 3 | PENDING |
 | 58 | `eeoc-ofs-triage/` | OFS submission window: configurable timer, extension handling, CDC monitoring, manual early review override | Phase 3 | PENDING |
+| 59 | `eeoc-mcp-hub-functions/` | REMEDIATION: Full M-21-31 compliance logging (P43 was not implemented) + protocol version fix (P6) | Phase 2 | PENDING |
+| 60 | `eeoc-ogc-trialtool/` | REMEDIATION: Remove pdf2image/poppler, replace python-jose→PyJWT, pin deps, MODEL_LICENSES.md, build-and-test.yml | Phase 2 | PENDING |
+| 61 | `eeoc-ofs-triage/` | REMEDIATION: Reconstruct OFPCaseMonitor/__init__.py (P54 source file missing) | Phase 3 | PENDING |
+| 62 | Workspace root | REMEDIATION: Create Azure_M2131_EL3_Infrastructure_Guide.md (P45 was not implemented) | Phase 3 | PENDING |
+| 63 | Multiple repos | REMEDIATION: HMAC-SHA256 upgrade for Triage+UDIP audit loggers, OGC 508 CSS, retention string standardization, ADR MCP protocol version | Phase 2 | PENDING |
+| 64 | UDIP + Triage | WIRING FIX: Connect conversation lifecycle to case closure/holds (UDIP), wire session population into login flow (Triage), fix ScheduledDisposal (Triage) | Phase 2 | PENDING |
+| 65 | ALL repos | FINAL HARDENING: 7 missing test suites, UDIP PDBs, HMAC key out of ConfigMaps, SQL roles, search function ordering, startup probes, doc cross-references | Phase 2 | PENDING |
+| 66 | `eeoc-data-analytics-and-dashboard/` | Debezium schema expansion: `schema.include.list` → `"public,fed_hearings"` + PII column exclusions + runbook | Phase 4a | PENDING |
+| 67 | `eeoc-data-analytics-and-dashboard/` | Replica schema DDL: 24 new tables (13 fed_hearings + 11 public gaps) | Phase 4a | PENDING |
+| 68 | `eeoc-data-analytics-and-dashboard/` | Analytics target tables: 17 new analytics schema tables + lifecycle triggers + indexes | Phase 4a | PENDING |
+| 69 | `eeoc-data-analytics-and-dashboard/` | YAML mappings for 13 federal hearings CDC entities (fedhearings_*.yaml) | Phase 4a | PENDING |
+| 70 | `eeoc-data-analytics-and-dashboard/` | YAML mappings for 12 public schema gap entities (prepa_conciliation, benefits, race, etc.) | Phase 4a | PENDING |
+| 71 | `eeoc-arc-integration-api/` | Service Bus subscriptions: `user-management-topic` + `federal-hearing-topic` + handlers | Phase 4a | PENDING |
+| 72 | `eeoc-arc-integration-api/` | FederalHearingsClient: 9 methods, Pydantic models, feature flag | Phase 4b | PENDING |
+| 73 | `eeoc-arc-integration-api/` | EmployerClient (5 methods) + PrepaClient enforcement/conciliation/systemic additions (17 methods) | Phase 4b | PENDING |
+| 74 | `eeoc-arc-integration-api/` | New routers: federal.py, enforcement.py, systemic.py, employer.py | Phase 4b | PENDING |
+| 75 | `eeoc-arc-integration-api/` | MCP tools: 11 new tools (9 read + 2 write), dispatch handlers | Phase 4b | PENDING |
+| 76 | `eeoc-arc-integration-api/` | Feature flags consolidation: 7 flags, 2 URLs, 4 TTLs, helper module | Phase 4b | PENDING |
+| 77 | `eeoc-arc-integration-api/` | Unit tests for all Phase 4b additions (9 test files) | Phase 4b | PENDING |
+| 78 | `eeoc-ogc-trialtool/` | Enforcement + court hearing data display, CRUD routes, MCP tools | Phase 5 | PENDING |
+| 79 | `eeoc-ofs-triage/` | Federal sector data path: hearing metadata lookup, enriched classification context | Phase 5 | PENDING |
+| 80 | `eeoc-ofs-adr/` | Conciliation status display + case notes access (read-only additions) | Phase 5 | PENDING |
+| 81 | `eeoc-data-analytics-and-dashboard/` | Analytics views + AI assistant tools for federal hearings and enforcement | Phase 5 | PENDING |
+| 82 | `eeoc-ofs-adr/` + `eeoc-ofs-triage/` | Unified staff portal: blueprint extraction, namespaced routes, shared navigation | Phase 6 | PENDING |
+| 83 | `eeoc-ofs-adr/` | Unified staff portal: shared auth, role resolver, session manager, decorators | Phase 6 | PENDING |
+| 84 | `eeoc-ofs-adr/` | Unified staff portal: Dockerfile, K8s manifests, HPA, CI/CD pipeline | Phase 6 | PENDING |
+| 85 | `eeoc-ogc-trialtool/` | OGC case registry: dual case ID (internal + ARC), RBAC, organizational hierarchy, case dashboard | Phase 7 | PENDING |
+| 86 | `eeoc-ogc-trialtool/` | Transcript parser: page:line preservation from PDF, Document Intelligence OCR, case document ingestion + categorization | Phase 7 | PENDING |
+| 87 | `eeoc-ogc-trialtool/` | Case-scoped AI Assistant: per-case conversation store, dual-corpus RAG, Bluebook citation engine, case chat UI | Phase 7 | PENDING |
+| 88 | `eeoc-ogc-trialtool/` | Case lifecycle: closure → retention → disposal, FOIA export, ARC status pull (read-only), litigation hold integration | Phase 7 | PENDING |
+| 89 | `eeoc-ogc-trialtool/` | Word Add-in: secure API layer + SSO + manifest + security docs (foundation — full UI is future phase) | Phase 8 | PENDING |
+| 90 | ADR + Triage + Trial Tool + UDIP | PWA support: manifest.json, service worker, generated icons, taskbar/desktop install | Phase 7 | PENDING |
+| 91 | `eeoc-ofs-adr/` | Production deployment docs: Entra ID app registration guide, Login.gov prod setup, Key Vault secret generation, DNS/TLS, env var dependencies, health check script, first-run setup guide | Phase 9 | PENDING |
+| 92 | `eeoc-ofs-adr/` | Audit log viewer (search/filter/export), per-case activity timeline, bulk security audit export for compliance reviews | Phase 9 | PENDING |
+| 93 | All repos | Python 3.13 upgrade: psycopg2-binary bump, Dockerfile base image, CI python-version, config files | Phase 9 | PENDING |
 
 ### For the developer reviewing diffs:
 
@@ -4322,6 +4357,79 @@ This is a DOCUMENTATION + CONFIGURATION prompt, not heavy code changes.
      (image digest pinning in K8s manifests, private container registry with
      access controls)
 
+6. Secret scanning (SA-11, IA-5(7)):
+   The existing sast-scan.sh Phase 4 "Hardcoded Secrets Scan" uses regex
+   grep patterns only — no dedicated tool, no git history scanning, no
+   pre-commit hook. This is insufficient for FedRAMP.
+
+   a. Add gitleaks to EVERY repo's CI pipeline:
+      Add to .github/workflows/build-and-test.yml (or security-audit-evidence.yml):
+      ```yaml
+      secret-scan:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v4
+            with:
+              fetch-depth: 0  # full history for git log scanning
+          - name: Gitleaks scan
+            uses: gitleaks/gitleaks-action@v2
+            env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ```
+      This scans the FULL git history, not just current files. Catches
+      secrets that were committed and later removed.
+
+   b. Add .gitleaks.toml to EVERY repo root:
+      Configure allowlists for known false positives (test fixtures,
+      placeholder values, documentation examples):
+      ```toml
+      [allowlist]
+        description = "Known false positives"
+        paths = [
+          '''example_data/''',
+          '''tests/fixtures/''',
+          '''docs/'''
+        ]
+        regexTarget = "match"
+      ```
+      Customize per repo based on what sast-scan.sh's .secrets-allowlist.json
+      already suppresses — migrate those suppressions to gitleaks format.
+
+   c. Add pre-commit hook for local development:
+      Create .pre-commit-config.yaml in EVERY repo:
+      ```yaml
+      repos:
+        - repo: https://github.com/gitleaks/gitleaks
+          rev: v8.18.0
+          hooks:
+            - id: gitleaks
+      ```
+      Document in CONTRIBUTING.md or README: developers must run
+      `pre-commit install` after cloning the repo.
+
+   d. One-time full history scan:
+      Run gitleaks detect --source . --report-format sarif across ALL repos.
+      If any real secrets are found in git history:
+        - Rotate the compromised credential immediately
+        - Document the incident
+        - Do NOT rewrite git history (breaks audit trail) — rotation is
+          sufficient per NIST SP 800-53 IA-5(7)
+      Upload scan results as CI artifacts alongside other security evidence.
+
+   e. Enable GitHub push protection (if available):
+      - Go to each repo → Settings → Code security and analysis
+      - Enable "Secret scanning" and "Push protection"
+      - This blocks pushes containing known secret patterns (API keys,
+        tokens, connection strings) before they enter the repository
+      - Document as a compensating control in the SSP
+
+   f. Update sast-scan.sh in all repos:
+      - Keep the existing grep-based Phase 4 as a fast local check
+      - Add a note: "For comprehensive scanning including git history,
+        see the gitleaks CI job in .github/workflows/"
+      - The grep scan remains useful for quick local validation but
+        gitleaks in CI is the authoritative gate
+
 Write guidance docs and CI configuration files. No application code changes.
 ```
 
@@ -5893,4 +6001,4819 @@ Build the OFS submission window tracking and auto-queue system.
      case not yet queued for review)
 
 Write a CHANGES.md and unified diff.
+```
+
+---
+
+## Prompt 59: MCP Hub — Compliance Logging Remediation + Protocol Version Fix
+
+**Repository:** `eeoc-mcp-hub-functions/`
+**Owner:** Hub team
+**Phase:** 2 (CRITICAL — blocks M-21-31 compliance for the hub)
+
+### Prompt
+
+```
+POST-AUDIT REMEDIATION: The implementation audit found two issues in the
+MCP Hub Functions repository:
+
+1. Prompt 43 (M-21-31 compliance logging) was NOT implemented. The entire
+   audit logging layer is missing — no audit_logger.py, no security.py,
+   no HMAC signatures, no PII hashing, no structlog, no WORM blob archive.
+   Only a basic AuditRecord model and Table Storage write for catalog
+   refresh events exist.
+
+2. Prompt 6 MCP protocol version is still 2024-11-05 in three files
+   instead of 2025-03-26.
+
+FIX ALL OF THE FOLLOWING:
+
+PART A — Protocol Version Fix (3 files):
+
+1. In hub_functions/models.py: change the default protocol version from
+   "2024-11-05" to "2025-03-26"
+2. In function_app.py: change any hardcoded "2024-11-05" to "2025-03-26"
+3. In tests/conftest.py: update test fixtures to use "2025-03-26"
+   Search for "2024-11-05" across the entire repo and fix every occurrence.
+
+PART B — Full M-21-31 Compliance Logging (Prompt 43 implementation):
+
+1. Create hub_functions/audit_logger.py:
+   Use eeoc-arc-integration-api/app/audit_logger.py as the reference
+   implementation — it already passes audit. Implement the same pattern:
+
+   - Dual-write: Azure Table Storage ("hubauditlog") + WORM blob
+     ("hub-audit-archive", 2555-day immutability policy)
+   - HMAC-SHA256 on every record:
+     Key from Key Vault: HUB_AUDIT_HMAC_KEY (minimum 32 chars)
+     Signature covers: partition_key + row_key + event_type + caller_hash
+     Stored as RecordHMAC field
+   - Fields per record:
+     PartitionKey (YYYY-MM-DD), RowKey (request_id + timestamp_micros),
+     RequestID, CallerOIDHash (SHA-256 of caller OID, truncated 16 hex),
+     EventType (catalog_refresh, spoke_health_check, tool_call_routed,
+     spoke_registered, spoke_deregistered),
+     SpokeName, ToolCount, Duration, StatusCode, LatencyMs,
+     RetentionPolicy ("FOIA_7_YEAR"), DataClassification ("OPERATIONAL"),
+     RecordHMAC, Timestamp_UTC
+   - Content truncation at 32KB with blob overflow (BlobArchivePath)
+   - Lazy initialization with double-checked locking
+   - Immutability policy verification at startup
+
+2. Create hub_functions/security.py:
+   - hash_pii(value: str) → str:
+     HMAC-SHA256 with salt from Key Vault (HUB_AUDIT_HASH_SALT)
+     Truncate to 16 hex characters
+     Apply to ALL caller identifiers before logging
+   - validate_request_id(request_id: str) → str:
+     Sanitize and validate X-Request-ID header
+
+3. Add correlation ID propagation:
+   - In function_app.py: extract X-Request-ID from HTTP trigger requests,
+     generate UUID if not provided, echo in response headers
+   - In catalog_service.py: propagate X-Request-ID when calling spokes
+   - Include request_id in ALL log entries and audit records
+
+4. Replace logging with structlog:
+   - Add structlog to requirements.txt
+   - Configure structlog with JSON output, UTC timestamps, log level,
+     request_id context variable
+   - Replace all logging.getLogger() calls with structlog.get_logger()
+
+5. Add audit logging to ALL operations:
+   - Catalog refresh: log spokes contacted, tools per spoke, total tools,
+     duration, errors
+   - Spoke health check: log spoke name, status, response time
+   - Spoke registration/deregistration: log spoke name, URL, registered_by
+   - Tool catalog request: log requester, categories, tools returned
+   - Every HTTP trigger: log request_id, method, path, status, latency
+
+6. AU-5 failure handling:
+   - Retry audit writes 3 times with exponential backoff (0.5s, 1s, 2s)
+   - On all retries exhausted: log to stderr, continue serving
+   - Never block hub operations for audit failures
+
+7. Update existing AuditRecord model in models.py:
+   - Add missing fields: RequestID, CallerOIDHash, EventType, SpokeName,
+     RetentionPolicy, RecordHMAC, StatusCode, LatencyMs, DataClassification
+   - Keep existing fields (refresh_id, spokes_healthy, etc.) as additional
+     context fields
+
+8. Update tests:
+   - Add tests/test_audit_logger.py: test HMAC computation, PII hashing,
+     dual-write, retry logic, blob overflow
+   - Update test_function_app.py: verify audit logging is called on
+     every HTTP trigger
+
+Write a CHANGES.md and unified diff.
+```
+
+---
+
+## Prompt 60: OGC Trial Tool — License Remediation Completion + CI Pipeline Fix
+
+**Repository:** `eeoc-ogc-trialtool/`
+**Owner:** OGC team
+**Phase:** 2 (HIGH — license/SCA blockers + CI gap)
+
+### Prompt
+
+```
+POST-AUDIT REMEDIATION: The implementation audit found two incomplete
+prompts in the OGC Trial Tool:
+
+1. Prompt 46 (license remediation) was PARTIALLY implemented:
+   - pdf2image is STILL in trial_tool_functionapp/requirements.txt and
+     imported in DocumentIndexer/__init__.py (line 96: from pdf2image
+     import convert_from_bytes). poppler-utils (GPL-2.0) remains a
+     runtime dependency.
+   - python-jose is STILL in trial_tool_webapp/requirements.txt and used
+     in mcp_server.py (line 86: from jose import jwt). Was supposed to
+     be replaced with PyJWT.
+   - MODEL_LICENSES.md was never created.
+   - openai and azure-identity use >= instead of == in both requirements
+     files.
+
+2. Prompt 12 (CI/CD) is missing a build-and-test.yml workflow. Only
+   security-audit-evidence.yml exists. Tests are never run in CI.
+
+FIX ALL OF THE FOLLOWING:
+
+PART A — Complete pdf2image removal:
+
+1. In trial_tool_functionapp/requirements.txt:
+   - Remove pdf2image entirely
+
+2. In trial_tool_functionapp/DocumentIndexer/__init__.py:
+   - Remove: from pdf2image import convert_from_bytes
+   - Replace PDF-to-image conversion with pdfplumber (already in the
+     project) or pypdf (also available):
+     - If convert_from_bytes was used for page rendering/OCR:
+       replace with pdfplumber.open(io.BytesIO(pdf_bytes)) and iterate
+       pages with page.extract_text()
+     - If it was used for image extraction: use pdfplumber page images
+       or pypdf page extraction
+   - Test that PDF processing still works after the replacement
+
+PART B — Replace python-jose with PyJWT:
+
+1. In trial_tool_webapp/requirements.txt:
+   - Remove: python-jose[cryptography]
+   - Add: PyJWT[crypto]==2.9.0 (or latest stable, pinned)
+   - Add: cryptography (if not already present, needed by PyJWT[crypto])
+
+2. In trial_tool_webapp/mcp_server.py:
+   - Replace: from jose import jwt, JWTError, jwk
+   - With: import jwt from jwt.exceptions import PyJWTError
+   - Update jwt.decode() calls to match PyJWT API:
+     python-jose: jwt.decode(token, key, algorithms=["RS256"], audience=...)
+     PyJWT: jwt.decode(token, key, algorithms=["RS256"], audience=...)
+     (API is similar but error classes differ)
+   - Replace JWTError catches with PyJWTError (or jwt.exceptions.*)
+   - JWKS key handling: python-jose uses jwk.construct(key_data),
+     PyJWT uses jwt.algorithms.RSAAlgorithm.from_jwk(key_data)
+   - Test: verify MCP server JWT validation still works after the swap
+
+PART C — Pin all dependencies:
+
+1. In trial_tool_webapp/requirements.txt:
+   - Change openai>=1.14.0 to openai==1.14.0 (or current installed version)
+   - Change azure-identity>=1.15.0 to azure-identity==1.15.0 (or current)
+   - Verify ALL other entries use == pinning
+
+2. In trial_tool_functionapp/requirements.txt:
+   - Same: pin openai and azure-identity to exact versions
+   - Verify all entries use == pinning
+
+PART D — Create MODEL_LICENSES.md:
+
+1. Create trial_tool_webapp/MODEL_LICENSES.md documenting:
+   - The Trial Tool now uses Azure OpenAI (via FoundryModelProvider)
+   - Model: GPT-4o — licensed through Azure OpenAI Service agreement
+   - Azure OpenAI is a Microsoft managed service, FedRAMP High authorized
+   - No local model files, no Ollama, no direct model licensing concerns
+   - If embeddings are used: text-embedding-3-small via Azure OpenAI
+   - Previous Ollama models (Llama, Mistral) have been removed
+   - Government use: Azure OpenAI Service terms govern usage, not
+     individual model community licenses
+
+PART E — Create build-and-test.yml:
+
+1. Create .github/workflows/build-and-test.yml:
+   Model after eeoc-arc-integration-api/.github/workflows/build-and-test.yml
+   (which already passes audit). Include:
+
+   Jobs:
+   - lint: ruff check + format validation
+   - test: pytest with coverage (target 80%)
+     - Install both webapp and functionapp requirements
+     - Run tests from tests/ directory
+   - build-container: Docker build (if Dockerfile exists, otherwise skip)
+   - container-scan: Trivy (if container built)
+   - secret-scan: gitleaks with full history
+
+   Triggers: push to main/feature/*/fix/*/refactor/*, PRs to main
+
+Write a CHANGES.md and unified diff.
+```
+
+---
+
+## Prompt 61: Triage OFP Case Monitor Recovery
+
+**Repository:** `eeoc-ofs-triage/`
+**Owner:** Triage team
+**Phase:** 3 (HIGH — OFP intake pipeline non-functional)
+
+### Prompt
+
+```
+POST-AUDIT REMEDIATION: The implementation audit found that
+case-processor-function/OFPCaseMonitor/__init__.py source file is MISSING.
+The directory exists and compiled .pyc files are present, but the actual
+Python source was not committed or was lost.
+
+The OFPCaseMonitor is the timer-triggered Azure Function that detects new
+OFP cases from the CDC pipeline and queues them for AI classification.
+Without it, the OFP intake pipeline (Prompt 54) does not function.
+
+Reconstruct OFPCaseMonitor/__init__.py based on the Prompt 54 specification
+and the patterns established in the repository. Use OFSSubmissionMonitor/
+__init__.py (which exists and works, 401 lines) as the structural template.
+
+1. Create case-processor-function/OFPCaseMonitor/__init__.py:
+
+   Timer trigger: runs every 15 minutes (configure in function.json)
+
+   Main function flow:
+   a. Acquire distributed lock (same pattern as OFSSubmissionMonitor)
+   b. Query UDIP analytics tables (via read replica or UDIP API) for new
+      charges matching OFP criteria:
+      - accountabilityOfficeCode maps to an OFP district office
+        (use office hierarchy lookup from triage_webapp/helpers/office_hierarchy.py)
+      - Status = CHARGE_FILED (configurable via OFP_TRIGGER_STATUS env var)
+      - Not already in casetriage table (check by charge_number)
+   c. For each new case:
+      - Check classification delay: if charge_filed_date + OFP_REVIEW_DELAY_DAYS
+        > now(), skip (not ready). If delay = 0, process immediately.
+      - Pull case metadata from ARC via Integration API
+        (GET {ARC_INTEGRATION_API_URL}/arc/v1/charges/{charge_number}/metadata)
+        Auth: managed identity token (same pattern as arc_lookup.py)
+      - Pull available case files from ARC document store
+        (charging party uploads only)
+      - Create entry in casetriage table:
+        Sector="OFP", office_id from accountabilityOfficeCode mapping,
+        status="PENDING_REVIEW" (if documents available)
+        status="AWAITING_DOCUMENTS" (if no documents yet)
+      - Queue for CaseFileProcessor if documents available
+        (upload to processing-container blob to trigger blob trigger)
+   d. Check for new documents on already-classified OFP cases:
+      - Monitor CDC events for document uploads on tracked cases
+      - If new document found: set NEW_DOCUMENT_AVAILABLE flag on case entity
+      - Do NOT auto-reclassify
+   e. Log all activity to structured logger
+   f. Release distributed lock
+
+   Configuration (from environment):
+   - OFP_CASE_MONITOR_ENABLED: true (default)
+   - OFP_REVIEW_DELAY_DAYS: 5 (default, 0 = immediate)
+   - OFP_TRIGGER_STATUS: "CHARGE_FILED" (comma-separated list)
+   - OFP_CASE_MONITOR_INTERVAL_MINUTES: 15
+   - ARC_INTEGRATION_API_URL: (required)
+   - ARC_INTEGRATION_API_SCOPE: (Entra ID scope)
+   - UDIP_API_URL or PG_READ_REPLICA_CONNECTION_STRING: for querying new cases
+   - OFP_CALIBRATION_PHASE: true (log calibration warnings)
+
+2. Create or verify case-processor-function/OFPCaseMonitor/function.json:
+   Timer trigger with schedule matching the interval config.
+   Ensure the function is registered in the function app.
+
+3. Add tests:
+   Create or update tests to cover:
+   - New case detection logic
+   - Delay calculation (5-day default, 0 immediate, configurable)
+   - Duplicate detection (case already in casetriage)
+   - New document detection on classified cases
+   - Lock acquisition and release
+   - ARC API failure handling (non-blocking)
+
+Write a CHANGES.md and unified diff.
+```
+
+---
+
+## Prompt 62: M-21-31 EL3 Infrastructure Guide
+
+**Repository:** Workspace root
+**Owner:** OCIO Platform team
+**Phase:** 3 (HIGH — compliance documentation gap)
+
+### Prompt
+
+```
+POST-AUDIT REMEDIATION: The implementation audit found that Prompt 45 was
+not implemented. The file Azure_M2131_EL3_Infrastructure_Guide.md does
+not exist. While some Sentinel configuration is covered in the deployment
+guide (Section 2.19), the standalone M-21-31 EL3 infrastructure guide
+was never created.
+
+Create Azure_M2131_EL3_Infrastructure_Guide.md in the workspace root.
+
+This is a DOCUMENTATION prompt. Create a complete infrastructure guide for
+M-21-31 EL3 requirements handled at the Azure infrastructure level.
+
+Document step-by-step Azure Portal instructions for:
+
+1. Azure Sentinel (SOAR + UBA):
+   - Enable Microsoft Sentinel on the Log Analytics workspace
+   - Connect data sources: Azure AD sign-in logs, Azure Activity logs,
+     Application Insights (all 6 apps), NSG flow logs
+   - Enable User and Entity Behavior Analytics (UEBA)
+   - Create analytics rules for:
+     a. Failed authentication > 10 per hour per user
+     b. AI audit write failures > 5 per hour
+     c. Unusual query patterns (> 100 AI queries per hour per user)
+     d. After-hours access to PII tier 3 data
+     e. FOIA export activity (any export triggers alert)
+   - Create automation playbooks (Logic Apps):
+     a. On high-severity alert: email security team + create ticket
+     b. On AI circuit breaker: notify ADR/Triage team leads
+     c. On WORM deletion attempt: email Records Management Officer
+
+2. NSG Flow Logs:
+   - Enable on all NSGs in vnet-eeoc-ai-platform
+   - Version 2 (includes bytes transferred)
+   - Retention: 365 days
+   - Send to Log Analytics workspace
+   - Enable Traffic Analytics
+
+3. Azure DNS Analytics:
+   - Enable DNS Analytics solution in Log Analytics
+   - Configure diagnostic settings on Azure DNS zones
+   - Alert on: DNS queries to known malicious domains, unusual volume
+
+4. Azure Network Watcher:
+   - Enable in USGov Virginia region
+   - Configure on-demand packet capture capability
+   - Document incident response procedure for initiating capture
+   - Retention: 30 days for captured packets
+
+5. Log Analytics Workspace Configuration:
+   - Interactive retention: 12 months (M-21-31 requirement)
+   - Archive tier: 18 months beyond interactive (30 months total)
+   - Per-table retention where needed
+   - Data Export Rules to cold storage blob containers
+   - Workspace-level RBAC (who can query what)
+
+6. Azure AD Identity Protection:
+   - Enable risk-based conditional access policies
+   - Alert on: impossible travel, anonymous IP, malware-linked IP
+   - Feed risk detections into Sentinel for correlation
+
+7. TLS Inspection:
+   - Azure Firewall Premium with TLS inspection
+   - Or Application Gateway with end-to-end TLS
+   - Document which traffic is inspected vs pass-through
+
+8. Compliance Dashboard (Azure Monitor Workbook):
+   - M-21-31 maturity level per application (EL1/EL2/EL3)
+   - AU control compliance status
+   - Log volume per application per day
+   - Audit record integrity (HMAC validation results)
+   - Retention policy adherence
+   - Open litigation holds
+
+Write click-by-click Azure Portal instructions for each section.
+Reference the existing EEOC_AI_Platform_Complete_Deployment_Guide.md
+Section 2.19 where applicable, but this document must be STANDALONE and
+COMPLETE — someone should be able to follow it without the deployment guide.
+
+Target length: 600-800 lines.
+```
+
+---
+
+## Prompt 63: Cross-Cutting Compliance Remediation — HMAC, 508, Retention String, Protocol Version
+
+**Repositories:** `eeoc-ofs-triage/`, `eeoc-data-analytics-and-dashboard/`, `eeoc-ogc-trialtool/`, `eeoc-ofs-adr/` (run per repo)
+**Owner:** All teams
+**Phase:** 2 (compliance — blocks FedRAMP assessment)
+
+### Prompt (Triage — run in eeoc-ofs-triage/)
+
+```
+POST-AUDIT REMEDIATION: The compliance audit found that the Triage audit
+logger uses SHA-256 hashing but NOT HMAC-SHA256 keyed signatures. Per
+NIST 800-53 AU-10 (non-repudiation), audit records must use keyed HMAC
+to prevent tampering by anyone with write access to Table Storage.
+
+ADR (eeoc-ofs-adr/shared_code/ai_audit_logger.py) and ARC Integration API
+(eeoc-arc-integration-api/app/audit_logger.py) already implement HMAC-SHA256
+correctly. Bring Triage to parity.
+
+1. Upgrade shared/utils/ai_audit_logger.py to use HMAC-SHA256:
+   - Add HMAC key configuration:
+     AI_AUDIT_HMAC_KEY from environment (sourced from Key Vault)
+     Minimum 32 characters, fail startup in production if missing
+     Allow empty key in development (log warning, use SHA-256 fallback)
+   - Replace hashlib.sha256() calls with hmac.new(key, msg, hashlib.sha256):
+     InputPromptHash → HMAC-SHA256 of system prompt + user prompt
+     OutputResponseHash → HMAC-SHA256 of AI response
+   - Add RecordHMAC field: HMAC-SHA256 covering
+     PartitionKey + RowKey + event fields (same pattern as ARC API)
+   - Keep SHA-256 as fallback ONLY when HMAC key is not configured
+     (development mode)
+
+2. Standardize retention policy string:
+   - Change RETENTION_POLICY from "NARA_7_YEAR" to "FOIA_7_YEAR"
+   - This aligns with ADR and ARC Integration API
+   - Both strings mean the same thing (7-year retention per NARA/FOIA)
+     but consistency matters for automated compliance queries
+   - Update in: ai_audit_logger.py, foia_export.py (if present),
+     any other file referencing the retention string
+
+3. Add AI_AUDIT_HMAC_KEY to configuration documentation and K8s configmaps.
+
+Write a CHANGES.md and unified diff.
+```
+
+### Prompt (UDIP — run in eeoc-data-analytics-and-dashboard/)
+
+```
+POST-AUDIT REMEDIATION: Same HMAC-SHA256 and retention string issue as
+Triage. The UDIP analytics dashboard audit logger uses SHA-256 only.
+
+1. Upgrade shared_code/ai_audit_logger.py to use HMAC-SHA256:
+   - Same changes as Triage prompt above:
+     HMAC key from Key Vault (AI_AUDIT_HMAC_KEY, 32+ chars)
+     Replace hashlib.sha256 with hmac.new for all hash fields
+     Add RecordHMAC integrity field
+     Fail in production without key, allow SHA-256 fallback in dev
+
+2. Standardize retention policy string:
+   - Change RETENTION_POLICY from "NARA_7_YEAR" to "FOIA_7_YEAR"
+   - Update in ai_audit_logger.py and any other files referencing it
+
+Write a CHANGES.md and unified diff.
+```
+
+### Prompt (OGC — run in eeoc-ogc-trialtool/)
+
+```
+POST-AUDIT REMEDIATION: The OGC Trial Tool has no accessibility CSS
+overrides for 508 compliance. ADR and Triage both have dedicated
+stylesheets overriding Bootstrap defaults to meet WCAG 2.1 AA 4.5:1
+contrast requirements.
+
+1. Create trial_tool_webapp/static/css/accessibility.css:
+   Copy the proven pattern from eeoc-ofs-triage/triage_webapp/static/css/accessibility.css:
+   - Override Bootstrap color defaults for 4.5:1+ contrast:
+     .text-muted: #5a6472 (6.0:1 on white)
+     .text-info: #087990 (7.1:1)
+     .text-warning: #997404 (5.7:1)
+     .text-danger: #b02a37 (6.5:1)
+     --bs-border-color: #737373 (4.7:1)
+   - Force dark text on light badges (bg-info, bg-warning)
+   - Focus indicators: 2px solid #0a58ca with offset (WCAG 2.4.7)
+   - Minimal color palette — avoid decorative colors
+
+2. Include the stylesheet in the base template:
+   Add <link rel="stylesheet" href="/static/css/accessibility.css">
+   after Bootstrap CSS in the base HTML template
+
+3. Standardize retention policy string:
+   In shared_code/ai_audit_logger.py:
+   - Change RETENTION_POLICY from "NARA_7_YEAR" to "FOIA_7_YEAR"
+   - Update in any other files referencing the string (foia_export.py, etc.)
+
+Write a CHANGES.md and unified diff.
+```
+
+### Prompt (ADR — run in eeoc-ofs-adr/)
+
+```
+POST-AUDIT REMEDIATION: Two minor fixes found in the cross-repo audit.
+
+1. Add MCP protocol version to ADR's MCP server:
+   In adr_webapp/routes/api_mcp.py (or adr_webapp/mcp_server.py):
+   - Add: _PROTOCOL_VERSION = "2025-03-26"
+   - Include in the server_info response and any protocol handshake
+   - Triage and ARC Integration API already declare this version;
+     ADR is the only spoke that omits it
+
+2. No other changes needed — ADR already has HMAC-SHA256, 508 compliance,
+   and uses "FOIA_7_YEAR" retention string.
+
+Write a CHANGES.md and unified diff.
+```
+
+---
+
+## Prompt 64: Final Wiring Fixes — UDIP Conversation Lifecycle + Triage Session Population + ScheduledDisposal
+
+**Repositories:** `eeoc-data-analytics-and-dashboard/` and `eeoc-ofs-triage/`
+**Owner:** UDIP team + Triage team
+**Phase:** 2 (CRITICAL — dead code paths that break compliance and multi-tenancy)
+
+### Prompt (UDIP — run in eeoc-data-analytics-and-dashboard/)
+
+```
+POST-AUDIT WIRING FIX: The full wiring audit found two methods in
+conversation_store.py that are implemented correctly but NEVER CALLED
+from any production code path. This means:
+- Case closures do NOT archive conversations to WORM blob
+- Case closures do NOT set retention_expires_at on conversations
+- Litigation holds do NOT freeze linked conversations
+
+Both methods exist and are tested, but the integration points are missing.
+
+FIX 1 — Wire case closure to conversation archival:
+
+The method ConversationStore.set_retention_on_case_closure() at
+ai-assistant/app/conversation_store.py:809 must be called when a
+charge's lifecycle_state transitions to "closed" in the system.
+
+Option A (preferred): Wire into HoldService/lifecycle events.
+In ai-assistant/app/hold_service.py, the issue_hold() method at line 45
+already propagates holds to 9 analytics tables. Add a call after the
+analytics propagation:
+
+   # After _set_analytics_hold() succeeds:
+   from .conversation_store import ConversationStore
+   store = ConversationStore(table_service_client)
+   store.hold_conversations_for_charge(charge_number)
+
+Option B: Wire into lifecycle_manager.py case closure path.
+In data-middleware/lifecycle_manager.py, when execute_purge() or any
+lifecycle transition sets a charge to "closed":
+   - Import ConversationStore
+   - Call store.set_retention_on_case_closure(charge_number, case_closed_at)
+   - This archives all linked conversations and sets 7-year retention
+
+Implement BOTH options:
+1. In hold_service.py issue_hold(): after _set_analytics_hold(), call
+   ConversationStore.hold_conversations_for_charge(charge_number)
+   — this freezes conversations when a hold is issued
+
+2. In hold_service.py release_hold(): after _release_analytics_hold(),
+   call ConversationStore.release_hold_for_charge(charge_number)
+   — this unfreezes conversations when a hold is released
+   (create this method if it doesn't exist — iterate linked conversations
+   and call release_hold() on each)
+
+3. Create a new API endpoint or hook for case closure events:
+   POST /api/lifecycle/case-closed
+   Input: { charge_number, case_closed_at }
+   Auth: managed identity (lifecycle_manager or CDC consumer identity)
+   Action: calls ConversationStore.set_retention_on_case_closure()
+   This is called by the lifecycle_manager when it detects a case has
+   been closed (either via CDC status change or manual closure).
+
+   Alternatively, if lifecycle_manager.py already has a case closure
+   detection path, add the ConversationStore call directly there.
+
+4. Wire into the data middleware CDC consumer if possible:
+   When the CDC consumer processes a charge status change to CLOSED
+   (via the lifecycle state machine), trigger the conversation archival.
+   This ensures conversations are archived in near-real-time after
+   case closure, not just during batch lifecycle runs.
+
+5. Add integration test:
+   Test that when a charge gets a litigation hold:
+   - All linked conversations have lifecycle_state="held"
+   Test that when a case is closed:
+   - All linked conversations are archived to WORM blob
+   - retention_expires_at is set to case_closed_at + 7 years
+
+Write a CHANGES.md and unified diff.
+```
+
+### Prompt (Triage — run in eeoc-ofs-triage/)
+
+```
+POST-AUDIT WIRING FIX: The full wiring audit found two issues:
+
+1. office_hierarchy.py is loaded and the office tree works, but the
+   login flow does NOT populate session fields needed for multi-tenancy.
+   Dashboard queries that filter by sector + office subtree will not
+   work because session['staff_role'], session['office_id'], and
+   session['sector'] are never set.
+
+2. ScheduledDisposal/ directory has a function.json timer trigger
+   (daily 3 AM) but no __init__.py source file. This will cause
+   runtime errors in Azure Functions.
+
+FIX 1 — Wire session population into login flow:
+
+In triage_webapp/auth.py (or wherever the MSAL login callback is):
+After successful authentication (where session['user'] and session['sid']
+are set), add hierarchy lookup:
+
+   from helpers.office_hierarchy import (
+       load_staff_assignment,
+       load_staff_hierarchy,
+   )
+
+   # After session['user'] is set:
+   user_oid = session['user']['oid']  # or however the OID is extracted
+
+   # Look up staff assignment
+   assignment = load_staff_assignment(table_service, user_oid)
+   if assignment:
+       session['staff_role'] = assignment.get('Role', 'intake_coordinator')
+       session['office_id'] = assignment.get('OfficeId', '')
+       session['sector'] = assignment.get('Sector', 'OFS')
+       # Load subordinate IDs for supervisors/directors
+       if session['staff_role'] in ('supervisor', 'director', 'admin'):
+           session['subordinate_coordinator_ids'] = (
+               load_staff_hierarchy(table_service, user_oid)
+           )
+       else:
+           session['subordinate_coordinator_ids'] = []
+   else:
+       # Default for users not in staffassignments table
+       session['staff_role'] = 'intake_coordinator'
+       session['office_id'] = ''
+       session['sector'] = os.environ.get('TRIAGE_DEFAULT_SECTOR', 'OFS')
+       session['subordinate_coordinator_ids'] = []
+
+   session['hierarchy_loaded'] = True
+
+This must happen BEFORE the user is redirected to the dashboard.
+
+Verify that office_hierarchy.py has the functions load_staff_assignment()
+and load_staff_hierarchy() that return the expected data. If they have
+different names, use the actual function names — the key point is that
+the session must be populated with role, office, and sector after login.
+
+Also verify that blueprints/cases.py (dashboard queries) actually READ
+these session fields when filtering. If the query filtering code
+references session['office_id'] or session['sector'], this fix will
+make it functional. If the filtering code doesn't exist yet, add it:
+- OFS users: no office filter (national view)
+- OFP users with role=intake_coordinator: filter to own cases only
+- OFP users with role=supervisor/director: filter to subordinate cases
+  + own office subtree
+
+FIX 2 — ScheduledDisposal source file:
+
+Either create case-processor-function/ScheduledDisposal/__init__.py or
+remove the directory entirely. Check whether any other function or
+documentation references ScheduledDisposal:
+- If it's supposed to be a timer that triggers FinalizeDisposal for
+  expired retention records: create the source file that queries cases
+  past retention_expires_at and queues them for FinalizeDisposal
+- If FinalizeDisposal is already triggered by other means (HTTP, queue):
+  remove the ScheduledDisposal directory and its function.json to
+  prevent Azure Functions runtime errors
+
+The safest approach: create a minimal __init__.py that:
+1. Queries casetriage for cases where retention_expires_at < now()
+   AND lifecycle_state = "retained" (not held)
+2. For each: sends a message to the disposal queue that triggers
+   FinalizeDisposal
+3. Respects LITIGATION_HOLD_CHECK — never queues held cases
+4. Uses distributed lock to prevent concurrent runs
+5. Logs activity to structured logger
+
+Write a CHANGES.md and unified diff.
+```
+
+---
+
+## Prompt 65: Final Hardening — Tests, K8s, SQL Roles, Config Hygiene (All Repos)
+
+**Repositories:** All repos as specified per section
+**Owner:** All teams
+**Phase:** 2 (FINAL — run before production deployment)
+
+### Prompt (Triage — run in eeoc-ofs-triage/)
+
+```
+FINAL HARDENING: The comprehensive audit identified the following issues
+in the Triage repo. Fix ALL of them.
+
+PART A — Missing unit tests (7 gaps):
+
+1. Create triage_webapp/tests/test_office_hierarchy.py:
+   Test office_hierarchy.py (Prompt 53 multi-tenancy):
+   - test_get_office_tree_builds_correct_hierarchy: mock officestructure
+     table, verify parent-child relationships
+   - test_get_subtree_office_ids_returns_all_descendants: verify recursive
+     traversal collects all children
+   - test_cycle_detection_prevents_infinite_loop: create circular
+     parent references, verify no hang
+   - test_load_staff_assignment_returns_role_office_sector: mock
+     staffassignments table, verify correct fields returned
+   - test_load_staff_hierarchy_for_supervisor: verify subordinate IDs
+     loaded for supervisor role
+   - test_cache_expires_after_ttl: verify office tree reloads after
+     OFFICE_HIERARCHY_CACHE_TTL_SECONDS
+   - test_missing_staff_assignment_returns_none: verify graceful
+     handling when user not in staffassignments
+
+2. Create case-processor-function/tests/test_ofs_submission_monitor.py:
+   Test OFSSubmissionMonitor (Prompt 58):
+   - test_window_closed_transitions_to_ready_for_review: verify state
+     transition when deadline passes
+   - test_window_open_calculates_days_remaining: verify countdown
+   - test_extension_detected_updates_deadline: mock CDC extension event,
+     verify new deadline calculated
+   - test_manual_override_closes_window_early: verify "Review Now"
+     triggers immediate transition
+   - test_distributed_lock_prevents_concurrent_runs: verify only one
+     instance runs
+   - test_arc_deadline_preferred_over_fallback: when filingDeadlineDte
+     exists, use it instead of created_date + window_days
+   - test_no_cases_in_window_is_noop: verify clean exit when no
+     AWAITING_SUBMISSION_WINDOW cases
+
+3. Create triage_webapp/tests/test_session_population.py:
+   Test the login → session population flow (Prompt 64):
+   - test_successful_login_populates_all_session_fields: verify
+     staff_role, office_id, sector, subordinate_coordinator_ids set
+   - test_unknown_user_gets_restrictive_defaults: verify
+     intake_coordinator role, empty office/sector
+   - test_supervisor_gets_subordinate_ids: verify hierarchy loaded
+   - test_ofs_user_gets_national_view: verify no office filtering
+
+PART B — K8s ConfigMap hygiene:
+
+4. In deploy/k8s/triage-functionapp/configmap.yaml:
+   - Remove AI_AUDIT_HMAC_KEY from the ConfigMap entirely
+   - It is a secret and must come from triage-secrets (Kubernetes Secret)
+   - Add a comment: "# AI_AUDIT_HMAC_KEY: sourced from triage-secrets"
+
+5. In deploy/k8s/triage-webapp/configmap.yaml:
+   - Same: remove AI_AUDIT_HMAC_KEY, reference triage-secrets
+
+6. In deploy/k8s/triage-functionapp/deployment.yaml and
+   deploy/k8s/triage-webapp/deployment.yaml:
+   - If AI_AUDIT_HMAC_KEY is in the env section from configMapRef,
+     add it via secretKeyRef instead:
+     - name: AI_AUDIT_HMAC_KEY
+       valueFrom:
+         secretKeyRef:
+           name: triage-secrets
+           key: ai-audit-hmac-key
+
+Write a CHANGES.md and unified diff.
+```
+
+### Prompt (UDIP — run in eeoc-data-analytics-and-dashboard/)
+
+```
+FINAL HARDENING: The comprehensive audit identified the following issues
+in the UDIP repo. Fix ALL of them.
+
+PART A — Missing unit tests (4 gaps):
+
+1. Create ai-assistant/tests/test_hold_service.py:
+   Test hold_service.py API endpoints (Prompt 41):
+   - test_issue_hold_creates_record_and_returns_hold_id: POST /api/holds
+   - test_release_hold_updates_record: DELETE /api/holds/{id}
+   - test_check_hold_returns_true_when_active: GET /api/holds/check/{charge}
+   - test_check_hold_returns_false_when_none: verify no false positives
+   - test_list_holds_filters_active_only: GET /api/holds
+   - test_issue_hold_propagates_to_conversations: verify
+     hold_conversations_for_charge() called
+   - test_case_closed_endpoint_archives_conversations: POST
+     /api/lifecycle/case-closed triggers archival
+   - test_unauthorized_user_rejected: verify role check (Admin/LegalCounsel)
+   - Mock PostgreSQL and ConversationStore, test HTTP responses
+
+2. Create ai-assistant/tests/test_foia_export.py:
+   Test foia_export.py (Prompt 40):
+   - test_export_creates_zip_with_correct_structure: verify ZIP contains
+     ai_audit_records.json, conversations/, metadata.json
+   - test_metadata_includes_chain_of_custody: verify export_id,
+     requester_hash, zip_hash, timestamp
+   - test_rate_limit_enforced: verify 5 per hour limit
+   - test_admin_role_required: verify 403 for non-admin
+   - test_sas_url_generated_with_24hr_expiry: verify download URL
+   - Mock Table Storage, Blob Storage, test full export flow
+
+3. Create data-middleware/tests/test_schema_detector.py:
+   Test schema_detector.py (Prompt 52):
+   - test_detect_new_replica_tables_finds_unregistered: mock replica
+     schema, verify new tables identified
+   - test_detect_new_ingest_datasets_infers_schema: pass sample records,
+     verify column types inferred correctly
+   - test_auto_label_columns_from_registry: verify known columns get
+     labels from column_registry.yaml
+   - test_auto_label_columns_pattern_based: verify *_id → identifier,
+     *_date → date, is_* → boolean patterns
+   - test_auto_detect_pii_flags_sensitive_columns: verify SSN/email/name
+     patterns detected as tier 3
+   - test_column_registry_loads_from_yaml: verify YAML parsing of
+     column_registry.yaml
+
+4. Create data-middleware/tests/test_auto_schema_builder.py:
+   Test auto_schema_builder.py (Prompt 52):
+   - test_create_analytics_table_generates_valid_sql: verify CREATE TABLE
+     with lifecycle columns
+   - test_create_rls_policy_for_charge_linked_table: verify region-based
+     RLS when charge_id present
+   - test_generate_yaml_mapping_creates_valid_yaml: verify YAML output
+     with transforms
+   - test_generate_dbt_model_creates_staging_sql: verify SQL + schema.yml
+   - test_generate_dataset_metadata_creates_json: verify metadata JSON
+     with columns, metrics, suggested_dashboards
+   - Mock PostgreSQL connection
+
+PART B — K8s PodDisruptionBudgets:
+
+5. Create deploy/k8s/ai-assistant/pdb.yaml:
+   ```yaml
+   apiVersion: policy/v1
+   kind: PodDisruptionBudget
+   metadata:
+     name: ai-assistant-pdb
+     namespace: udip
+   spec:
+     minAvailable: 1
+     selector:
+       matchLabels:
+         app: ai-assistant
+   ```
+
+6. Create deploy/k8s/superset/pdb.yaml:
+   ```yaml
+   apiVersion: policy/v1
+   kind: PodDisruptionBudget
+   metadata:
+     name: superset-web-pdb
+     namespace: udip
+   spec:
+     minAvailable: 1
+     selector:
+       matchLabels:
+         app: superset-web
+   ---
+   apiVersion: policy/v1
+   kind: PodDisruptionBudget
+   metadata:
+     name: superset-worker-pdb
+     namespace: udip
+   spec:
+     minAvailable: 1
+     selector:
+       matchLabels:
+         app: superset-worker
+   ```
+
+7. Create deploy/k8s/pgbouncer/pdb.yaml:
+   ```yaml
+   apiVersion: policy/v1
+   kind: PodDisruptionBudget
+   metadata:
+     name: pgbouncer-pdb
+     namespace: udip
+   spec:
+     minAvailable: 1
+     selector:
+       matchLabels:
+         app: pgbouncer
+   ```
+
+8. Create deploy/k8s/portal-nginx/pdb.yaml:
+   ```yaml
+   apiVersion: policy/v1
+   kind: PodDisruptionBudget
+   metadata:
+     name: portal-nginx-pdb
+     namespace: udip
+   spec:
+     minAvailable: 1
+     selector:
+       matchLabels:
+         app: portal-nginx
+   ```
+
+PART C — SQL role creation:
+
+9. In analytics-db/postgres/040-rls-policies.sql (or a new file
+   039-application-roles.sql that runs before 040):
+   Add creation of application roles used by 065-litigation-holds.sql:
+   ```sql
+   DO $$
+   BEGIN
+     IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'adr_app') THEN
+       CREATE ROLE adr_app NOLOGIN;
+     END IF;
+     IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'triage_app') THEN
+       CREATE ROLE triage_app NOLOGIN;
+     END IF;
+     IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'ogc_app') THEN
+       CREATE ROLE ogc_app NOLOGIN;
+     END IF;
+   END $$;
+   ```
+   Also add these roles to the provision script Section 8 if not present.
+
+PART D — Search function ordering fix:
+
+10. Rename 050-search-functions.sql to 017-search-functions.sql so it
+    runs AFTER 016-cdc-target-tables.sql (which creates tables that the
+    search function references). Update the provision script
+    SCHEMA_FILES array to match the new filename.
+
+    Alternatively: if renaming would break existing deployments, add a
+    comment to 050-search-functions.sql documenting the lazy evaluation
+    dependency and add a verification step to the provision script that
+    checks the referenced tables exist after all files are run.
+
+Write a CHANGES.md and unified diff.
+```
+
+### Prompt (ADR — run in eeoc-ofs-adr/)
+
+```
+FINAL HARDENING: Two minor K8s issues found.
+
+1. In deploy/k8s/adr-functionapp/deployment.yaml:
+   Add a startupProbe if missing. The function app may have cold starts
+   >30s. Match the pattern from triage-functionapp:
+   ```yaml
+   startupProbe:
+     httpGet:
+       path: /api/health/startup
+       port: 80
+     initialDelaySeconds: 10
+     periodSeconds: 5
+     failureThreshold: 24
+   ```
+   This gives up to 2 minutes for cold start before the pod is killed.
+
+2. Verify AI_AUDIT_HMAC_KEY is NOT in any ConfigMap. It should only be
+   in adr-secrets (Kubernetes Secret). If it appears in any configmap.yaml,
+   remove it and add a secretKeyRef in the deployment env section instead.
+
+Write a CHANGES.md and unified diff.
+```
+
+### Prompt (OGC — run in eeoc-ogc-trialtool/)
+
+```
+FINAL HARDENING: No critical issues found — OGC passed all audits.
+One documentation cross-reference:
+
+1. In trial_tool_webapp/MODEL_LICENSES.md:
+   If not already present, add a section noting that the accessibility
+   overrides (accessibility.css) follow WCAG 2.1 AA with 4.5:1+ contrast
+   ratios, matching the ADR and Triage implementations. Reference the
+   CSS file path.
+
+2. Verify all tests pass: run pytest tests/ -v and fix any failures.
+
+Write a CHANGES.md and unified diff.
+```
+
+### Prompt (ARC Integration API — run in eeoc-arc-integration-api/)
+
+```
+FINAL HARDENING: No critical issues found — ARC Integration API passed
+all audits with 100% on every check. One minor item:
+
+1. Verify TRIAGE_FIELD_MAPPING_PATH is configurable via environment
+   variable (not hardcoded). In app/routers/triage.py, the YAML mapping
+   file path should come from settings or an env var so it can be
+   overridden without code changes. If it's already configurable, no
+   action needed. If hardcoded, add:
+   - TRIAGE_FIELD_MAPPING_PATH env var (default: app/config/triage_field_mapping.yaml)
+   - Read in config.py or directly in triage.py's load_field_mapping()
+
+2. Verify all tests pass: run pytest tests/ -v and fix any failures.
+
+Write a CHANGES.md and unified diff.
+```
+
+### Prompt (MCP Hub — run in eeoc-mcp-hub-functions/)
+
+```
+FINAL HARDENING: No critical issues found — MCP Hub passed all audits
+after Prompt 59 remediation. One item:
+
+1. Verify all tests pass: run pytest tests/ -v and fix any failures.
+
+2. If any test references the old protocol version "2024-11-05" that
+   was missed in the grep, update it to "2025-03-26".
+
+Write a CHANGES.md and unified diff.
+```
+
+### Prompt (Workspace docs — run in workspace root)
+
+```
+FINAL HARDENING: Cross-reference and consistency fixes.
+
+1. In EEOC_AI_Platform_Complete_Deployment_Guide.md, Section 2.19
+   (Azure Sentinel), add at the beginning of the section:
+
+   > For complete step-by-step implementation with KQL queries, retention
+   > configurations, SOAR playbook definitions, and M-21-31 control
+   > mappings, refer to Azure_M2131_EL3_Infrastructure_Guide.md. This
+   > section provides a summary; the infrastructure guide is the
+   > authoritative reference.
+
+2. In provision_eeoc_ai_platform.sh, Section 20 (Sentinel) comments,
+   add a reference:
+
+   # Detailed portal instructions: Azure_M2131_EL3_Infrastructure_Guide.md
+
+3. In provision_eeoc_ai_platform.sh, Section 8 (PostgreSQL), verify
+   the SCHEMA_FILES array includes all 19 SQL files in correct order.
+   If 050-search-functions.sql was renamed to 017-search-functions.sql
+   (per UDIP prompt above), update the array accordingly.
+
+4. In provision_eeoc_ai_platform.sh, Section 8, add application role
+   creation BEFORE running schema files (if not already present):
+
+   log_info "Creating application roles..."
+   psql -h "$PG_HOST" -U "$PG_ADMIN_USER" -d udip -c "
+     DO \$\$ BEGIN
+       IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'adr_app') THEN
+         CREATE ROLE adr_app NOLOGIN;
+       END IF;
+       IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'triage_app') THEN
+         CREATE ROLE triage_app NOLOGIN;
+       END IF;
+       IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'ogc_app') THEN
+         CREATE ROLE ogc_app NOLOGIN;
+       END IF;
+     END \$\$;
+   " || log_warn "Role creation had issues (may already exist)"
+
+5. Update SESSION_HANDOFF.md prompt status: mark prompts 39-64 as DONE
+   and add the execution note for Prompt 65.
+
+Write a CHANGES.md for the documentation updates.
+```
+
+---
+
+## Prompt 66: Debezium Schema Expansion for Federal Hearings
+
+**Repository:** eeoc-data-analytics-and-dashboard/
+**Owner:** UDIP team
+**Phase:** 4a
+
+### Prompt
+
+```
+Expand the Debezium CDC pipeline to capture the fed_hearings schema.
+
+1. In deploy/cdc-pipeline/debezium/connector-config.json, line 17,
+   change:
+     "schema.include.list": "public"
+   to:
+     "schema.include.list": "public,fed_hearings"
+
+2. Apply the same change to the embedded connector config in
+   deploy/cdc-pipeline/k8s/configmap.yaml.
+
+3. Add PII column exclusions for the fed_hearings schema. In both
+   connector-config.json and the configmap embedded config, add or
+   extend the "column.exclude.list" property:
+     "column.exclude.list": "fed_hearings.hearing_complainant.ssn,fed_hearings.hearing_complainant.social_security_number"
+   If other schemas already have column exclusions, append these
+   entries to the existing comma-separated list.
+
+4. Add a feature flag CDC_FED_HEARINGS_ENABLED to the configmap.
+   The connector registration script (if one exists) should check
+   this flag before registering the fed_hearings connector. If no
+   script exists, document the flag in the configmap with a comment.
+
+5. Note: 002-publication.sql already uses FOR ALL TABLES so no SQL
+   publication change is needed.
+
+6. Create deploy/cdc-pipeline/docs/fed-hearings-cdc.md as an
+   operations runbook covering:
+   - Purpose: what data flows from fed_hearings to analytics
+   - Connector configuration fields and their values
+   - PII exclusions and why each column is excluded
+   - How to enable: set CDC_FED_HEARINGS_ENABLED=true and register
+     the connector via the Kafka Connect REST API
+   - How to verify: Kafka topic naming convention for fed_hearings
+     tables, how to check consumer lag
+   - How to pause and resume without data loss
+   - Rollback procedure
+
+Write CHANGES.md summarizing all files modified and created.
+```
+
+---
+
+## Prompt 67: Replica Schema DDL for New Entities
+
+**Repository:** eeoc-data-analytics-and-dashboard/
+**Owner:** UDIP team
+**Phase:** 4a
+
+### Prompt
+
+```
+Create replica schema DDL files for Federal Hearings entities and
+public schema gap entities. Follow the exact pattern established in
+analytics-db/postgres/003-replica-schema.sql: integer PKs, no FK
+constraints, updated_on TIMESTAMPTZ NOT NULL DEFAULT now(), GRANT
+SELECT/INSERT/UPDATE/DELETE ON all tables TO udip_writer.
+
+FILE 1: analytics-db/postgres/004-replica-fed-hearings.sql
+
+Create 13 replica tables in the fed_hearings schema (CREATE SCHEMA IF
+NOT EXISTS fed_hearings first) matching the FederalHearings JPA entities
+in eeoc-arc-payloads/FederalHearings-ims-aks/:
+
+  hearing_case           — case header, agency_code, aj_id, stage,
+                           filed_date, closed_date, disposition_code
+  hearing_complainant    — complainant demographics (no ssn/ssn_last4),
+                           case_id FK reference (no constraint)
+  hearing_agency         — respondent agency name, bureau, org_code
+  hearing_claims         — basis_code, issue_code, statute_code, case_id
+  hearing_allegation     — allegation text, ruling, case_id
+  hearing_assignment     — aj_id, assigned_date, reassigned_date, case_id
+  hearing_conference     — conference_type, scheduled_date, held_flag,
+                           outcome_code, case_id
+  hearing_action         — action_code, action_date, performed_by, case_id
+  hearing_event_log      — event_type, event_timestamp, user_id, payload
+                           JSONB, case_id
+  hearing_note           — note_text, note_type, authored_by,
+                           authored_date, case_id
+  hearing_assessment     — merit_assessment, monetary_request,
+                           recommended_remedy, case_id
+  hearing_stay           — stay_reason, stay_date, lifted_date, case_id
+  hearing_case_transfer  — from_office, to_office, transfer_date,
+                           reason_code, case_id
+
+Also create shared reference/lookup tables in fed_hearings schema:
+  hearing_shared_code     — domain, code, description, active_flag
+  hearing_shared_doc_type — doc_type_code, description
+  hearing_shared_office_info — office_code, office_name, region
+  hearing_event_code      — event_code, category, description
+  fed_shared_basis        — basis_code, basis_description
+  fed_shared_issue        — issue_code, issue_description
+  fed_shared_statute      — statute_code, statute_name, citation
+
+FILE 2: analytics-db/postgres/005-replica-public-extensions.sql
+
+Create 11 additional replica tables in the public schema to cover
+gaps identified from PrEPA JPA entities:
+
+  conciliation_proposal_response — charge_number, proposal_date,
+    response_date, outcome_code, monetary_amount NUMERIC(12,2),
+    updated_on TIMESTAMPTZ
+  benefit_group              — group_code, group_name, category,
+    active_flag, updated_on TIMESTAMPTZ
+  beneficiary                — charge_number, beneficiary_name,
+    benefit_type, amount NUMERIC(12,2), updated_on TIMESTAMPTZ
+  charging_party_race        — charge_number, race_code,
+    national_origin_code, updated_on TIMESTAMPTZ
+  charge_suspension          — charge_number, suspension_reason_code,
+    suspension_date, lift_date, updated_on TIMESTAMPTZ
+  charge_transfer            — charge_number, from_office_id,
+    to_office_id, transfer_date, reason_code, updated_on TIMESTAMPTZ
+  systemic_case              — systemic_case_id INTEGER PK,
+    case_name, office_id, status_code, opened_date, closed_date,
+    updated_on TIMESTAMPTZ
+  systemic_case_charge       — systemic_case_id, charge_number,
+    link_date, updated_on TIMESTAMPTZ
+  enforcement_conference     — charge_number, conference_type,
+    scheduled_date, held_flag, outcome_code, updated_on TIMESTAMPTZ
+  charge_review_assignment   — charge_number, reviewer_id,
+    assigned_date, review_type, completed_date, updated_on TIMESTAMPTZ
+
+Grant all tables to udip_writer. Add COMMENT ON TABLE for each table
+briefly describing its source system.
+
+Write CHANGES.md listing both files and the table count in each.
+```
+
+---
+
+## Prompt 68: Analytics Target Tables for New Entities
+
+**Repository:** eeoc-data-analytics-and-dashboard/
+**Owner:** UDIP team
+**Phase:** 4a
+
+### Prompt
+
+```
+Create analytics target table DDL for Federal Hearings and Enforcement
+entities. Follow the lifecycle pattern from
+analytics-db/postgres/016-cdc-target-tables.sql exactly: UUID PKs
+(DEFAULT gen_random_uuid()), lifecycle columns, retention trigger,
+hold-reason CHECK constraint, GRANT to udip_writer and udip_reader.
+
+FILE 1: analytics-db/postgres/017-fed-hearings-analytics-tables.sql
+
+Create 6 analytics tables in the analytics schema:
+
+  hearing_cases
+    Columns: id UUID PK, source_hearing_case_id INTEGER NOT NULL,
+    agency_code VARCHAR(10), aj_employee_id VARCHAR(20),
+    stage_code VARCHAR(20), filed_date DATE, closed_date DATE,
+    disposition_code VARCHAR(20), fiscal_year INTEGER GENERATED ALWAYS
+    AS (EXTRACT(YEAR FROM filed_date + INTERVAL '3 months')::INTEGER)
+    STORED, lifecycle_state VARCHAR(20) NOT NULL DEFAULT 'active',
+    first_synced_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    case_closed_at TIMESTAMPTZ, retention_expires_at TIMESTAMPTZ,
+    retention_hold BOOLEAN NOT NULL DEFAULT FALSE,
+    hold_reason VARCHAR(100), hold_set_by VARCHAR(100),
+    hold_set_at TIMESTAMPTZ, updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+
+  hearing_claims
+    source_hearing_claim_id, source_hearing_case_id, basis_code,
+    issue_code, statute_code, plus lifecycle columns
+
+  hearing_assignments
+    source_assignment_id, source_hearing_case_id, aj_employee_id,
+    assigned_date, reassigned_date, plus lifecycle columns
+
+  hearing_conferences
+    source_conference_id, source_hearing_case_id, conference_type,
+    scheduled_date, held_flag, outcome_code, plus lifecycle columns
+
+  hearing_actions
+    source_action_id, source_hearing_case_id, action_code,
+    action_date, performed_by, plus lifecycle columns
+
+  hearing_events
+    source_event_id, source_hearing_case_id, event_type,
+    event_timestamp, user_id, event_payload JSONB,
+    plus lifecycle columns
+
+For each table:
+- Add CHECK (hold_reason IS NOT NULL OR retention_hold = FALSE)
+- Add CHECK (lifecycle_state IN ('active','closed','purged','held'))
+- Create trigger set_updated_at BEFORE UPDATE using the shared
+  trigger function from 016-cdc-target-tables.sql
+- GRANT SELECT ON table TO udip_reader
+- GRANT SELECT, INSERT, UPDATE ON table TO udip_writer
+- CREATE INDEX ON hearing_cases (agency_code, fiscal_year)
+- CREATE INDEX ON hearing_cases (lifecycle_state)
+
+FILE 2: analytics-db/postgres/018-enforcement-analytics-tables.sql
+
+Create 11 analytics tables in the analytics schema:
+
+  conciliations — source fields from conciliation_proposal_response,
+    plus outcome_category, fiscal_year derived, lifecycle columns
+
+  benefits — source fields from benefit_group + beneficiary,
+    benefit_amount NUMERIC(12,2), lifecycle columns
+
+  charging_party_races — charge_number, race_code,
+    national_origin_code, lifecycle columns
+
+  suspensions — charge_number, suspension_reason_code,
+    suspension_date, lift_date, is_active BOOLEAN GENERATED ALWAYS
+    AS (lift_date IS NULL) STORED, lifecycle columns
+
+  systemic_cases — systemic_case_id (from source), case_name,
+    office_id, status_code, opened_date, closed_date,
+    fiscal_year derived, lifecycle columns
+
+  systemic_case_charges — systemic_case_id, charge_number,
+    link_date, lifecycle columns
+
+  enforcement_conferences — charge_number, conference_type,
+    scheduled_date, held_flag, outcome_code, lifecycle columns
+
+  transfers — charge_number, from_office_id, to_office_id,
+    transfer_date, reason_code, lifecycle columns
+
+  court_hearings — charge_number, hearing_date, court_name,
+    judge_name, outcome_code, appeal_flag, lifecycle columns
+
+  review_assignments — charge_number, reviewer_id, assigned_date,
+    review_type, completed_date, lifecycle columns
+
+  employer_enrichment — charge_number, employer_id, naics_code,
+    employer_size_code, state_code, lifecycle columns
+
+Apply same index, grant, trigger, and constraint patterns as File 1.
+
+Write CHANGES.md listing both files, table counts, and noting that
+these depend on 016-cdc-target-tables.sql for the shared trigger
+function.
+```
+
+---
+
+## Prompt 69: YAML Mappings for Federal Hearings CDC Entities
+
+**Repository:** eeoc-data-analytics-and-dashboard/
+**Owner:** UDIP team
+**Phase:** 4a
+
+### Prompt
+
+```
+The 13 fedhearings_*.yaml mapping files have already been created in
+data-middleware/source_mappings/. This prompt validates and finalizes
+them.
+
+1. Read each of the 13 fedhearings_*.yaml files:
+   fedhearings_hearing_case.yaml
+   fedhearings_hearing_complainant.yaml
+   fedhearings_hearing_agency.yaml
+   fedhearings_hearing_claims.yaml
+   fedhearings_hearing_allegation.yaml
+   fedhearings_hearing_assignment.yaml
+   fedhearings_hearing_conference.yaml
+   fedhearings_hearing_action.yaml
+   fedhearings_hearing_event_log.yaml
+   fedhearings_hearing_note.yaml
+   fedhearings_hearing_assessment.yaml
+   fedhearings_hearing_stay.yaml
+   fedhearings_hearing_case_transfer.yaml
+
+2. For each file, verify:
+   a. source_schema is "fed_hearings" (not "public")
+   b. Column names in source_columns match JPA entity field names from
+      eeoc-arc-payloads/FederalHearings-ims-aks/ entity classes. Read
+      the entity source if needed. Fix any mismatches.
+   c. uuid_v5_namespace uses the prefix "fed_hearings." (e.g.,
+      "fed_hearings.hearing_case") — not "prepa." or "public."
+   d. Any lookup_table references use the correct fed_hearings lookup
+      table names: hearing_shared_code, hearing_event_code,
+      fed_shared_basis, fed_shared_issue, fed_shared_statute — not
+      the public schema's shared_code table.
+   e. destination_table references match tables created in
+      017-fed-hearings-analytics-tables.sql.
+   f. No SSN or social_security_number columns appear in any mapping
+      (these are excluded at the Debezium layer per Prompt 66).
+
+3. If the mapping_validator script exists in data-middleware/,
+   run it against each file and fix all validation errors.
+
+4. Update data-middleware/source_mappings/README.md:
+   - Add a "Federal Hearings" section listing all 13 files with a
+     one-line description of each entity
+   - Document the fed_hearings schema context: these tables originate
+     from the FederalHearings ARC service, captured via the expanded
+     Debezium connector (Prompt 66)
+   - Note that fed_hearings lookup tables differ from public schema
+     lookup tables even where names are similar
+
+Write CHANGES.md listing each yaml file reviewed, what was corrected
+(if anything), and confirming validation status.
+```
+
+---
+
+## Prompt 70: YAML Mappings for Public Schema Gap Entities
+
+**Repository:** eeoc-data-analytics-and-dashboard/
+**Owner:** UDIP team
+**Phase:** 4a
+
+### Prompt
+
+```
+The 12 prepa_*.yaml gap mapping files have already been created in
+data-middleware/source_mappings/. This prompt validates and finalizes
+them.
+
+1. Read each of the 12 gap files:
+   prepa_conciliation_proposal_response.yaml
+   prepa_benefit_group.yaml
+   prepa_beneficiary.yaml
+   prepa_charging_party_race.yaml
+   prepa_charge_suspension.yaml
+   prepa_charge_transfer.yaml
+   prepa_systemic_case.yaml
+   prepa_systemic_case_charge.yaml
+   prepa_enforcement_conference.yaml
+   prepa_charge_review_assignment.yaml
+   prepa_court_hearing.yaml
+   prepa_employer_enrichment.yaml
+
+2. For each file verify:
+   a. source_schema is "public"
+   b. source_table matches the exact JPA entity table name from
+      eeoc-arc-payloads/PrEPAWebService-ims-aks-test/ entity classes.
+      Read entity source if needed. Fix any mismatches.
+   c. uuid_v5_namespace uses "prepa." prefix
+   d. lookup_table references use replica.shared_code (public schema
+      lookup) not fed_hearings lookup tables
+   e. destination_table references match tables in
+      018-enforcement-analytics-tables.sql
+
+3. Special attention to three files:
+   prepa_court_hearing.yaml — if this is modeled as a filtered event
+   log (i.e., source is hearing_event_log filtered by event_type),
+   verify the filter_expression field is supported by the mapping
+   engine. Read data-middleware/engine/ to confirm. If not supported,
+   change source_table to a direct court_hearing table if one exists,
+   or add a comment explaining the workaround needed.
+
+   prepa_employer_enrichment.yaml — this uses a REST driver to enrich
+   charge data from the Employer service. Verify the driver config
+   block (driver: rest, base_url, auth_type) is documented. If the
+   REST driver is not yet implemented in data-middleware/engine/,
+   add a comment block: "# REST driver — requires engine v2 support"
+   and a JIRA/backlog reference format: "# Backlog: UDIP-XXX".
+
+   prepa_benefits.yaml — this denormalizes benefit_group into
+   beneficiary rows. Verify the join_key and denormalization transform
+   are correctly expressed. If the engine does not support in-mapping
+   joins, note the limitation and propose a replica-layer view instead.
+
+4. Run mapping_validator if available. Fix all errors.
+
+5. Update data-middleware/source_mappings/README.md:
+   - Add a "Public Schema Gap Entities" section listing all 12 files
+   - Note which files have engine limitations (REST driver, filtered
+     event log, denormalization)
+
+Write CHANGES.md summarizing validation results and any issues found.
+```
+
+---
+
+## Prompt 71: Service Bus Topic Subscriptions
+
+**Repository:** eeoc-arc-integration-api/
+**Owner:** Hub team
+**Phase:** 4a
+
+### Prompt
+
+```
+Add conditional Service Bus subscriptions for two new topics:
+user-management-topic and federal-hearing-topic.
+
+1. Modify app/config.py Settings class:
+   Add fields:
+     service_bus_user_mgmt_topic: str = ""
+     service_bus_federal_hearing_topic: str = ""
+     service_bus_user_mgmt_enabled: bool = False
+     service_bus_federal_hearing_enabled: bool = False
+   Follow the naming and default patterns of existing Service Bus
+   config fields.
+
+2. Modify app/services/service_bus.py:
+   In the subscription setup function (wherever db-change-topic and
+   document-activity-topic are registered), add two conditional blocks:
+
+     if settings.service_bus_user_mgmt_enabled and
+        settings.service_bus_user_mgmt_topic:
+         subscribe to service_bus_user_mgmt_topic
+         on message: call handle_user_management(payload)
+
+     if settings.service_bus_federal_hearing_enabled and
+        settings.service_bus_federal_hearing_topic:
+         subscribe to service_bus_federal_hearing_topic
+         on message: call handle_federal_hearing(payload)
+
+   Existing db-change-topic and document-activity-topic subscriptions
+   are unchanged.
+
+3. Create app/services/service_bus_handlers.py:
+
+   def handle_user_management(payload: dict) -> None:
+     Transform the raw Service Bus message into the MCP event envelope
+     format used by existing handlers. Extract event_type, entity_id,
+     timestamp. Forward to MCP Hub via the internal HTTP client
+     (follow the pattern of existing topic handlers). Log with
+     request_id propagation. Never log PII fields. On error: log and
+     do not re-raise (dead-letter the message).
+
+   def handle_federal_hearing(payload: dict) -> None:
+     Same pattern. Extract hearing_case_id, event_type, stage_code,
+     agency_code from payload. Forward to MCP Hub endpoint
+     /internal/events/federal-hearing. Never log case content beyond
+     IDs. On error: log and do not re-raise.
+
+   Both functions must have full type hints and docstrings explaining
+   the expected payload schema.
+
+4. Wire into app/main.py startup: import and call the subscription
+   setup so new topics are registered on application start, same as
+   existing topics.
+
+5. Add SERVICE_BUS_USER_MGMT_TOPIC, SERVICE_BUS_USER_MGMT_ENABLED,
+   SERVICE_BUS_FEDERAL_HEARING_TOPIC, and
+   SERVICE_BUS_FEDERAL_HEARING_ENABLED to README env var table.
+
+Write CHANGES.md with a unified diff of each modified file.
+```
+
+---
+
+## Prompt 72: FederalHearingsClient Service
+
+**Repository:** eeoc-arc-integration-api/
+**Owner:** Hub team
+**Phase:** 4b
+
+### Prompt
+
+```
+Create the FederalHearingsClient service following the exact pattern
+of app/services/prepa_client.py. Read prepa_client.py first to match
+constructor signature, auth provider injection, error handling, retry
+logic, and logging patterns.
+
+1. Create app/models/federal.py with Pydantic v2 models:
+   HearingCase — hearing_id, agency_code, aj_employee_id, stage_code,
+     filed_date, closed_date, disposition_code, created_at, updated_at
+   HearingClaim — claim_id, hearing_id, basis_code, issue_code,
+     statute_code
+   HearingConference — conference_id, hearing_id, conference_type,
+     scheduled_date, held_flag, outcome_code
+   HearingAction — action_id, hearing_id, action_code, action_date,
+     performed_by
+   HearingAssessment — assessment_id, hearing_id, merit_assessment,
+     monetary_request, recommended_remedy
+   HearingNote — note_id, hearing_id, note_type, authored_date
+     (no note_text — PII risk; text fetched only on explicit request)
+   HearingCasesResponse — cases: list[HearingCase], total: int,
+     page: int, page_size: int
+
+   All models: use Optional for nullable fields, Field(alias=...) if
+   ARC uses camelCase, model_config = ConfigDict(populate_by_name=True)
+
+2. Create app/services/federal_hearings_client.py:
+   Class FederalHearingsClient:
+     __init__(self, auth_provider, settings): build httpx.AsyncClient
+       with base_url=settings.arc_federal_hearings_url, timeout=30s,
+       inject auth token from auth_provider on each request
+     async get_hearing_cases(agency_code: str, status: str | None)
+       -> HearingCasesResponse
+     async get_hearing_case(case_id: int) -> HearingCase
+     async get_hearing_actions(case_id: int) -> list[HearingAction]
+     async get_hearing_conferences(case_id: int)
+       -> list[HearingConference]
+     async get_hearing_claims(case_id: int) -> list[HearingClaim]
+     async get_hearing_assessment(case_id: int) -> HearingAssessment
+     async get_hearing_notes(case_id: int) -> list[HearingNote]
+     async get_hearing_domain_lookup(domain: str) -> list[dict]
+     async search_hearing_cases(query: dict) -> HearingCasesResponse
+
+   All methods: raise FeatureDisabledError (from
+   app/config/feature_flags.py — see Prompt 76) when
+   settings.federal_sector_enabled is False. On HTTP error: raise
+   with status code and upstream message. Propagate X-Request-ID
+   from context var. Log at DEBUG before each request, INFO on
+   success, ERROR on failure — never log response body.
+
+3. Modify app/config.py Settings:
+   Add arc_federal_hearings_url: str = ""
+   Add federal_sector_enabled: bool = False
+
+4. Add arc_federal_hearings_url and FEDERAL_SECTOR_ENABLED to README
+   env var table with descriptions and default values.
+
+Write CHANGES.md with unified diff of each new and modified file.
+```
+
+---
+
+## Prompt 73: EmployerClient and Enforcement Method Additions
+
+**Repository:** eeoc-arc-integration-api/
+**Owner:** Hub team
+**Phase:** 4b
+
+### Prompt
+
+```
+Add an EmployerClient service, Employer and Enforcement Pydantic models,
+and 17 new methods on the existing PrepaClient. Read the existing
+PrepaClient and models before writing.
+
+1. Create app/models/employer.py:
+   NaicsCode — naics_code, title, sector_code, subsector_code
+   EmployerSearchResult — employer_id, employer_name, naics_code,
+     state_code, employee_count_range, eeo1_filer_flag
+   EmployerDetail — all EmployerSearchResult fields plus address,
+     parent_employer_id, subsidiaries: list[str]
+
+2. Create app/models/enforcement.py:
+   EnforcementActivity — charge_number, activity_type, activity_date,
+     status_code, assigned_to
+   ConciliationStatus — charge_number, proposal_date, response_date,
+     outcome_code, monetary_amount: Decimal | None
+   CourtHearing — hearing_id: int | None, charge_number, hearing_date,
+     court_name, judge_name, outcome_code, appeal_flag: bool
+   SystemicCase — systemic_case_id, case_name, office_id, status_code,
+     opened_date, closed_date
+   SuspensionStatus — charge_number, suspension_reason_code,
+     suspension_date, lift_date, is_active: bool
+   TransferRecord — charge_number, from_office_id, to_office_id,
+     transfer_date, reason_code
+   ClosureReasonCode — code, description, category
+   CaseNote — note_id, charge_number, note_type, authored_by,
+     authored_date (no note_text field)
+
+3. Create app/services/employer_client.py:
+   Class EmployerClient following FederalHearingsClient pattern:
+     base_url = settings.arc_employer_url
+     async get_naics_code(naics_code: str) -> NaicsCode
+     async search_naics(query: str) -> list[NaicsCode]
+     async search_employer(name: str, state: str | None,
+       naics: str | None) -> list[EmployerSearchResult]
+     async get_employer(employer_id: str) -> EmployerDetail
+     async search_eeo1(employer_id: str, year: int | None)
+       -> list[dict]
+   All methods raise FeatureDisabledError when
+   settings.employer_service_enabled is False.
+
+4. Add 17 methods to app/services/prepa_client.py:
+   Enforcement data:
+     async get_enforcement_position_statements(charge_number: str)
+     async get_enforcement_fact_finding(charge_number: str)
+     async get_enforcement_subpoenas(charge_number: str)
+     async get_enforcement_communications(charge_number: str)
+     async get_conciliation(charge_number: str) -> ConciliationStatus
+     async get_court_hearings(charge_number: str) -> list[CourtHearing]
+     async create_court_hearing(charge_number: str,
+       data: CourtHearing) -> CourtHearing
+     async update_court_hearing(charge_number: str, hearing_id: int,
+       data: CourtHearing) -> CourtHearing
+   Systemic cases:
+     async get_systemic_cases(office_id: str | None,
+       status: str | None) -> list[SystemicCase]
+     async get_systemic_case(systemic_case_id: int) -> SystemicCase
+     async get_systemic_case_charges(systemic_case_id: int)
+       -> list[dict]
+   Other:
+     async get_suspension(charge_number: str) -> SuspensionStatus
+     async get_transfers(charge_number: str) -> list[TransferRecord]
+     async close_allegation(charge_number: str, allegation_id: int,
+       reason_code: str) -> dict
+     async get_benefit_groups() -> list[dict]
+     async get_closure_reason_codes() -> list[ClosureReasonCode]
+     async get_case_notes(charge_number: str) -> list[CaseNote]
+
+   Methods gated by feature flags:
+     get_court_hearings, create_court_hearing, update_court_hearing —
+       require settings.court_hearings_enabled
+     get_systemic_cases, get_systemic_case, get_systemic_case_charges
+       — require settings.systemic_cases_enabled
+     All others — require settings.enforcement_sync_enabled
+
+5. Modify app/config.py:
+   Add enforcement_sync_enabled: bool = False
+   Add systemic_cases_enabled: bool = False
+   Add employer_service_enabled: bool = False
+   Add court_hearings_enabled: bool = False
+   Add arc_employer_url: str = ""
+
+Write CHANGES.md with unified diff of each new and modified file.
+```
+
+---
+
+## Prompt 74: Federal Sector and Enforcement Routers
+
+**Repository:** eeoc-arc-integration-api/
+**Owner:** Hub team
+**Phase:** 4b
+
+### Prompt
+
+```
+Create four new FastAPI routers covering federal hearings, enforcement
+activities, systemic cases, and employer lookups. Read an existing
+router (e.g., app/routers/charges.py or app/routers/triage.py) before
+writing to match auth dependency patterns, Redis caching, audit
+logging, and error response format exactly.
+
+1. Create app/routers/federal.py (prefix /arc/v1/federal):
+   GET  /cases                     list hearing cases, params: agency_code, status
+   GET  /cases/{hearing_id}        single case detail
+   GET  /cases/{hearing_id}/claims list claims for case
+   GET  /cases/{hearing_id}/conferences
+   GET  /cases/{hearing_id}/actions
+   GET  /cases/{hearing_id}/assessment
+   GET  /cases/{hearing_id}/notes
+   POST /cases/search              body: HearingSearchRequest (agency_code,
+                                   status, filed_after, filed_before, aj_id)
+   All endpoints: read_dep auth dependency, cache GET responses in
+   Redis (TTL 300s for lists, 120s for detail), emit audit log entry
+   with endpoint + hearing_id (no PII), propagate X-Request-ID.
+   Return HTTP 404 (not 403) when federal_sector_enabled is False.
+
+2. Create app/routers/enforcement.py (prefix /arc/v1/enforcement):
+   GET  /cases/{charge_number}/position-statements
+   GET  /cases/{charge_number}/fact-finding
+   GET  /cases/{charge_number}/subpoenas
+   GET  /cases/{charge_number}/communications
+   GET  /cases/{charge_number}/conciliation
+   GET  /cases/{charge_number}/court-hearings
+   POST /cases/{charge_number}/court-hearings    write_dep auth
+   PUT  /cases/{charge_number}/court-hearings/{hearing_id}  write_dep
+   GET  /cases/{charge_number}/suspension
+   GET  /cases/{charge_number}/transfers
+   GET  /cases/{charge_number}/benefit-groups
+   GET  /cases/{charge_number}/notes
+   GET  /closure-reason-codes                    (static, TTL 3600s)
+   POST /cases/{charge_number}/allegations/{allegation_id}/close  write_dep
+   All read endpoints: read_dep, Redis cache TTL 300s.
+   Return HTTP 404 when enforcement_sync_enabled is False.
+
+3. Create app/routers/systemic.py (prefix /arc/v1/systemic):
+   GET /cases                      params: office_id, status
+   GET /cases/{systemic_case_id}
+   GET /cases/{systemic_case_id}/charges
+   All: read_dep, Redis cache TTL 300s.
+   Return HTTP 404 when systemic_cases_enabled is False.
+
+4. Create app/routers/employer.py (prefix /arc/v1/employer):
+   GET /search                     params: name, state, naics
+   GET /{employer_id}
+   GET /naics/{naics_code}
+   GET /naics/search               params: query
+   GET /{employer_id}/eeo1         params: year
+   All: read_dep, Redis cache TTL 3600s (employer data changes rarely).
+   Return HTTP 404 when employer_service_enabled is False.
+
+5. Register all four routers in app/main.py with the same include
+   pattern as existing routers.
+
+6. All four routers use RFC 7807 Problem Details for errors (match
+   existing router error format).
+
+Write CHANGES.md with a list of every new endpoint, its method,
+path, auth level, cache TTL, and feature flag dependency.
+```
+
+---
+
+## Prompt 75: New MCP Tools for Gap Entities
+
+**Repository:** eeoc-arc-integration-api/
+**Owner:** Hub team
+**Phase:** 4b
+
+### Prompt
+
+```
+Extend the MCP tool registry in app/routers/mcp.py with 11 new tools
+covering the gap entities from Prompts 72-74. Read the full mcp.py
+file first to understand _READ_TOOLS, _WRITE_TOOLS, and _dispatch_tool
+structure before making changes.
+
+1. Add 9 entries to _READ_TOOLS list:
+
+   arc_get_enforcement_status
+     description: "Get enforcement activity status for a charge,
+       including conciliation, suspension, and transfer history."
+     inputSchema: {"charge_number": {"type": "string"}}
+
+   arc_get_court_hearings
+     description: "List court hearings scheduled or completed for
+       a charge number."
+     inputSchema: {"charge_number": {"type": "string"}}
+
+   arc_get_systemic_cases
+     description: "List systemic investigation cases, optionally
+       filtered by office and status."
+     inputSchema: {"office_id": {"type": "string", "required": false},
+       "status": {"type": "string", "required": false}}
+
+   arc_get_case_notes
+     description: "Retrieve case note metadata (type, date, author)
+       for a charge. Note text is not returned — view in ARC directly."
+     inputSchema: {"charge_number": {"type": "string"}}
+
+   arc_get_suspension_status
+     description: "Get the current suspension status for a charge,
+       including reason and lift date if applicable."
+     inputSchema: {"charge_number": {"type": "string"}}
+
+   arc_get_federal_hearing
+     description: "Get federal sector hearing case detail including
+       stage, assigned AJ, and agency."
+     inputSchema: {"hearing_id": {"type": "integer"}}
+
+   arc_get_federal_hearing_claims
+     description: "List claims (basis, issue, statute) for a federal
+       sector hearing case."
+     inputSchema: {"hearing_id": {"type": "integer"}}
+
+   arc_get_closure_reasons
+     description: "List all valid charge closure reason codes and
+       their descriptions."
+     inputSchema: {}
+
+   arc_search_employer
+     description: "Search for employer records by name, state, or
+       NAICS code."
+     inputSchema: {"name": {"type": "string", "required": false},
+       "state": {"type": "string", "required": false},
+       "naics": {"type": "string", "required": false}}
+
+2. Add 2 entries to _WRITE_TOOLS list:
+
+   arc_create_court_hearing
+     description: "Schedule a new court hearing for a charge number.
+       Requires ARC.Write role."
+     inputSchema: {"charge_number": {"type": "string"},
+       "hearing_date": {"type": "string", "format": "date"},
+       "court_name": {"type": "string"},
+       "judge_name": {"type": "string", "required": false}}
+
+   arc_close_allegation
+     description: "Close an allegation with a disposition code.
+       Requires ARC.Write role. Irreversible — confirm before calling."
+     inputSchema: {"charge_number": {"type": "string"},
+       "allegation_id": {"type": "integer"},
+       "reason_code": {"type": "string"}}
+
+3. Add matching cases to _dispatch_tool() for all 11 tools, routing
+   each to the appropriate router method or client call. Write tools
+   require the ARC.Write role check — follow existing write tool
+   pattern.
+
+4. Feature-flag-gated tools: when the corresponding feature flag is
+   False, return a MCP error response:
+   {"error": {"code": -32004, "message": "Feature not enabled"}}
+   Do not raise an exception — return the error dict.
+
+5. Update the tool count comment in mcp.py to reflect the new total
+   (18 existing + 11 new = 29 tools).
+
+Write CHANGES.md listing all 11 new tools, their type (read/write),
+feature flag dependency, and the dispatch target.
+```
+
+---
+
+## Prompt 76: Feature Flags and Configuration Consolidation
+
+**Repository:** eeoc-arc-integration-api/
+**Owner:** Hub team
+**Phase:** 4b
+
+### Prompt
+
+```
+Consolidate all new feature flags and configuration values added by
+Prompts 71-75 into a clean, documented configuration layer.
+
+1. Update app/config.py Settings class.
+   Verify these fields exist (add if missing from prior prompts):
+     federal_sector_enabled: bool = False
+     enforcement_sync_enabled: bool = False
+     systemic_cases_enabled: bool = False
+     employer_service_enabled: bool = False
+     court_hearings_enabled: bool = False
+     arc_federal_hearings_url: str = ""
+     arc_employer_url: str = ""
+     service_bus_user_mgmt_topic: str = ""
+     service_bus_federal_hearing_topic: str = ""
+     service_bus_user_mgmt_enabled: bool = False
+     service_bus_federal_hearing_enabled: bool = False
+     cache_ttl_hearing_list: int = 300
+     cache_ttl_hearing_detail: int = 120
+     cache_ttl_enforcement: int = 300
+     cache_ttl_employer: int = 3600
+
+   Group these under a comment block:
+   # Phase 4b — Federal Sector, Enforcement, Employer feature flags
+
+2. Create app/config/feature_flags.py:
+
+   class FeatureDisabledError(Exception):
+     """Raised when a disabled feature is accessed."""
+     def __init__(self, feature_name: str) -> None:
+       super().__init__(f"Feature '{feature_name}' is not enabled")
+       self.feature_name = feature_name
+
+   def is_enabled(flag_name: str, settings=None) -> bool:
+     """Return True if the named feature flag is enabled.
+     Resolves settings from dependency injection or import fallback.
+     Logs a structured WARNING when a disabled feature is accessed,
+     including flag_name and caller module — never logs PII."""
+     ...
+
+   The is_enabled function should accept an optional settings object
+   for testability. If settings is None, import from app/config.py.
+   Log at WARNING level using structlog or the project's existing
+   logger when a flag is False and a caller attempts access, so that
+   operations can identify misconfigured deployments.
+
+3. Verify all routers added in Prompt 74 reference cache TTL constants
+   from settings (cache_ttl_hearing_list etc.) rather than hardcoded
+   integers. If any router hardcodes a TTL, update it to read from
+   settings.
+
+4. Update README.md env var table with all 15 new variables. Each
+   entry: variable name, type, default, description. Group under
+   heading "Phase 4b Configuration".
+
+Write CHANGES.md listing every setting added or verified, and confirming
+the feature_flags.py module was created.
+```
+
+---
+
+## Prompt 77: Unit Tests for Phase 4b
+
+**Repository:** eeoc-arc-integration-api/
+**Owner:** Hub team
+**Phase:** 4b
+
+### Prompt
+
+```
+Write comprehensive unit tests for all Phase 4b code. Read existing
+test files in tests/ first to match the fixture patterns, mock
+strategy, and assertion style before writing.
+
+Create the following test files:
+
+tests/test_federal_hearings_client.py
+  - test_get_hearing_cases_success: httpx mock returns 200, verify
+    HearingCasesResponse deserialized correctly
+  - test_get_hearing_cases_filters_by_status: verify query params sent
+  - test_get_hearing_case_success: single case, verify fields
+  - test_get_hearing_claims_success: list response
+  - test_get_hearing_client_raises_when_disabled: settings.federal_sector_enabled=False,
+    verify FeatureDisabledError raised
+  - test_get_hearing_client_http_error: httpx mock returns 503,
+    verify exception with status code
+
+tests/test_employer_client.py
+  - test_search_employer_success
+  - test_get_employer_success
+  - test_get_naics_success
+  - test_employer_client_raises_when_disabled
+  - test_employer_http_error
+
+tests/test_enforcement_methods.py
+  - test_get_conciliation_success
+  - test_get_court_hearings_success
+  - test_create_court_hearing_success
+  - test_get_systemic_cases_success
+  - test_get_suspension_success
+  - test_get_case_notes_success: verify note_text NOT in returned model
+  - test_enforcement_raises_when_disabled
+  - test_court_hearings_raises_when_court_hearings_disabled
+
+tests/test_router_federal.py
+  - Use TestClient, mock FederalHearingsClient
+  - test_list_hearing_cases_200
+  - test_get_hearing_case_200
+  - test_search_hearing_cases_200
+  - test_hearing_routes_return_404_when_flag_off: set
+    federal_sector_enabled=False, verify all endpoints return 404
+  - test_hearing_routes_require_auth: remove auth header, verify 401
+
+tests/test_router_enforcement.py
+  - test_get_conciliation_200
+  - test_post_court_hearing_201
+  - test_put_court_hearing_200
+  - test_close_allegation_200
+  - test_enforcement_routes_return_404_when_flag_off
+
+tests/test_router_systemic.py
+  - test_list_systemic_cases_200
+  - test_get_systemic_case_200
+  - test_systemic_routes_return_404_when_flag_off
+
+tests/test_router_employer.py
+  - test_search_employer_200
+  - test_get_employer_200
+  - test_employer_routes_return_404_when_flag_off
+
+tests/test_mcp_new_tools.py
+  - test_all_11_new_tools_in_tool_list: verify each tool name appears
+    in the tools list response
+  - test_arc_get_enforcement_status_dispatch: call tool, verify routed
+    to enforcement client
+  - test_arc_create_court_hearing_requires_write_role: mock read-only
+    token, verify error returned
+  - test_arc_close_allegation_dispatches: verify allegation_id and
+    reason_code forwarded
+  - test_gated_tool_returns_error_when_disabled: set flag off, call
+    tool, verify error code -32004
+
+tests/test_feature_flags.py
+  - test_is_enabled_returns_true_when_flag_set
+  - test_is_enabled_returns_false_when_flag_unset
+  - test_is_enabled_logs_warning_when_false: capture log output,
+    verify WARNING emitted with flag_name
+  - test_feature_disabled_error_message_contains_flag_name
+  - test_gating_behavior_in_client: end-to-end — Settings flag=False,
+    call client method, verify FeatureDisabledError propagates
+
+Run pytest tests/ -v after writing. All tests must pass with zero
+failures. If any existing test breaks due to Phase 4b changes, fix it.
+
+Write CHANGES.md listing each new test file and the count of test
+functions in each.
+```
+
+---
+
+## Prompt 78: OGC TrialTool — Enforcement and Court Hearing Data
+
+**Repository:** eeoc-ogc-trialtool/
+**Owner:** OGC team
+**Phase:** 5
+
+### Prompt
+
+```
+Add enforcement timeline and court hearing views to the OGC Trial Tool.
+Read arc_lookup.py (in eeoc-ofs-triage/ — study as the reference
+pattern for calling the ARC Integration API), and read the existing
+OGC Trial Tool's structure and templates before writing.
+
+1. Create trial_tool_webapp/arc_enforcement_client.py:
+   A thin async wrapper calling the ARC Integration API endpoints
+   added in Prompt 74. Follow arc_lookup.py's pattern: managed
+   identity token acquisition, httpx.AsyncClient, X-Request-ID
+   propagation, structured logging, non-fatal error handling (return
+   None on failure, log warning).
+
+   Functions:
+     async def get_enforcement_status(charge_number: str) -> dict | None
+       Calls GET /arc/v1/enforcement/cases/{charge_number}/conciliation
+       and GET .../suspension, returns combined dict.
+     async def get_court_hearings(charge_number: str) -> list[dict]
+       Calls GET /arc/v1/enforcement/cases/{charge_number}/court-hearings
+     async def create_court_hearing(charge_number: str,
+       data: dict) -> dict | None
+       Calls POST /arc/v1/enforcement/cases/{charge_number}/court-hearings
+     async def update_court_hearing(charge_number: str,
+       hearing_id: int, data: dict) -> dict | None
+       Calls PUT .../court-hearings/{hearing_id}
+
+   Gate each function: return None/[] immediately when
+   ENFORCEMENT_DATA_ENABLED env var is not "true".
+
+2. Add two routes to the existing case detail Blueprint:
+   GET  /cases/<case_name>/enforcement
+     Fetch enforcement status via arc_enforcement_client.
+     Render enforcement_detail.html.
+     Gate with ENFORCEMENT_DATA_ENABLED.
+   GET  /cases/<case_name>/court-hearings
+     Fetch court hearings list.
+     Render court_hearings.html.
+     Gate with COURT_HEARING_ENABLED.
+   POST /cases/<case_name>/court-hearings
+     Create new court hearing via arc_enforcement_client.
+     Redirect to GET on success.
+     Gate with COURT_HEARING_ENABLED.
+   PUT  /cases/<case_name>/court-hearings/<hearing_id>
+     Update court hearing.
+
+3. Create templates/enforcement_detail.html:
+   Extend base.html. Show enforcement timeline: conciliation status,
+   suspension status, transfer history. Read-only view.
+   508 compliance: table with headers, no color-only indicators,
+   status uses text + icon with aria-label.
+
+4. Create templates/court_hearings.html:
+   Extend base.html. List upcoming and past hearings in a sortable
+   table. Include "Schedule Hearing" form (hearing_date, court_name,
+   judge_name fields) when COURT_HEARING_ENABLED is true. Edit inline
+   or via modal. 508 compliant: form labels, aria-required, error
+   announcements via aria-live.
+
+5. Add two MCP tools to mcp_server.py (follow existing OGC tool
+   pattern):
+   ogc_get_enforcement_timeline — calls arc_enforcement_client
+   ogc_get_court_hearings — calls arc_enforcement_client
+   Both gated by feature flags.
+
+6. Add "Enforcement" and "Court Hearings" tabs to the case detail
+   navigation (wherever existing tabs like "Documents", "Timeline" are
+   defined). Show tabs only when respective flags are enabled.
+
+7. Add ENFORCEMENT_DATA_ENABLED and COURT_HEARING_ENABLED to
+   .env.example and the config/README if one exists.
+
+Write CHANGES.md listing all new files and modified files.
+```
+
+---
+
+## Prompt 79: Triage Federal Sector Data Path
+
+**Repository:** eeoc-ofs-triage/
+**Owner:** Triage team
+**Phase:** 5
+
+### Prompt
+
+```
+Add a federal sector data path to the Triage application. When a charge
+is identified as federal sector, fetch hearing metadata from the ARC
+Integration API to enrich the AI classification pipeline.
+
+Read arc_lookup.py and blueprints/cases.py before writing to match
+existing patterns for ARC calls, error handling, and AI pipeline
+context injection.
+
+1. Create triage_webapp/federal_lookup.py:
+
+   async def lookup_federal_hearing_metadata(
+     charge_number: str
+   ) -> dict | None:
+     """Fetch federal hearing metadata for a charge number.
+
+     Returns a dict with keys: agency_name, claims (list of
+     basis/issue pairs), stage, assigned_aj_id — or None if the
+     charge has no federal hearing, the API is unavailable, or
+     FEDERAL_SECTOR_ENABLED is not 'true'.
+
+     Non-fatal: all exceptions are caught and logged at WARNING.
+     Never logs charge content beyond charge_number.
+     """
+     if not os.environ.get("FEDERAL_SECTOR_ENABLED") == "true":
+         return None
+     Call GET /arc/v1/federal/cases/search with charge_number param
+     (or the appropriate search endpoint from Prompt 74).
+     Extract and return the relevant fields. On 404: return None.
+     On any other error: log and return None.
+
+   Follow arc_lookup.py's auth pattern (managed identity token,
+   httpx, X-Request-ID propagation).
+
+2. Modify arc_lookup.py:
+   In the function that fetches charge detail (read the file to find
+   the correct function), add a detection step after the ARC response
+   is received:
+
+     is_federal = (
+       charge_data.get("institution_type") == "FEDERAL" or
+       charge_data.get("sector") == "FEDERAL"
+     )
+
+   If is_federal is True and FEDERAL_SECTOR_ENABLED is "true":
+     Call lookup_federal_hearing_metadata(charge_number) and attach
+     the result to the charge_data dict under the key
+     "federal_hearing_metadata".
+   This is additive — no existing fields are changed or removed.
+
+3. Modify blueprints/cases.py:
+   In the AI classification pipeline context-building step, when
+   "federal_hearing_metadata" is present in charge_data, add it to
+   the AI context dict under key "federal_hearing_context". Include:
+   agency_name, claims summary (basis/issue codes only — no free
+   text), stage.
+   This gives the AI model federal-specific context for better
+   classification of federal sector charges.
+
+4. Modify the case review template (read the file to find it):
+   When charge_data contains "federal_hearing_metadata", add a
+   "Federal Hearing Detail" card below existing charge detail cards.
+   Show: Agency, Stage, Claims (table of basis/issue), Assigned AJ ID.
+   Read-only. 508 compliant (table headers, card region landmark).
+   Show the card only when federal_hearing_metadata is not None.
+
+5. Add FEDERAL_SECTOR_ENABLED to .env.example (default "false") and
+   to the configuration table in the Triage README.
+
+Write CHANGES.md listing all files modified and describing each change.
+```
+
+---
+
+## Prompt 80: ADR Conciliation and Case Notes Wiring
+
+**Repository:** eeoc-ofs-adr/
+**Owner:** ADR team
+**Phase:** 5
+
+### Prompt
+
+```
+Wire conciliation status and case notes from the ARC Integration API
+into the ADR mediator interface. Read adr_webapp/arc_client.py,
+adr_functionapp/shared/arc_client.py, and the mediator case detail
+template before writing.
+
+1. Add two methods to adr_webapp/arc_client.py:
+
+   async def get_conciliation_status(
+     self, charge_number: str
+   ) -> dict | None:
+     """Fetch conciliation proposal/response status from ARC.
+     Returns dict with keys: proposal_date, response_date,
+     outcome_code, monetary_amount — or None on 404 or error.
+     Non-fatal. Never logs monetary_amount (treat as PII-adjacent)."""
+     Calls GET /arc/v1/enforcement/cases/{charge_number}/conciliation
+     Gate: return None when CONCILIATION_ENABLED is not "true".
+
+   async def get_case_notes(
+     self, charge_number: str
+   ) -> list[dict]:
+     """Fetch case note metadata list from ARC.
+     Returns list of {note_id, note_type, authored_date, authored_by}.
+     No note_text field — text is not fetched to avoid PII exposure.
+     Non-fatal: returns [] on error."""
+     Calls GET /arc/v1/enforcement/cases/{charge_number}/notes
+     Gate: return [] when CASE_NOTES_ENABLED is not "true".
+
+2. Add the same two methods to adr_functionapp/shared/arc_client.py,
+   matching the existing sync or async pattern in that module (read
+   the file first — function app client may be sync).
+
+3. Modify the mediator case detail template (read the file to find it):
+   a. Add a "Post-Mediation Status" card when CONCILIATION_ENABLED
+      is true and conciliation_status is not None:
+      - Proposal Date, Response Date, Outcome (text label from
+        outcome_code), Monetary Amount redacted as "$***" (do not
+        display actual amount in UI — compliance requirement)
+      - Read-only. ARIA region with label "Post-Mediation Status".
+      - 508: no color-only status indicators.
+   b. Add a "Case Notes" tab to the case detail tab set when
+      CASE_NOTES_ENABLED is true:
+      - Table: Note Type, Author, Date — reverse chronological order
+      - No note text displayed
+      - 508: table with thead, th scope="col", caption
+
+4. Modify the mediator case detail view function (in routes or
+   blueprints — read to find it) to:
+   a. Call get_conciliation_status when CONCILIATION_ENABLED is "true"
+   b. Call get_case_notes when CASE_NOTES_ENABLED is "true"
+   c. Pass results to template context as conciliation_status and
+      case_notes respectively
+
+5. Add CONCILIATION_ENABLED and CASE_NOTES_ENABLED to:
+   - adr_webapp/.env.example (default "false")
+   - deploy/k8s/adr-webapp/configmap.yaml (value "false")
+   - ADR README configuration table
+
+Write CHANGES.md listing all files modified.
+```
+
+---
+
+## Prompt 81: Analytics Dashboard — Federal Hearing and Enforcement Views
+
+**Repository:** eeoc-data-analytics-and-dashboard/
+**Owner:** UDIP team
+**Phase:** 5
+
+### Prompt
+
+```
+Add SQL views and MCP tools for federal hearing and enforcement
+analytics. Read analytics-db/views/ for existing view patterns and
+ai-assistant/app/mcp_server.py for tool registration patterns before
+writing.
+
+1. Create analytics-db/views/vw_hearing_cases.sql:
+   SELECT from analytics.hearing_cases. Include:
+   - hearing_case_id (source_hearing_case_id), agency_code, stage_code,
+     filed_date, closed_date, disposition_code, fiscal_year,
+     lifecycle_state
+   - Derived: is_resolved (lifecycle_state IN ('closed','purged'))
+   - Filter: WHERE lifecycle_state != 'purged' (default view)
+   Follow the exact CREATE OR REPLACE VIEW pattern from existing views.
+   Add COMMENT ON VIEW.
+
+2. Create analytics-db/views/vw_hearing_claims_summary.sql:
+   Aggregate hearing_claims joined to hearing_cases:
+   SELECT fiscal_year, agency_code, basis_code, issue_code,
+     COUNT(*) AS claim_count
+   FROM analytics.hearing_claims hc
+   JOIN analytics.hearing_cases hcase
+     ON hc.source_hearing_case_id = hcase.source_hearing_case_id
+   WHERE hcase.lifecycle_state != 'purged'
+   GROUP BY fiscal_year, agency_code, basis_code, issue_code
+   Add COMMENT ON VIEW.
+
+3. Create analytics-db/views/vw_enforcement_summary.sql:
+   Aggregate conciliations joined to charges (use source charge_number
+   as join key if charges table exists, otherwise standalone):
+   SELECT fiscal_year, outcome_code,
+     COUNT(*) AS case_count,
+     SUM(CASE WHEN outcome_code = 'SUCCESS' THEN 1 ELSE 0 END)
+       AS successful_conciliations
+   FROM analytics.conciliations
+   WHERE lifecycle_state != 'purged'
+   GROUP BY fiscal_year, outcome_code
+   Add COMMENT ON VIEW.
+
+4. Create analytics-db/views/vw_conciliation_outcomes.sql:
+   Extend vw_enforcement_summary with office dimension (join to a
+   charges or office table if available, else use a placeholder
+   office_id = 'UNKNOWN' with a comment noting the join dependency):
+   Include: fiscal_year, office_id, outcome_code, case_count,
+   success_rate NUMERIC(5,2) computed as
+   (successful / NULLIF(case_count, 0)) * 100
+   Add COMMENT ON VIEW.
+
+5. Create analytics-db/views/vw_court_hearings.sql:
+   SELECT from analytics.court_hearings:
+   - hearing_date, court_name, outcome_code, appeal_flag,
+     fiscal_year derived from hearing_date,
+     is_upcoming (hearing_date > CURRENT_DATE),
+     lifecycle_state
+   WHERE lifecycle_state != 'purged'
+   Add COMMENT ON VIEW.
+
+6. Create ai-assistant/app/tools/federal_hearing_tools.py:
+   Follow the pattern of existing tool files in that directory.
+   Four async tool functions:
+
+   async def udip_get_hearing_caseload(
+     agency_code: str | None = None,
+     fiscal_year: int | None = None
+   ) -> dict:
+     Query vw_hearing_cases. Return aggregated counts by stage_code.
+     If no filters: return current fiscal year. Never return individual
+     case records — aggregate only.
+
+   async def udip_get_enforcement_metrics(
+     fiscal_year: int | None = None
+   ) -> dict:
+     Query vw_enforcement_summary. Return case counts and success
+     rate by outcome_code.
+
+   async def udip_get_conciliation_rates(
+     office_id: str | None = None,
+     fiscal_year: int | None = None
+   ) -> dict:
+     Query vw_conciliation_outcomes. Return success_rate by office
+     and fiscal year.
+
+   async def udip_get_court_hearing_schedule(
+     upcoming_only: bool = True
+   ) -> dict:
+     Query vw_court_hearings. Return count of upcoming hearings by
+     court_name if upcoming_only, else return outcome summary.
+
+   All functions: read-only database access, 30-second timeout,
+   return structured dicts not raw rows, aggregate only — no charge
+   numbers or individual identifiers in return values.
+
+7. Register all four tools in ai-assistant/app/mcp_server.py following
+   the existing tool registration pattern (import function, add to
+   tools list/dict with name and description).
+
+Write CHANGES.md listing all new SQL files, the new tools file, and
+the mcp_server.py registration.
+```
+
+---
+
+## Prompt 82: Unified Staff Portal — Blueprint Extraction and Shared Navigation
+
+**Repository:** eeoc-ofs-adr/ and eeoc-ofs-triage/
+**Owner:** ADR + Triage teams
+**Phase:** 6
+
+### Prompt
+
+```
+Create the foundation of the Unified Staff Portal within eeoc-ofs-adr/.
+This portal combines ADR and Triage under a single navigation surface
+without merging their databases or cases.
+
+Read adr_webapp/__init__.py, adr_webapp/routes/__init__.py,
+and triage_webapp/__init__.py before writing to understand existing
+app factory and blueprint registration patterns.
+
+1. Create staff_portal/__init__.py:
+   App factory create_app(config_override: dict | None = None)
+     -> Flask:
+   - Create Flask app
+   - Load config from environment (follow existing config pattern)
+   - Register extensions: Redis session, login manager
+   - Import and register ADR blueprints under url_prefix="/adr"
+     (read adr_webapp/routes/__init__.py to find all blueprints)
+   - Import and register Triage blueprints under url_prefix="/triage"
+     (read triage_webapp to find entry blueprints)
+   - Register the context processor from staff_portal/shared/nav.py
+   - Register /healthz route returning {"status": "ok"}
+   - Return app
+
+   Both standalone apps must still start independently — do not
+   modify their own create_app() functions. The portal create_app()
+   imports from them; it does not replace them.
+
+2. Create staff_portal/shared/nav.py:
+   Context processor inject_nav_context() -> dict:
+   Returns {"nav_sections": [...]} where each section is:
+   {"label": str, "url": str, "visible": bool, "active": bool}
+   Sections: "Mediation" (url /adr/), "Triage" (url /triage/)
+   visible is determined by user roles in session:
+   - Mediation visible when session role includes "mediator" or
+     "coordinator" or "supervisor"
+   - Triage visible when session role includes "coordinator" or
+     "supervisor" or "intake_coordinator"
+   active is True when request.path starts with the section url.
+   Returns empty nav_sections list when no session (unauthenticated).
+
+3. Create staff_portal/shared/templates/base_portal.html:
+   Extends nothing (is the root base). Imports from shared static.
+   Navigation bar: horizontal list of nav_sections, showing only
+   visible sections, marking active with aria-current="page".
+   Skip-navigation link at top: <a href="#main-content">Skip to main
+   content</a> (508 requirement).
+   Main content area: <main id="main-content" role="main">.
+   Footer: EEOC branding, no PII.
+   4.5:1 contrast minimum for all text. No color-only indicators.
+   All interactive elements reachable by keyboard.
+
+4. Create Azure Table unified_case_index schema definition in
+   staff_portal/shared/unified_case_index.py:
+   Class UnifiedCaseIndex with PartitionKey = app_source ("adr" or
+   "triage"), RowKey = case_identifier, fields: case_number,
+   display_name, status, app_url (relative URL within the portal).
+   Methods:
+     upsert_case(entity: dict) -> None
+     lookup_case(case_number: str) -> dict | None
+     search_cases(query: str, app_source: str | None) -> list[dict]
+   Use Azure Table Storage SDK. Connection string from env var
+   UNIFIED_CASE_INDEX_CONNECTION_STRING. Non-fatal: log and return
+   None/[] on error.
+
+5. Modify adr_webapp/routes/__init__.py:
+   Wrap each blueprint.register call so blueprints can be imported
+   with or without a url_prefix. If blueprints are registered directly
+   (not via a register function), refactor to a register_blueprints(app,
+   prefix="") function that the portal can call with prefix="/adr" and
+   the standalone app can call with prefix="".
+
+6. Add UNIFIED_CASE_INDEX_CONNECTION_STRING to eeoc-ofs-adr/.env.example.
+
+Write CHANGES.md listing all new files and the modification to
+adr_webapp/routes/__init__.py.
+```
+
+---
+
+## Prompt 83: Unified Staff Portal — Shared Auth and Role Resolution
+
+**Repository:** eeoc-ofs-adr/
+**Owner:** ADR + Triage teams
+**Phase:** 6
+
+### Prompt
+
+```
+Build the shared authentication and role resolution layer for the
+Unified Staff Portal. Read staff_portal/__init__.py (Prompt 82),
+adr_webapp/auth.py (or wherever MSAL login is implemented in ADR),
+and any existing role/permission code before writing.
+
+1. Create staff_portal/shared/role_resolver.py:
+
+   ROLE_GROUP_MAP: dict[str, str] = {
+     # Map Entra ID group object IDs or display names to portal roles.
+     # Values read from env vars at startup — not hardcoded.
+     # Pattern: GROUP_MEDIATOR_ID, GROUP_COORDINATOR_ID, etc.
+   }
+
+   def resolve_roles(group_ids: list[str], settings=None) -> list[str]:
+     """Map a user's Entra ID group memberships to portal role names.
+     Returns a list of role strings: e.g. ['mediator', 'coordinator'].
+     Unknown groups are silently ignored.
+     Group-to-role mapping is loaded from env vars:
+       PORTAL_GROUP_MEDIATOR, PORTAL_GROUP_COORDINATOR,
+       PORTAL_GROUP_SUPERVISOR, PORTAL_GROUP_ATTORNEY,
+       PORTAL_GROUP_ADMIN
+     Each env var contains the Entra ID group object ID (UUID) for
+     that role. A user can have multiple roles."""
+
+   def get_highest_role(roles: list[str]) -> str:
+     """Return the highest-privilege role from a list.
+     Order: admin > supervisor > attorney > coordinator > mediator >
+     intake_coordinator. Returns 'guest' if list is empty."""
+
+2. Create staff_portal/shared/session_manager.py:
+
+   def populate_portal_session(
+     user_info: dict,
+     group_ids: list[str],
+     session: dict
+   ) -> None:
+     """Populate Flask session with portal role context.
+     Sets: session['portal_roles'], session['primary_role'],
+     session['display_name'], session['user_oid'].
+     Replaces any prior portal session fields.
+     Never logs user_info contents."""
+
+   def get_portal_roles(session: dict) -> list[str]:
+     """Return portal roles from session, or [] if not set."""
+
+   def clear_portal_session(session: dict) -> None:
+     """Remove all portal-specific keys from session on logout."""
+
+3. Create staff_portal/shared/decorators.py:
+
+   def portal_login_required(f):
+     """Redirect to /auth/login if session has no portal_roles."""
+
+   def require_role(role: str):
+     """Return 403 if user does not have the specified role.
+     Use as @require_role('mediator')."""
+
+   def require_any_role(roles: list[str]):
+     """Return 403 if user has none of the specified roles.
+     Use as @require_any_role(['mediator', 'coordinator'])."""
+
+   All decorators preserve function name via @functools.wraps.
+   403 responses use RFC 7807 Problem Details format.
+
+4. Create staff_portal/shared/auth.py:
+   Single MSAL login flow for the portal. Read adr_webapp/auth.py
+   to understand the existing MSAL client setup and token flow, then
+   adapt it:
+   - On callback: extract groups claim from ID token (or call Graph
+     API /me/memberOf if groups not in token due to size limit)
+   - Call role_resolver.resolve_roles(group_ids)
+   - Call session_manager.populate_portal_session(user_info, groups,
+     session)
+   - Redirect to originally requested URL or /adr/ as default
+   - Logout route: call session_manager.clear_portal_session, then
+     MSAL logout with post_logout_redirect_uri
+
+   The existing standalone ADR auth (adr_webapp/auth.py) is preserved
+   unchanged. The portal auth module is separate and additive.
+
+5. Add env vars to eeoc-ofs-adr/.env.example:
+   PORTAL_GROUP_MEDIATOR=
+   PORTAL_GROUP_COORDINATOR=
+   PORTAL_GROUP_SUPERVISOR=
+   PORTAL_GROUP_ATTORNEY=
+   PORTAL_GROUP_ADMIN=
+
+Write CHANGES.md listing all new files and confirming adr_webapp/auth.py
+was not modified.
+```
+
+---
+
+## Prompt 84: Unified Staff Portal — Deployment
+
+**Repository:** eeoc-ofs-adr/
+**Owner:** Hub team
+**Phase:** 6
+
+### Prompt
+
+```
+Create the deployment artifacts for the Unified Staff Portal. Read
+existing Dockerfiles and K8s manifests in eeoc-ofs-adr/deploy/ and
+eeoc-ofs-triage/deploy/ before writing to match conventions.
+
+1. Create staff_portal/Dockerfile:
+   Multi-stage build:
+   Stage 1 (builder): python:3.12-slim-bookworm, install build deps,
+     pip install --no-cache-dir -r staff_portal/requirements.txt into
+     /install
+   Stage 2 (runtime): python:3.12-slim-bookworm, non-root user
+     (useradd -r -u 1001 portal), copy /install from builder, copy:
+       adr_webapp/
+       adr_functionapp/shared/
+       triage_webapp/
+       staff_portal/
+     WORKDIR /app, USER portal
+   CMD: gunicorn --worker-class gevent --workers 4 --bind 0.0.0.0:8080
+     --timeout 60 --access-logfile - --error-logfile -
+     "staff_portal:create_app()"
+   EXPOSE 8080
+   No secrets or credentials in the image. No pip install at runtime.
+
+2. Create staff_portal/requirements.txt:
+   Merge requirements from adr_webapp/requirements.txt and
+   triage_webapp/requirements.txt. Deduplicate. Pin all versions.
+   Add gunicorn[gevent] if not already present.
+   Add azure-data-tables for UnifiedCaseIndex.
+   Retain any ADR or Triage version pins — do not upgrade packages.
+   If there are version conflicts between ADR and Triage dependencies,
+   flag each conflict in a comment and resolve to the higher version
+   unless that would break a known constraint.
+
+3. Create staff_portal/deploy/k8s/portal-deployment.yaml:
+   Deployment in namespace udip (or match existing app namespace).
+   Image: pulled from ACR, tag from CI (use image: PORTAL_IMAGE
+   placeholder with a comment). Replicas: 2.
+   Resources: requests cpu=250m memory=512Mi, limits cpu=1000m
+   memory=1Gi. Non-root security context (runAsUser: 1001,
+   runAsNonRoot: true, readOnlyRootFilesystem: true).
+   Liveness probe: GET /healthz, initialDelaySeconds 15, period 20.
+   Readiness probe: GET /healthz, initialDelaySeconds 10, period 10.
+   envFrom: configMapRef portal-configmap, secretRef portal-secrets.
+   Volumes: emptyDir for /tmp (required for readOnlyRootFilesystem).
+
+4. Create staff_portal/deploy/k8s/portal-service.yaml:
+   Service type ClusterIP, port 80 → targetPort 8080. Add annotation
+   for Azure internal load balancer if other services use it.
+
+5. Create staff_portal/deploy/k8s/portal-configmap.yaml:
+   Non-secret configuration: FLASK_ENV, LOG_LEVEL, REDIS_URL (no
+   password), UNIFIED_CASE_INDEX_CONNECTION_STRING placeholder comment,
+   PORTAL_GROUP_* vars as empty strings (values from secrets at deploy).
+   Comment at top: "# Secrets (MSAL keys, Redis password, HMAC key)
+   must come from portal-secrets — never put them here."
+
+6. Create staff_portal/deploy/k8s/portal-hpa.yaml:
+   HorizontalPodAutoscaler: min 2, max 6 replicas, CPU utilization
+   target 70%. Match API version used in other HPA files in the repo.
+
+7. Create .github/workflows/portal-build-and-test.yml:
+   Trigger: push to main or PR targeting main, path filter
+   staff_portal/** or adr_webapp/** or triage_webapp/**.
+   Jobs:
+   lint-and-test:
+     - Checkout
+     - Setup Python 3.12
+     - pip install -r staff_portal/requirements.txt
+     - ruff check staff_portal/ adr_webapp/ triage_webapp/
+     - mypy --strict staff_portal/
+     - pytest tests/ triage_webapp/tests/ -v --tb=short
+   build-and-push (depends on lint-and-test, runs on main only):
+     - Docker buildx build --file staff_portal/Dockerfile
+     - Tag: acr.azurecr.io/eeoc-staff-portal:${{ github.sha }}
+     - Push to ACR (use OIDC workload identity — no stored passwords)
+   deploy-staging (depends on build-and-push, runs on main only):
+     - kubectl set image deployment/portal portal=<new image>
+     - kubectl rollout status deployment/portal --timeout=120s
+
+   This CI/CD pipeline does NOT replace individual app pipelines for
+   eeoc-ofs-adr or eeoc-ofs-triage. It is an additional pipeline.
+   No hardcoded credentials. Use GitHub Actions OIDC for ACR auth.
+
+Write CHANGES.md listing all new files and noting that individual ADR
+and Triage deployments are unaffected.
+```
+
+---
+
+## Prompt 66: Advanced Security Scanning — ScanCode, OSV, Grype, PII Rules, Checkov, Fuzzing, SLSA, Authenticated DAST
+
+**Repositories:** All 7 EEOC repos (run per repo where applicable)
+**Owner:** All teams
+**Phase:** 2 (before FedRAMP assessment — closes remaining gaps vs. commercial SCA/IAST)
+
+### Prompt (All repos — scanning infrastructure, run once per repo)
+
+```
+ADVANCED SECURITY HARDENING: Add 7 new security scanning capabilities to
+close gaps identified against Black Duck SCA and Synopsys Seeker IAST.
+
+After this prompt, the platform will query 6 vulnerability advisory
+databases (vs Black Duck's 2), perform snippet-level license detection
+(matching Black Duck), detect PII leakage statically (partially matching
+Seeker), scan infrastructure-as-code (neither commercial tool does this),
+fuzz critical input functions, and generate supply chain provenance.
+
+The only remaining gap vs. commercial tooling will be true IAST runtime
+instrumentation, which requires a commercial product.
+
+Implement ALL of the following in this repository.
+
+=== PART 1: Snippet-Level License Detection (ScanCode) ===
+
+ScanCode Toolkit detects licenses, copyrights, and code snippets matching
+known open-source projects — including copy-pasted code without imports.
+This is the capability that previously only Black Duck provided.
+
+1. Add ScanCode to the security-audit-evidence.yml workflow:
+
+   license-deep-scan:
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@v4
+       - name: Install ScanCode
+         run: pip install scancode-toolkit
+       - name: Run ScanCode license + copyright scan
+         run: |
+           scancode \
+             --license --copyright --package --classify \
+             --json-pp scancode-results.json \
+             --processes 4 \
+             --timeout 120 \
+             --ignore "*.pyc" --ignore "__pycache__" \
+             --ignore "node_modules" --ignore ".git" \
+             --ignore ".venv" --ignore "venv" \
+             --ignore "example_data" \
+             .
+       - name: Check for copyleft licenses
+         run: |
+           python3 -c "
+           import json, sys
+           data = json.load(open('scancode-results.json'))
+           copyleft = []
+           for f in data.get('files', []):
+               for lic in f.get('licenses', []):
+                   cat = lic.get('category', '')
+                   if 'copyleft' in cat.lower() and 'weak' not in cat.lower():
+                       copyleft.append({
+                           'file': f['path'],
+                           'license': lic.get('spdx_license_key', 'unknown'),
+                           'category': cat
+                       })
+           if copyleft:
+               print('COPYLEFT LICENSES FOUND:')
+               for c in copyleft:
+                   print(f'  {c[\"file\"]}: {c[\"license\"]} ({c[\"category\"]})')
+               sys.exit(1)
+           print('No copyleft license issues found.')
+           "
+       - name: Upload ScanCode results
+         if: always()
+         uses: actions/upload-artifact@v4
+         with:
+           name: scancode-license-evidence
+           path: scancode-results.json
+           retention-days: 90
+
+=== PART 2: Multi-Source Vulnerability Scanning (OSV + Grype) ===
+
+Add two additional vulnerability scanners that query databases beyond NVD.
+Combined with existing Trivy + pip-audit + OWASP Dependency-Check +
+Dependabot, this gives us 6 advisory sources.
+
+2. Add Google OSV Scanner to build-and-test.yml:
+
+   osv-scan:
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@v4
+       - name: OSV Scanner
+         uses: google/osv-scanner-action/osv-scanner-action@v2
+         with:
+           scan-args: |-
+             --recursive
+             --format sarif
+             --output osv-results.sarif
+             .
+       - name: Upload OSV results
+         if: always()
+         uses: github/codeql-action/upload-sarif@v3
+         with:
+           sarif_file: osv-results.sarif
+         continue-on-error: true
+       - name: Upload artifact
+         if: always()
+         uses: actions/upload-artifact@v4
+         with:
+           name: osv-scan-evidence
+           path: osv-results.sarif
+           retention-days: 90
+
+3. Add Anchore Grype to build-and-test.yml:
+
+   grype-scan:
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@v4
+       - name: Grype vulnerability scan
+         uses: anchore/scan-action@v4
+         with:
+           path: "."
+           severity-cutoff: high
+           fail-build: true
+           output-format: sarif
+       - name: Upload Grype results
+         if: always()
+         uses: github/codeql-action/upload-sarif@v3
+         with:
+           sarif_file: results.sarif
+         continue-on-error: true
+
+=== PART 3: PII Leakage Detection (Custom Semgrep Rules) ===
+
+Static detection of PII flowing into logs, API responses, and exception
+messages without hashing. Partially replicates Seeker IAST's data-flow
+tracking capability.
+
+4. Create .semgrep/pii-leak-detection.yml in the repo root:
+
+   rules:
+     - id: pii-in-log-statement
+       patterns:
+         - pattern-either:
+             - pattern: logging.$METHOD(..., $VAR, ...)
+             - pattern: logger.$METHOD(..., $VAR, ...)
+             - pattern: app.logger.$METHOD(..., $VAR, ...)
+             - pattern: structlog.get_logger().$METHOD(..., $VAR, ...)
+         - metavariable-regex:
+             metavariable: $VAR
+             regex: ".*(email|ssn|social_security|phone|first_name|last_name|street_address|date_of_birth|dob|password|secret|token|api_key).*"
+         - pattern-not: logging.$METHOD(..., _hash_pii($VAR), ...)
+         - pattern-not: logging.$METHOD(..., hash_pii($VAR), ...)
+         - pattern-not: logging.$METHOD(..., _mask_pii($VAR), ...)
+       message: >
+         PII field '$VAR' passed to log statement without hashing.
+         Use _hash_pii() or _mask_pii() before logging.
+       severity: ERROR
+       languages: [python]
+       metadata:
+         category: security
+         cwe: "CWE-532: Insertion of Sensitive Information into Log File"
+         owasp: "A09:2021 Security Logging and Monitoring Failures"
+
+     - id: pii-in-jsonify-response
+       patterns:
+         - pattern-either:
+             - pattern: jsonify({..., "$KEY": $VAR, ...})
+             - pattern: json.dumps({..., "$KEY": $VAR, ...})
+         - metavariable-regex:
+             metavariable: $KEY
+             regex: "(email|ssn|social_security|phone|first_name|last_name|street_address|date_of_birth|dob|home_address)"
+       message: >
+         PII field '$KEY' included in API response. Verify the endpoint
+         requires this field and that the caller is authorized for PII access.
+       severity: WARNING
+       languages: [python]
+       metadata:
+         category: security
+         cwe: "CWE-359: Exposure of Private Personal Information"
+
+     - id: pii-in-exception
+       patterns:
+         - pattern-either:
+             - pattern: raise $EXC(f"...$VAR...")
+             - pattern: raise $EXC(..., $VAR, ...)
+         - metavariable-regex:
+             metavariable: $VAR
+             regex: ".*(email|ssn|phone|password|secret|token|api_key|connection_string).*"
+       message: >
+         Potential PII or secret in exception message. Exception text may
+         appear in logs, error responses, or monitoring dashboards.
+       severity: WARNING
+       languages: [python]
+       metadata:
+         category: security
+         cwe: "CWE-209: Generation of Error Message Containing Sensitive Info"
+
+     - id: unhashed-oid-in-audit
+       patterns:
+         - pattern: |
+             $DICT["$KEY"] = $VAR
+         - metavariable-regex:
+             metavariable: $KEY
+             regex: "(CallerOID|UserID|UserId|user_id|caller_id|assigned_to|mediator_id)"
+         - metavariable-regex:
+             metavariable: $VAR
+             regex: "^(?!.*hash)(?!.*Hash)(?!.*HASH).*$"
+       message: >
+         User identifier '$KEY' stored without hashing. Use SHA-256 or
+         _hash_pii() before storing in audit records.
+       severity: ERROR
+       languages: [python]
+       metadata:
+         category: security
+         cwe: "CWE-312: Cleartext Storage of Sensitive Information"
+
+5. Add PII rules to the existing Semgrep scan step in CI:
+   In the Semgrep scan command, add: --config .semgrep/
+   This picks up the custom rules alongside the default rulesets.
+   If the repo already passes --config p/python or similar, APPEND
+   --config .semgrep/ as an additional config source.
+
+=== PART 4: Infrastructure as Code Scanning (Checkov) ===
+
+Scans K8s manifests, Dockerfiles, and Helm charts for security
+misconfigurations. Neither Black Duck nor Seeker covers this.
+
+6. Add Checkov to security-audit-evidence.yml (repos WITH deploy/k8s/):
+
+   iac-scan:
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@v4
+       - name: Checkov IaC security scan
+         uses: bridgecrewio/checkov-action@v12
+         with:
+           directory: deploy/
+           framework: kubernetes,dockerfile
+           output_format: sarif
+           output_file_path: checkov-results.sarif
+           soft_fail: false
+           skip_check: CKV_K8S_43  # skip image digest pin (we use Always pull)
+       - name: Upload Checkov results
+         if: always()
+         uses: github/codeql-action/upload-sarif@v3
+         with:
+           sarif_file: checkov-results.sarif
+         continue-on-error: true
+
+   For repos WITHOUT K8s manifests (eeoc-ogc-trialtool, eeoc-mcp-hub-functions):
+   - Only scan Dockerfile if one exists
+   - Skip the job entirely if neither deploy/ nor Dockerfile exists
+
+=== PART 5: Property-Based Fuzzing (Hypothesis) ===
+
+Fuzz critical input-handling functions with random inputs to find
+edge cases that unit tests miss. Focus on security-sensitive functions.
+
+7. Add hypothesis to dev dependencies (requirements-dev.txt or equivalent).
+
+8. Create tests/test_fuzz_security.py with fuzz tests for the repo's
+   critical input functions. Choose from the following based on what
+   exists in this repo:
+
+   For repos with OData sanitization (ADR, Triage):
+   ```python
+   from hypothesis import given, strategies as st
+   from hypothesis import settings as hyp_settings
+
+   @given(st.text(min_size=0, max_size=2000, alphabet=st.characters()))
+   @hyp_settings(max_examples=500)
+   def test_sanitize_odata_rejects_injection(raw):
+       """No input can produce unescaped single quotes in output."""
+       result = sanitize_odata_value(raw)
+       # After sanitization, any remaining ' must be doubled ''
+       stripped = result.replace("''", "")
+       assert "'" not in stripped
+       assert "\x00" not in result
+   ```
+
+   For repos with PII hashing:
+   ```python
+   @given(st.text(min_size=1, max_size=500))
+   @hyp_settings(max_examples=500)
+   def test_hash_pii_never_returns_original(raw):
+       """Hash output must never equal the input."""
+       hashed = _hash_pii(raw)
+       assert hashed != raw
+       assert len(hashed) > 0
+
+   @given(st.text(min_size=1, max_size=500))
+   def test_hash_pii_is_deterministic(raw):
+       """Same input always produces same hash."""
+       assert _hash_pii(raw) == _hash_pii(raw)
+   ```
+
+   For repos with charge number validation:
+   ```python
+   @given(st.text(min_size=0, max_size=100, alphabet=st.characters()))
+   @hyp_settings(max_examples=1000)
+   def test_charge_number_validation_rejects_path_traversal(raw):
+       """No input can bypass charge number regex to inject paths."""
+       import re
+       pattern = re.compile(r'^[A-Z0-9\-]{3,25}$')
+       if not pattern.match(raw):
+           # The validation function should reject this
+           # (test the actual validation function used in the repo)
+           pass
+       else:
+           assert '/' not in raw
+           assert '..' not in raw
+           assert '\x00' not in raw
+   ```
+
+   For repos with HMAC computation:
+   ```python
+   @given(st.binary(min_size=32, max_size=64), st.text(min_size=1, max_size=10000))
+   def test_hmac_different_keys_different_output(key, data):
+       """Different keys must produce different HMACs for same data."""
+       import hmac, hashlib
+       h1 = hmac.new(key, data.encode(), hashlib.sha256).hexdigest()
+       h2 = hmac.new(key + b'\x00', data.encode(), hashlib.sha256).hexdigest()
+       assert h1 != h2
+   ```
+
+   Include 3-5 fuzz tests per repo targeting the most security-critical
+   functions. Run with: pytest tests/test_fuzz_security.py -v
+
+=== PART 6: Supply Chain Provenance (SLSA + Cosign) ===
+
+Generate build provenance and sign container images. FedRAMP Rev5 SR
+family encourages (not yet requires) this. Neither Black Duck nor Seeker
+provides it.
+
+9. For repos that build container images (those with Dockerfile or
+   container-build job in build-and-test.yml), add after the image build:
+
+   - name: Install Cosign
+     uses: sigstore/cosign-installer@v3
+
+   - name: Sign container image
+     if: github.ref == 'refs/heads/main'
+     run: |
+       cosign sign --yes \
+         ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+     env:
+       COSIGN_EXPERIMENTAL: "true"
+
+   - name: Generate SLSA provenance attestation
+     if: github.ref == 'refs/heads/main'
+     run: |
+       cosign attest --yes --predicate <(
+         cat <<'PROVENANCE'
+       {
+         "buildType": "https://github.com/actions/runner",
+         "builder": { "id": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" },
+         "invocation": {
+           "configSource": {
+             "uri": "${{ github.server_url }}/${{ github.repository }}",
+             "digest": { "sha1": "${{ github.sha }}" },
+             "entryPoint": "${{ github.workflow }}"
+           }
+         },
+         "metadata": {
+           "buildStartedOn": "${{ github.event.head_commit.timestamp }}",
+           "completeness": { "parameters": true, "environment": true, "materials": true }
+         },
+         "materials": [
+           { "uri": "${{ github.server_url }}/${{ github.repository }}", "digest": { "sha1": "${{ github.sha }}" } }
+         ]
+       }
+       PROVENANCE
+       ) ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+
+   For repos WITHOUT container images (pure Azure Functions or docs):
+   skip this section entirely.
+
+=== PART 7: Authenticated DAST Upgrade (ZAP Active Scan) ===
+
+10. In security-audit-evidence.yml, if a DAST section already exists
+    with ZAP baseline scan, upgrade it to an authenticated active scan:
+
+    dast-authenticated:
+      runs-on: ubuntu-latest
+      if: inputs.staging_url != ''
+      steps:
+        - uses: actions/checkout@v4
+        - name: ZAP authenticated full scan
+          uses: zaproxy/action-full-scan@v0.12.0
+          with:
+            target: ${{ inputs.staging_url }}
+            rules_file_name: ".zap/rules.tsv"
+            allow_issue_writing: false
+            artifact_name: "dast-authenticated-evidence"
+            cmd_options: >
+              -config replacer.full_list(0).description=AuthHeader
+              -config replacer.full_list(0).enabled=true
+              -config replacer.full_list(0).matchtype=REQ_HEADER
+              -config replacer.full_list(0).matchstr=Authorization
+              -config replacer.full_list(0).replacement="Bearer ${{ secrets.ZAP_AUTH_TOKEN }}"
+
+    If no staging URL workflow_dispatch input exists, add one:
+    on:
+      workflow_dispatch:
+        inputs:
+          staging_url:
+            description: 'Staging URL for authenticated DAST scan'
+            required: false
+            type: string
+
+    Create .zap/rules.tsv if it does not exist:
+    - Suppress known false positives (e.g., CSP report-uri informational)
+    - Set threshold to MEDIUM for all other rules
+
+    Note: The ZAP_AUTH_TOKEN secret must be configured in GitHub repo
+    settings. Document this in README or CONTRIBUTING.md.
+
+=== SUMMARY OF FILES TO CREATE/MODIFY ===
+
+New files:
+- .semgrep/pii-leak-detection.yml (PII static detection rules)
+- tests/test_fuzz_security.py (property-based fuzz tests)
+- .zap/rules.tsv (ZAP scan configuration)
+
+Modified files:
+- .github/workflows/security-audit-evidence.yml (add: ScanCode, Checkov, DAST upgrade)
+- .github/workflows/build-and-test.yml (add: OSV, Grype, Cosign/SLSA)
+- requirements-dev.txt or equivalent (add: hypothesis, scancode-toolkit)
+
+Do NOT modify application code. This prompt adds scanning and testing
+infrastructure only.
+
+Write a CHANGES.md and unified diff.
+```
+
+---
+
+## Prompt 85: OGC Trial Tool — Case Registry, RBAC, and Organizational Hierarchy
+
+**Repository:** `eeoc-ogc-trialtool/`
+**Owner:** OGC team
+**Phase:** 7 (OGC AI Assistant foundation — must complete before Prompts 86-89)
+
+### Prompt
+
+```
+Build a case registry for the OGC Trial Tool that supports two types of
+cases: OFP litigation cases (linked to ARC charges) and OGC-internal cases
+(opened by OGC attorneys, not in ARC). Add organizational hierarchy and
+case-level RBAC so attorneys only see their assigned cases.
+
+CONTEXT: The Trial Tool currently has 9 AI analysis functions but no
+persistent case registry, no per-case document management, and no
+organizational scoping. This prompt builds the foundation for a
+case-scoped AI Assistant (Prompt 87).
+
+OGC handles litigation for the entire agency. Cases may come from OFP
+(a charge was filed and OFP elected to prosecute) or be opened directly
+by OGC (Commissioner charges, directed investigations, systemic cases).
+OFP attorneys also litigate cases. Both offices need access, scoped to
+their assigned cases.
+
+1. Case registry data model:
+
+   Create trial_tool_webapp/models/case_registry.py:
+
+   class TrialCase:
+     case_id: UUID (primary key, auto-generated)
+     case_name: str (human-readable, e.g., "EEOC v. Acme Corp")
+     case_number: str (OGC internal number, unique)
+     charge_number: Optional[str] (ARC charge number if OFP-originated)
+     case_type: str ("ofp_litigation", "commissioner_charge",
+       "directed_investigation", "systemic", "amicus", "other")
+     status: str ("open", "discovery", "trial_prep", "trial",
+       "post_trial", "appeal", "settled", "closed")
+     court_name: Optional[str] (e.g., "N.D. Ill.", "5th Cir.")
+     court_case_number: Optional[str] (docket number)
+     assigned_attorney_id: str (Entra ID OID, hashed for storage)
+     assigned_paralegal_ids: list[str] (Entra ID OIDs)
+     office: str ("OGC", "OFP")
+     region: Optional[str] (for OFP district mapping)
+     created_at: datetime
+     updated_at: datetime
+     closed_at: Optional[datetime]
+     lifecycle_state: str ("active", "retained", "held", "archived")
+     retention_expires_at: Optional[datetime]
+
+   Storage: Azure Table Storage (primary) with PostgreSQL dual-write
+   (same PG_MIGRATION_MODE pattern as ADR/Triage).
+   PartitionKey: office (OGC or OFP)
+   RowKey: case_id
+
+2. Case CRUD API:
+
+   Create trial_tool_webapp/routes/cases.py:
+   - GET /cases — list cases (filtered by RBAC)
+   - GET /cases/<case_id> — case detail
+   - POST /cases — create new case
+   - PUT /cases/<case_id> — update case metadata
+   - POST /cases/<case_id>/close — close case, trigger retention
+   - Auth: Entra ID, role-based (attorney, paralegal, supervisor,
+     director, admin)
+
+3. Organizational hierarchy (copy ADR pattern):
+
+   Create trial_tool_webapp/helpers/office_hierarchy.py:
+   - OGC hierarchy: OGC Director → Deputy → Supervisory Attorneys →
+     Trial Attorneys + Paralegals
+   - OFP litigation: uses existing OFP hierarchy from ADR
+     (Regional Director → District → Supervisor → Attorney)
+   - officestructure table: PartitionKey=office (OGC/OFP), RowKey=office_id
+   - staffassignments table: user-to-office-to-role mapping
+   - Session population on login: staff_role, office_id, office,
+     subordinate_attorney_ids
+
+4. Case-level RBAC:
+
+   Three-layer access control (same as ADR):
+
+   Layer 1 — Session scoping:
+   - On login, populate session with role, office, assigned cases
+   - Attorney: sees only own assigned cases
+   - Supervisor: sees subordinate attorneys' cases
+   - Director: sees all cases in their office
+   - Admin/OCH: sees everything
+
+   Layer 2 — Query filtering:
+   - Case list queries filtered by assigned_attorney_id or office subtree
+   - No cross-case data access unless authorized
+
+   Layer 3 — PostgreSQL RLS (when PG_MIGRATION_MODE active):
+   - SET LOCAL app.current_attorney, app.current_office
+   - RLS policies filter by assignment
+
+5. ARC charge linkage (optional, for OFP cases):
+
+   When creating a case with a charge_number:
+   - Pull charge metadata from ARC via Integration API
+   - Auto-populate respondent name, basis codes, filing date
+   - Display ARC charge status (read-only, pulled periodically)
+   - Feature flag: ARC_CASE_LINK_ENABLED (default: false)
+
+6. Case dashboard:
+
+   Update trial_tool_webapp/templates/ with:
+   - Case list view: filterable by status, office, attorney, case type
+   - Case detail view: metadata, assigned staff, documents (Prompt 86),
+     AI conversations (Prompt 87)
+   - Status badges with 508-compliant colors
+   - Office filter (OGC / OFP / All for admin)
+
+7. Configuration:
+   - OGC_CASE_REGISTRY_ENABLED: true (default)
+   - ARC_CASE_LINK_ENABLED: false (default)
+   - OGC_DEFAULT_RETENTION_YEARS: 7
+   - PG_MIGRATION_MODE: "off" (default, same as ADR/Triage)
+
+Write a CHANGES.md and unified diff.
+```
+
+---
+
+## Prompt 86: OGC Trial Tool — Transcript Parser and Case Document Ingestion
+
+**Repository:** `eeoc-ogc-trialtool/`
+**Owner:** OGC team
+**Phase:** 7 (depends on Prompt 85 for case registry)
+
+### Prompt
+
+```
+Build a document ingestion system for the OGC Trial Tool that handles
+depositions, trial transcripts, exhibits, pleadings, and other litigation
+documents. The critical capability: preserve page and line number structure
+from transcripts so the AI can produce accurate page:line citations.
+
+Transcripts are uploaded as PDFs — either machine-generated (text-selectable)
+or clean scans (OCR required). Standard court reporter format: 25 lines per
+page, line numbers 1-25 on the left margin.
+
+PREREQUISITE: Prompt 85 (case registry) must be complete.
+
+1. Document categories:
+
+   Define document types in trial_tool_webapp/models/document_types.py:
+   - DEPOSITION_TRANSCRIPT: deposition testimony
+   - TRIAL_TRANSCRIPT: trial testimony
+   - HEARING_TRANSCRIPT: hearing testimony (admin proceedings)
+   - EXHIBIT: trial exhibit (photos, documents, contracts, emails)
+   - PLEADING: complaint, answer, motion, brief, order
+   - CORRESPONDENCE: letters between counsel
+   - DISCOVERY: interrogatories, requests for production, responses
+   - EXPERT_REPORT: expert witness reports
+   - DECLARATION: sworn declarations, affidavits
+   - OTHER: uncategorized
+
+2. Transcript parser:
+
+   Create trial_tool_functionapp/TranscriptParser/__init__.py:
+   Azure Function, blob trigger on case document uploads.
+
+   For TRANSCRIPT types (deposition, trial, hearing):
+
+   a. Text extraction:
+      - Machine-generated PDF: extract text directly with pypdf,
+        preserving page boundaries
+      - Scanned PDF: use Azure Document Intelligence (Layout model)
+        for OCR with spatial analysis
+      - Detect which type automatically (check if text layer exists)
+
+   b. Page:line structure preservation:
+      THE MOST CRITICAL FUNCTION.
+
+      parse_transcript_lines(pdf_bytes) -> TranscriptDocument:
+
+      TranscriptDocument:
+        witness_name: str (extracted from header/caption)
+        date: str (deposition/hearing date)
+        pages: list[TranscriptPage]
+
+      TranscriptPage:
+        page_number: int
+        lines: list[TranscriptLine]
+
+      TranscriptLine:
+        line_number: int (1-25 typically)
+        text: str
+        speaker: Optional[str] (Q/A/THE WITNESS/THE COURT/etc.)
+
+      Parsing strategy:
+      i.   Split PDF by page boundaries
+      ii.  For each page, detect line number column on left margin:
+           - Regex: look for sequential integers 1-25 at start of lines
+           - Spatial: use Document Intelligence word positions to identify
+             the line number column (leftmost numeric column)
+      iii. Associate each line of text with its line number
+      iv.  Detect Q/A speaker changes:
+           - "Q." or "Q " at start = attorney question
+           - "A." or "A " at start = witness answer
+           - "THE COURT:" = judge
+           - "MR./MS. [NAME]:" = identified speaker
+      v.   Handle continuation lines (text that wraps without new line number)
+      vi.  Handle page headers/footers (reporter certification, page numbers)
+           — exclude from line content but preserve page number
+
+   c. Store structured transcript:
+      - Full structured JSON → blob storage (case-documents container)
+      - Searchable text → Azure AI Search index (per-case, with page:line metadata)
+      - Each indexed chunk includes: case_id, document_id, page_number,
+        start_line, end_line, speaker, text
+
+   d. Chunking strategy for RAG:
+      - Chunk by Q&A exchange (question + answer = one chunk), not by
+        fixed character count
+      - Each chunk tagged with: page_number, start_line, end_line
+      - This enables precise page:line citations in AI responses
+
+3. Non-transcript document handling:
+
+   For EXHIBIT, PLEADING, DISCOVERY, etc.:
+   - Extract text with Document Intelligence or pypdf
+   - If document has page numbers: preserve page references
+   - If document has paragraph numbers (common in pleadings): preserve
+   - Chunk by paragraph or section (not fixed character count)
+   - Index with: case_id, document_id, page_number, document_type
+
+4. Case document management API:
+
+   In trial_tool_webapp/routes/case_documents.py:
+   - POST /cases/<case_id>/documents — upload document(s)
+     Accepts: single file, multiple files, or ZIP
+     Requires: document_type parameter
+     Auto-detects transcript format if type is *_TRANSCRIPT
+   - GET /cases/<case_id>/documents — list documents for case
+   - GET /cases/<case_id>/documents/<doc_id> — document detail + metadata
+   - DELETE /cases/<case_id>/documents/<doc_id> — soft delete (lifecycle)
+   - GET /cases/<case_id>/documents/<doc_id>/transcript — structured
+     transcript JSON (for transcript types only)
+   - Auth: case-level RBAC (only assigned attorneys/paralegals)
+
+5. Blob storage layout:
+   Container: ogc-case-documents
+   Path: {case_id}/{document_type}/{document_id}/{original_filename}
+   Structured data: {case_id}/{document_type}/{document_id}/parsed.json
+   Quarantine: ogc-quarantine (for malware-flagged files)
+
+6. Malware scanning:
+   Same pattern as ADR/Triage: Microsoft Defender scan on blob upload,
+   Event Grid trigger to MalwareScanner function, quarantine on detection.
+
+7. Document audit trail:
+   Every upload, download, and deletion logged to aigenerationaudit
+   with: case_id, document_id, action, user_hash, timestamp, HMAC signature.
+
+8. Configuration:
+   - OGC_CASE_DOCUMENTS_CONTAINER: "ogc-case-documents"
+   - OGC_QUARANTINE_CONTAINER: "ogc-quarantine"
+   - TRANSCRIPT_PARSER_ENABLED: true
+   - TRANSCRIPT_OCR_FALLBACK: true (use Document Intelligence if no text layer)
+   - MAX_DOCUMENT_SIZE_MB: 100 (transcripts can be large)
+
+Write a CHANGES.md and unified diff.
+```
+
+---
+
+## Prompt 87: OGC Trial Tool — Case-Scoped AI Assistant with Bluebook Citations
+
+**Repository:** `eeoc-ogc-trialtool/`
+**Owner:** OGC team
+**Phase:** 7 (depends on Prompts 85 + 86 for case registry + documents)
+
+### Prompt
+
+```
+Build a case-scoped AI Assistant for the OGC Trial Tool. Unlike UDIP's
+cross-system analytics assistant, this one operates WITHIN a single case
+and NEVER mixes data between cases. It answers questions about case
+documents, generates citations in Bluebook format, and helps attorneys
+prepare briefs, motions, and trial materials.
+
+The assistant combines two knowledge sources:
+1. CASE DOCUMENTS (per-case): depositions, transcripts, exhibits, pleadings
+   uploaded via Prompt 86 — scoped to the current case only
+2. LAW LIBRARY (shared): statutes, CFR, case law, compliance manual —
+   same as Triage's priority-docs index but accessible to OGC
+
+Data isolation is absolute: an attorney working on Case A cannot retrieve
+documents from Case B through the AI, even accidentally. The RAG query
+filters by case_id before any retrieval.
+
+PREREQUISITE: Prompts 85 (case registry) and 86 (document ingestion).
+
+1. Case-scoped conversation store:
+
+   Create trial_tool_webapp/conversation_store.py:
+   Copy the pattern from UDIP's conversation_store.py but with case_id
+   as the mandatory scoping field.
+
+   - Every conversation belongs to exactly one case
+   - Conversations stored in Azure Table Storage:
+     PartitionKey: case_id
+     RowKey: conversation_id
+   - Fields: case_id, conversation_id, user_hash, messages (JSON),
+     created_at, updated_at, lifecycle_state, retention_expires_at,
+     charge_number (optional, if OFP-linked)
+   - HMAC-SHA256 on every audit record
+   - WORM archival on case closure (same as UDIP)
+   - Litigation hold support (same as UDIP)
+
+   Retention:
+   - Active case: conversations retained indefinitely
+   - Closed case: retention_expires_at = closed_at + 7 years
+   - Held case: frozen, no expiration
+
+2. Dual-corpus RAG:
+
+   Create trial_tool_webapp/case_rag.py:
+
+   a. Case document retrieval (per-case):
+      Query Azure AI Search with MANDATORY filter: case_id eq '{case_id}'
+      Returns: transcript excerpts with page:line metadata, exhibit text,
+      pleading sections
+      This index is populated by Prompt 86's TranscriptParser
+
+   b. Law library retrieval (shared):
+      Query the shared priority-docs-index (same as Triage)
+      Filter: category ne 'ADR Guidance' and category ne 'ADR Mediation Material'
+      Returns: statutes, CFR, case law, compliance manual
+
+   c. Combined context assembly:
+      Merge case documents + law library results
+      Label each source clearly:
+      "--- CASE DOCUMENT: Smith Depo., p. 47, ll. 12-15 ---"
+      "--- LAW LIBRARY: Title VII, 42 U.S.C. § 2000e-2(a)(1) ---"
+      The LLM sees both but knows which is which
+
+3. Bluebook citation engine:
+
+   Create trial_tool_webapp/citation_formatter.py:
+
+   The AI must produce citations that attorneys can paste directly into
+   briefs. Encode these Bluebook formatting rules:
+
+   a. Deposition citations:
+      {Witness Last Name} Dep. {page}:{line}-{line}
+      Example: "Smith Dep. 47:12-15"
+      If spanning pages: "Smith Dep. 47:22-48:3"
+
+   b. Trial transcript citations:
+      Trial Tr. {page}:{line}-{line} ({Witness Last Name})
+      Example: "Trial Tr. 142:8-14 (Jones)"
+
+   c. Case law citations:
+      {Case Name}, {Volume} {Reporter} {Page}, {Pinpoint} ({Court} {Year})
+      Example: "McDonnell Douglas Corp. v. Green, 411 U.S. 792, 802 (1973)"
+
+   d. Statute citations:
+      {Title} U.S.C. § {Section} ({Year})
+      Example: "42 U.S.C. § 2000e-2(a)(1) (2018)"
+
+   e. Regulation citations:
+      {Title} C.F.R. § {Section} ({Year})
+      Example: "29 C.F.R. § 1614.105(a)(1) (2024)"
+
+   f. Exhibit citations:
+      {Party} Ex. {Number} at {Page}
+      Example: "Pl. Ex. 12 at 3"
+
+   The system prompt instructs the LLM to use these formats. The
+   citation_formatter.py post-processes AI output to validate and
+   normalize citation format — flagging citations that don't match
+   any known pattern.
+
+4. AI Assistant system prompt:
+
+   "You are a litigation support assistant for EEOC attorneys preparing
+   federal employment discrimination cases. You have access to two
+   knowledge sources: (1) case documents for the current case only
+   (depositions, transcripts, exhibits, pleadings), and (2) a law
+   library of statutes, regulations, and case law.
+
+   Rules:
+   - NEVER reference documents from other cases
+   - EVERY factual statement must cite a source document with page:line
+     or exhibit number
+   - Use Bluebook citation format for all legal authorities
+   - Use deposition/transcript citation format: Witness Dep. page:line
+   - When citing transcript testimony, quote the exact text
+   - Do not provide legal conclusions — present facts and let the
+     attorney draw conclusions
+   - Stop sequences: 'Legal Conclusion:', 'Legal Advice:'
+   - If asked about something not in the case documents or law library,
+     say so explicitly — do not fabricate"
+
+5. Chat UI:
+
+   Create trial_tool_webapp/templates/case_chat.html:
+   - Embedded within the case detail view (not a separate page)
+   - Chat panel on right side of case view
+   - Markdown rendering for AI responses (preserving citation formatting)
+   - "Copy citation" button on each cited source
+   - Document reference links: clicking a citation opens the source
+     document at the referenced page
+   - Conversation history in sidebar (per-case, per-user)
+   - "New conversation" button (starts fresh within same case)
+   - 508 compliant: keyboard navigable, screen reader labels, 4.5:1 contrast
+
+6. API endpoints:
+
+   In trial_tool_webapp/routes/case_chat.py:
+   - POST /cases/<case_id>/chat — send message, get AI response
+     Input: { message, conversation_id (optional) }
+     Output: { response, citations: [...], conversation_id }
+     Auth: case-level RBAC (must be assigned to case)
+   - GET /cases/<case_id>/conversations — list conversations for case
+   - GET /cases/<case_id>/conversations/<conv_id> — conversation history
+   - DELETE /cases/<case_id>/conversations/<conv_id> — soft delete
+
+7. Audit logging:
+   Every AI interaction logged to aigenerationaudit:
+   - task_type: "CASE_CHAT"
+   - case_id, conversation_id, user_hash
+   - Full prompt + response + citations + token count
+   - HMAC-SHA256 signature
+   - WORM blob archival for responses > 32KB
+   - RetentionPolicy: "FOIA_7_YEAR"
+
+8. Configuration:
+   - OGC_AI_ASSISTANT_ENABLED: true (default)
+   - OGC_AI_CHAT_TEMPERATURE: 0.15 (low for factual accuracy)
+   - OGC_AI_CHAT_MAX_TOKENS: 4000
+   - OGC_AI_CITATION_VALIDATION: true (post-process citations)
+   - OGC_LAW_LIBRARY_INDEX: "priority-docs-index" (shared with Triage)
+   - OGC_CASE_DOCS_INDEX: "ogc-case-docs-index" (per-case document index)
+
+Write a CHANGES.md and unified diff.
+```
+
+---
+
+## Prompt 88: OGC Trial Tool — Case Lifecycle, FOIA Export, and ARC Status Integration
+
+**Repository:** `eeoc-ogc-trialtool/`
+**Owner:** OGC team
+**Phase:** 7 (depends on Prompts 85-87)
+
+### Prompt
+
+```
+Add case lifecycle management, FOIA export, and optional ARC status
+integration to the OGC Trial Tool. Cases stay active until litigation
+concludes, then enter 7-year NARA retention.
+
+PREREQUISITE: Prompts 85 (case registry), 86 (documents), 87 (AI assistant).
+
+1. Case lifecycle state machine:
+
+   In trial_tool_webapp/models/case_registry.py:
+
+   States: open → discovery → trial_prep → trial → post_trial → appeal →
+           settled | closed
+   Plus: any state can transition to "held" (litigation hold from UDIP)
+
+   On case closure (settled or closed):
+   a. Set closed_at = now()
+   b. Set retention_expires_at = closed_at + 7 years (2555 days)
+   c. Set lifecycle_state = "retained"
+   d. Archive all AI conversations to WORM blob (same as UDIP pattern)
+   e. Archive case documents metadata to WORM blob
+   f. Documents themselves remain in blob storage until retention expires
+   g. Log to audit trail: CASE_CLOSED event with HMAC signature
+
+   On retention expiry:
+   a. Queue for ScheduledDisposal (same pattern as Triage/ADR)
+   b. Check litigation holds before disposal (fail-closed)
+   c. Purge case documents, conversations, audit records from Table Storage
+   d. WORM blobs are immutable — retained by Azure lifecycle policy
+
+2. ARC status pull (for OFP-originated cases):
+
+   Feature flag: ARC_STATUS_PULL_ENABLED (default: false)
+
+   When enabled and case has a charge_number:
+   - Timer function (hourly): query ARC Integration API for charge status
+   - GET /arc/v1/charges/{charge_number}/metadata
+   - Update case display with current ARC status (read-only display)
+   - If ARC status = CLOSED and case still open: show warning banner
+     "ARC charge is closed — verify litigation status"
+   - Do NOT auto-close the OGC case based on ARC status (litigation
+     may continue after charge closure)
+   - Do NOT write back to ARC from OGC (OGC manages its own lifecycle)
+
+3. FOIA export:
+
+   Extend trial_tool_webapp/routes/foia_export.py:
+   - Add case-scoped export: POST /api/v1/foia-export with case_id
+   - Packages:
+     a. All AI audit records for the case
+     b. All conversation threads (full text)
+     c. Case metadata (registry entry)
+     d. Document list with metadata (not the documents themselves —
+        those are exported separately by OGC records management)
+     e. Chain-of-custody metadata (export_id, requester_hash, zip_hash)
+   - Auth: admin or legal_counsel role
+   - Rate limit: 5 per hour per user
+
+4. Litigation hold integration:
+
+   Same pattern as ADR/Triage:
+   - Before any disposal: check UDIP hold API
+     GET {UDIP_API_URL}/api/holds/check/{charge_number_or_case_id}
+   - Fail-closed: if UDIP unreachable, block disposal
+   - When hold is issued on a linked charge: freeze case and all
+     conversations (set lifecycle_state="held")
+   - Feature flag: LITIGATION_HOLD_CHECK_ENABLED (default: true)
+
+5. Case closure UI:
+
+   In trial_tool_webapp/routes/cases.py:
+   - "Close Case" button with confirmation dialog
+   - Closure reason selection: settled, judgment, appeal_exhausted,
+     dismissed, voluntary_dismissal, other
+   - Closure summary text (attorney writes brief summary)
+   - On submit: triggers lifecycle closure flow (step 1 above)
+   - Shows progress: "Archiving conversations... Archiving documents...
+     Setting retention... Done."
+
+6. Disposal queue:
+
+   Create trial_tool_functionapp/ScheduledDisposal/__init__.py:
+   (If it doesn't already exist from Prompt 41 — extend it)
+   - Timer trigger: daily at 03:00 UTC
+   - Query cases where retention_expires_at < now() and lifecycle_state = "retained"
+   - For each: check litigation hold, then queue for disposal
+   - Distributed lock to prevent concurrent runs
+
+7. Configuration:
+   - ARC_STATUS_PULL_ENABLED: false (default)
+   - ARC_STATUS_PULL_INTERVAL_MINUTES: 60
+   - LITIGATION_HOLD_CHECK_ENABLED: true (default)
+   - OGC_DEFAULT_RETENTION_YEARS: 7
+   - OGC_DISPOSAL_SCHEDULE: "0 0 3 * * *"
+
+Write a CHANGES.md and unified diff.
+```
+
+---
+
+## Prompt 89: OGC Trial Tool — Secure Word Add-in Architecture (Planning + Foundation)
+
+**Repository:** `eeoc-ogc-trialtool/`
+**Owner:** OGC team
+**Phase:** 8 (FUTURE — build after Prompts 85-88 are stable)
+
+### Prompt
+
+```
+ARCHITECTURE + FOUNDATION ONLY. Build the API layer and documentation
+for a Microsoft Word Office Add-in that connects to the OGC Trial Tool's
+case-scoped AI Assistant. The Add-in itself (JavaScript/HTML taskpane)
+can be built in a later phase — this prompt creates the secure backend
+endpoints and deployment documentation.
+
+WHY NOT COPILOT: Microsoft 365 Copilot routes queries through Microsoft's
+orchestration layer. Even with a custom plugin pointing to our Azure OpenAI,
+the Copilot orchestrator sees the content in transit. For active litigation
+material (depositions, case strategy, witness prep), this is unacceptable.
+
+APPROACH: A Word Office Add-in is a web panel hosted on OUR infrastructure
+that runs inside Word. The Add-in calls our API directly. Microsoft Word
+is the container, but Microsoft's cloud services are NOT in the data path.
+All AI processing stays within our Azure Government tenant and our Azure
+OpenAI deployment.
+
+DATA FLOW:
+  Attorney opens Word → Add-in taskpane loads from our server →
+  Attorney selects text → Add-in POSTs to our API with case_id + text →
+  Our API queries case documents via RAG → Our Azure OpenAI generates
+  response → Response returned to Add-in → Displayed in Word taskpane
+
+Microsoft Word sees the Add-in's HTML/JS but NEVER sees the API calls,
+case data, or AI responses. The Add-in uses fetch() directly to our
+endpoint with Entra ID authentication.
+
+1. Word Add-in API endpoints:
+
+   Create trial_tool_webapp/routes/word_addin_api.py:
+
+   POST /api/v1/addin/analyze
+   Auth: Entra ID bearer token (SSO from Word → Entra ID → our API)
+   Input: {
+     case_id: str,
+     selected_text: str,
+     action: "analyze" | "cite" | "summarize" | "find_testimony" |
+             "draft_argument" | "check_facts",
+     context: Optional[str] (surrounding text for better context)
+   }
+   Output: {
+     response: str (markdown formatted),
+     citations: [{ source, page, line_start, line_end, text }],
+     action: str,
+     model: str,
+     tokens_used: int
+   }
+
+   POST /api/v1/addin/search
+   Auth: Entra ID bearer token
+   Input: {
+     case_id: str,
+     query: str,
+     document_types: Optional[list] (filter by deposition, exhibit, etc.),
+     witness: Optional[str] (filter by deponent name)
+   }
+   Output: {
+     results: [{
+       document_name: str,
+       document_type: str,
+       page: int,
+       line_start: int,
+       line_end: int,
+       text: str,
+       relevance_score: float,
+       citation: str (pre-formatted Bluebook)
+     }]
+   }
+
+   POST /api/v1/addin/format-citation
+   Auth: Entra ID bearer token
+   Input: {
+     citation_type: "deposition" | "trial_transcript" | "case_law" |
+                    "statute" | "regulation" | "exhibit",
+     raw_data: { witness_name, page, line_start, line_end, ... }
+   }
+   Output: {
+     formatted: str (Bluebook format, paste-ready),
+     short_form: str (id. / supra form for subsequent references)
+   }
+
+   GET /api/v1/addin/cases
+   Auth: Entra ID bearer token
+   Output: list of cases the authenticated user is assigned to
+   (used by Add-in to populate case selector dropdown)
+
+2. SSO authentication flow:
+
+   The Word Add-in uses Office.js SSO to get an Entra ID token:
+   - Add-in calls Office.auth.getAccessToken()
+   - Word brokers SSO with Entra ID (user already signed in)
+   - Token sent to our API in Authorization header
+   - Our API validates token against same Entra ID tenant
+   - No additional login required — seamless for the attorney
+
+   Document the Entra ID app registration requirements:
+   - Register a new app: "EEOC OGC Word Add-in"
+   - API permissions: access_as_user (delegated)
+   - Expose an API: api://{client_id} with scope access_as_user
+   - Authorized client IDs: add Office desktop client IDs
+     (Office client IDs are well-known Microsoft GUIDs)
+   - Token validation: verify aud, iss, tid claims
+
+3. Add-in manifest (XML):
+
+   Create trial_tool_webapp/word_addin/manifest.xml:
+   - Define the Add-in metadata (name, description, icon)
+   - Taskpane URL: https://{OGC_TRIALTOOL_URL}/addin/taskpane
+   - SSO resource URI: api://{OGC_TRIALTOOL_URL}/{ADDIN_CLIENT_ID}
+   - Required permissions: ReadWriteDocument (read selected text,
+     insert formatted citations)
+   - Ribbon buttons:
+     a. "EEOC AI" tab in ribbon
+     b. "Analyze Selection" button
+     c. "Search Case" button
+     d. "Insert Citation" button
+
+4. Taskpane route (serves the Add-in UI):
+
+   In trial_tool_webapp/routes/word_addin_api.py:
+   - GET /addin/taskpane — serves the Add-in HTML page
+   - The page loads Office.js and our custom JavaScript
+   - For this prompt: create a minimal placeholder page that:
+     a. Initializes Office.js
+     b. Gets SSO token
+     c. Lists user's cases (from /api/v1/addin/cases)
+     d. Shows "Add-in connected" status
+   - The full interactive UI is a future phase
+
+5. Security documentation:
+
+   Create trial_tool_webapp/docs/WORD_ADDIN_SECURITY.md:
+   Document:
+   - Data flow diagram showing Word → Add-in → Our API → Azure OpenAI
+   - Explicit statement: Microsoft does NOT see case data, AI prompts,
+     or AI responses. Only the Add-in HTML/JS is served from our URL.
+   - Comparison with Copilot: why Copilot is not suitable for
+     litigation material and how the Add-in avoids the same risks
+   - Azure OpenAI data policy: prompts and completions are not used for
+     training, not available to other customers or OpenAI
+   - Entra ID SSO: no credentials stored in the Add-in
+   - All API calls over HTTPS with managed identity validation
+   - Audit logging: every Add-in interaction logged with HMAC signature
+   - FOIA implications: Add-in interactions are case-scoped AI queries,
+     subject to same 7-year retention as case chat
+
+6. Deployment documentation:
+
+   Create trial_tool_webapp/docs/WORD_ADDIN_DEPLOYMENT.md:
+   Document:
+   - Entra ID app registration steps (portal walk-through)
+   - Microsoft 365 admin center: how to deploy the Add-in centrally
+   - Testing: how to sideload for development
+   - Configuration: environment variables for Add-in client ID, scope
+   - Verification: how to confirm data stays within Azure Gov tenant
+
+7. Configuration:
+   - OGC_WORD_ADDIN_ENABLED: false (default — enable when ready)
+   - OGC_ADDIN_CLIENT_ID: (Entra ID app registration client ID)
+   - OGC_ADDIN_SCOPE: "api://{host}/{client_id}/access_as_user"
+
+Write a CHANGES.md and unified diff.
+```
+
+---
+
+## Prompt 90: Progressive Web App (PWA) Installation for ADR, Triage, Trial Tool, UDIP
+
+**Repositories:** `eeoc-ofs-adr/`, `eeoc-ofs-triage/`, `eeoc-ogc-trialtool/`, `eeoc-data-analytics-and-dashboard/`
+**Owner:** All teams
+**Phase:** 7 (run per repo, all 4 in parallel)
+
+### Prompt
+
+```
+Add Progressive Web App (PWA) support so EEOC staff can install the
+application to their desktop and taskbar as a standalone app window.
+No offline support — these apps require live Azure connections. This is
+purely a "looks and launches like a desktop app" install.
+
+When staff visit the app in Edge or Chrome, the browser shows an install
+prompt. After installing, the app opens in its own window (no browser
+chrome — no address bar, no tabs), with the app icon on the taskbar and
+desktop. It behaves like a native app but is still the web application.
+
+Implement ALL of the following in this repository.
+
+1. Generate app icon:
+
+   Create a Python script that generates simple, clean PWA icons with
+   the app abbreviation text on a solid background. Run the script
+   during build to produce the required icon sizes.
+
+   Create scripts/generate_pwa_icons.py:
+   ```python
+   """Generate PWA icons with app abbreviation text."""
+   from PIL import Image, ImageDraw, ImageFont
+   import os
+
+   # Configure per app:
+   #   ADR repo:     APP_NAME="ADR",    BG_COLOR="#1a5276", TEXT_COLOR="#ffffff"
+   #   Triage repo:  APP_NAME="Triage", BG_COLOR="#1a5276", TEXT_COLOR="#ffffff"
+   #   Trial Tool:   APP_NAME="Trial",  BG_COLOR="#1a5276", TEXT_COLOR="#ffffff"
+   #   UDIP repo:    APP_NAME="UDIP",   BG_COLOR="#1a5276", TEXT_COLOR="#ffffff"
+   APP_NAME = "ADR"  # CHANGE PER REPO
+   BG_COLOR = "#1a5276"  # EEOC navy
+   TEXT_COLOR = "#ffffff"
+   SIZES = [72, 96, 128, 144, 152, 192, 384, 512]
+
+   output_dir = os.path.join(os.path.dirname(__file__), "..", 
+       # ADR: "adr_webapp/static/icons"
+       # Triage: "triage_webapp/static/icons"
+       # Trial Tool: "trial_tool_webapp/static/icons"
+       # UDIP: "ai-assistant/app/static/icons"
+       "REPLACE_WITH_CORRECT_PATH/static/icons")
+   os.makedirs(output_dir, exist_ok=True)
+
+   for size in SIZES:
+       img = Image.new("RGB", (size, size), BG_COLOR)
+       draw = ImageDraw.Draw(img)
+       # Use a clean font; fall back to default if not available
+       font_size = size // 3 if len(APP_NAME) <= 4 else size // 4
+       try:
+           font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
+       except OSError:
+           font = ImageFont.load_default()
+       bbox = draw.textbbox((0, 0), APP_NAME, font=font)
+       tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+       x = (size - tw) // 2
+       y = (size - th) // 2
+       draw.text((x, y), APP_NAME, fill=TEXT_COLOR, font=font)
+       img.save(os.path.join(output_dir, f"icon-{size}x{size}.png"))
+
+   print(f"Generated {len(SIZES)} icons for {APP_NAME} in {output_dir}")
+   ```
+
+   Set APP_NAME and the output_dir path for this specific repo:
+   - eeoc-ofs-adr: APP_NAME="ADR", path="adr_webapp/static/icons"
+   - eeoc-ofs-triage: APP_NAME="Triage", path="triage_webapp/static/icons"
+   - eeoc-ogc-trialtool: APP_NAME="Trial", path="trial_tool_webapp/static/icons"
+   - eeoc-data-analytics-and-dashboard: APP_NAME="UDIP", path="ai-assistant/app/static/icons"
+
+   Run the script: python3 scripts/generate_pwa_icons.py
+   Commit the generated PNG files.
+
+   Add Pillow to requirements-dev.txt (or equivalent) if not present.
+
+2. Create manifest.json:
+
+   Place in the app's static directory (same level as css/, js/):
+
+   For ADR (adr_webapp/static/manifest.json):
+   {
+     "name": "EEOC ADR Mediation Portal",
+     "short_name": "ADR",
+     "description": "AI-powered mediation case management for EEOC",
+     "start_url": "/",
+     "display": "standalone",
+     "background_color": "#1a5276",
+     "theme_color": "#1a5276",
+     "orientation": "any",
+     "scope": "/",
+     "icons": [
+       { "src": "/static/icons/icon-72x72.png", "sizes": "72x72", "type": "image/png" },
+       { "src": "/static/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" },
+       { "src": "/static/icons/icon-128x128.png", "sizes": "128x128", "type": "image/png" },
+       { "src": "/static/icons/icon-144x144.png", "sizes": "144x144", "type": "image/png" },
+       { "src": "/static/icons/icon-152x152.png", "sizes": "152x152", "type": "image/png" },
+       { "src": "/static/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+       { "src": "/static/icons/icon-384x384.png", "sizes": "384x384", "type": "image/png" },
+       { "src": "/static/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+     ]
+   }
+
+   For Triage: name="EEOC Triage", short_name="Triage"
+   For Trial Tool: name="EEOC Trial Tool", short_name="Trial"
+   For UDIP: name="EEOC Analytics & AI", short_name="UDIP"
+
+3. Create service worker (minimal, no offline caching):
+
+   Place in the app's static directory:
+   static/sw.js:
+   ```javascript
+   // Minimal service worker required for PWA install prompt.
+   // No offline caching — app requires live connection.
+   self.addEventListener("install", function(event) {
+     self.skipWaiting();
+   });
+
+   self.addEventListener("activate", function(event) {
+     event.waitUntil(clients.claim());
+   });
+
+   self.addEventListener("fetch", function(event) {
+     // Pass through all requests to the network.
+     // No caching, no offline support.
+     event.respondWith(fetch(event.request));
+   });
+   ```
+
+4. Update the base HTML template:
+
+   In the <head> of the base/layout template (layout.html, base.html,
+   or equivalent), add:
+
+   <!-- PWA manifest -->
+   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+   <meta name="theme-color" content="#1a5276">
+   <meta name="apple-mobile-web-app-capable" content="yes">
+   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+   <meta name="apple-mobile-web-app-title" content="SHORT_NAME_HERE">
+   <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-152x152.png') }}">
+
+   At the bottom of <body> (before closing </body> tag), add the
+   service worker registration:
+
+   <script>
+     if ("serviceWorker" in navigator) {
+       navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}")
+         .catch(function(err) { console.log("SW registration failed:", err); });
+     }
+   </script>
+
+5. Flask route for manifest (if needed):
+
+   Some Flask setups require serving manifest.json from the root URL.
+   If the browser doesn't pick up /static/manifest.json, add a route:
+
+   @app.route("/manifest.json")
+   def manifest():
+       return send_from_directory(app.static_folder, "manifest.json",
+           mimetype="application/manifest+json")
+
+   Test: visit /manifest.json in the browser — it should return the JSON.
+
+6. Verify install works:
+
+   After implementation:
+   a. Open the app in Edge or Chrome
+   b. Look for the install icon in the address bar (or three-dot menu →
+      "Install EEOC ADR Mediation Portal")
+   c. Click install — app should open in a standalone window
+   d. Check taskbar — app icon should appear
+   e. Close and reopen from taskbar — should launch standalone
+   f. Verify: no address bar, no browser tabs, just the app
+
+7. 508 compliance note:
+   PWA install is progressive enhancement — the app works identically
+   in a regular browser tab. The install feature is optional for users.
+   No accessibility impact. Ensure the service worker doesn't break
+   keyboard navigation or screen readers (it won't with pass-through fetch).
+
+8. CSP update (if applicable):
+   If the app uses Content-Security-Policy headers, ensure the service
+   worker is allowed:
+   - worker-src 'self'
+   Add this to the Talisman CSP configuration or equivalent.
+
+Write a CHANGES.md and unified diff.
+```
+
+---
+
+## Prompt 91: ADR Production Deployment — Zero-Assumption Documentation Completion
+
+**Repository:** `eeoc-ofs-adr/`
+**Owner:** OCIO Platform team
+**Phase:** 9 (CRITICAL — before production rollout)
+
+### Prompt
+
+```
+The deployment documentation audit found 8 critical gaps that would block
+a zero-assumption operator from completing a production deployment. Fill
+ALL of them. The existing docs are good for Azure resource provisioning
+but incomplete for Entra ID setup, secret generation, DNS/TLS, initial
+data, and post-deployment validation.
+
+Do NOT rewrite existing docs. ADD the missing sections where they belong
+or create new targeted guides. Reference existing docs where appropriate.
+
+=== PART 1: Entra ID App Registration Guide (CRITICAL) ===
+
+Create docs/Entra_ID_App_Registration_Guide.md:
+
+This guide must cover creation of TWO app registrations from scratch.
+
+1. ADR Web Application Registration:
+
+   Step-by-step Azure Portal instructions:
+   a. Go to portal.azure.com → Entra ID → App registrations → New registration
+   b. Name: "EEOC-ADR-Mediation-Portal"
+   c. Supported account types: "Accounts in this organizational directory only"
+      (Single tenant — EEOC tenant only)
+   d. Redirect URI:
+      - Platform: Web
+      - URI: https://{ADR_DOMAIN}/signin-oidc
+      - Add second: https://{ADR_DOMAIN}/signin-oidc-logingov (if Login.gov enabled)
+   e. Click Register
+   f. Record: Application (client) ID → this becomes AAD-CLIENT-ID
+   g. Record: Directory (tenant) ID → this becomes TENANT_ID
+   h. Go to Certificates & secrets → Client secrets → New client secret
+      - Description: "ADR production secret"
+      - Expiry: 24 months (set rotation reminder)
+      - Copy the secret VALUE (not the ID) → this becomes AAD-CLIENT-SECRET
+   i. Go to API permissions → Add a permission:
+      - Microsoft Graph → Delegated permissions:
+        - User.Read (Sign in and read user profile)
+        - GroupMember.Read.All (Read group memberships)
+      - Click "Grant admin consent for EEOC"
+   j. Go to Token configuration → Add groups claim:
+      - Select: Security groups
+      - ID token: Group ID
+      (This ensures group memberships appear in the ID token)
+
+2. Graph Daemon Registration (for email/calendar background jobs):
+
+   a. New registration → Name: "EEOC-ADR-Graph-Daemon"
+   b. Supported account types: Single tenant
+   c. No redirect URI needed (daemon/background app)
+   d. Click Register
+   e. Record: Application (client) ID → GRAPH-CLIENT-ID
+   f. Go to Certificates & secrets → New client secret
+      - Copy VALUE → GRAPH-CLIENT-SECRET
+   g. Go to API permissions → Add a permission:
+      - Microsoft Graph → Application permissions (NOT delegated):
+        - Mail.Send
+        - Calendars.ReadWrite
+        - User.Read.All
+        - GroupMember.Read.All
+      - Click "Grant admin consent for EEOC"
+   h. Go to Overview → copy Application (client) ID
+
+3. Application Access Policy (restricts daemon to mediator mailboxes):
+
+   This requires Exchange Online PowerShell. Document step-by-step:
+
+   a. Prerequisites:
+      - Install Exchange Online PowerShell module:
+        Install-Module ExchangeOnlineManagement -Scope CurrentUser
+      - You need Exchange administrator role in Entra ID
+   b. Connect:
+      Connect-ExchangeOnline -Organization eeoc.onmicrosoft.com
+   c. Create the policy:
+      New-ApplicationAccessPolicy `
+        -AppId "{GRAPH-CLIENT-ID}" `
+        -PolicyScopeGroupId "{MEDIATOR-SECURITY-GROUP-EMAIL}" `
+        -AccessRight RestrictAccess `
+        -Description "Restrict ADR Graph daemon to mediator mailboxes"
+   d. Verify:
+      Test-ApplicationAccessPolicy `
+        -AppId "{GRAPH-CLIENT-ID}" `
+        -Identity "mediator@eeoc.gov"
+      Expected: AccessCheckResult = Granted
+      Test-ApplicationAccessPolicy `
+        -AppId "{GRAPH-CLIENT-ID}" `
+        -Identity "non-mediator@eeoc.gov"
+      Expected: AccessCheckResult = Denied
+   e. Note: Policy propagation takes 30-60 minutes
+
+4. Security Groups:
+
+   Create these Entra ID security groups (if not existing):
+   a. EEOC-ADR-Mediators — members get mediator role
+      Record Object ID → MEDIATOR-GROUP-ID (Key Vault)
+   b. EEOC-ADR-Admins — members get admin role
+      Record Object ID → ADMIN-GROUP-ID (Key Vault)
+   c. EEOC-ADR-Stats-Viewers — members get stats API access
+      Record Object ID → STATS-ADMIN-GROUP-ID (Key Vault)
+   d. EEOC-OFS-Staff (for bulk sync) — all OFS staff members
+   e. EEOC-OFP-Staff (for bulk sync) — all OFP staff members
+
+   For each: Entra ID → Groups → New group → Security → name → create
+   Add members: Groups → select group → Members → Add members
+
+=== PART 2: Login.gov Production Registration ===
+
+Add to docs/Entra_ID_App_Registration_Guide.md (or create separate
+docs/Login_Gov_Production_Setup.md):
+
+1. Generate production RSA key pair:
+   openssl genrsa -out logingov-private.pem 4096
+   openssl rsa -in logingov-private.pem -pubout -out logingov-public.pem
+   openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt \
+     -in logingov-private.pem -out logingov-private-pkcs8.pem
+
+2. Register at Login.gov Partner Dashboard:
+   a. Go to https://dashboard.login.gov (production)
+   b. Create a new app:
+      - App name: "EEOC ADR Mediation Portal"
+      - Issuer: urn:gov:gsa:openidconnect.profiles:sp:sso:eeoc:adr
+      - Redirect URIs: https://{ADR_DOMAIN}/signin-oidc-logingov
+      - Authentication method: private_key_jwt
+      - Level of service: IAL1
+      - Upload public key: paste contents of logingov-public.pem
+   c. Record the Issuer URI → LOGINGOV_CLIENT_ID
+   d. Store private key in Key Vault:
+      az keyvault secret set --vault-name {KV_NAME} \
+        --name LOGINGOV-PRIVATE-KEY \
+        --file logingov-private-pkcs8.pem
+   e. Delete the local private key file:
+      shred -u logingov-private.pem logingov-private-pkcs8.pem
+
+3. Environment variables to set:
+   LOGINGOV_ENABLED=true
+   LOGINGOV_CLIENT_ID=urn:gov:gsa:openidconnect.profiles:sp:sso:eeoc:adr
+   LOGINGOV_AUTHORITY=https://secure.login.gov
+   LOGINGOV_REDIRECT_URI=https://{ADR_DOMAIN}/signin-oidc-logingov
+
+=== PART 3: Key Vault Secret Generation Commands ===
+
+Add to docs/Azure_Portal_Provisioning_Guide.md Section 5.2 (or create
+docs/Key_Vault_Secret_Generation.md):
+
+For EVERY secret, provide the exact generation command:
+
+| Secret Name | Generation Command | Format | Notes |
+|---|---|---|---|
+| FLASK-SECRET-KEY | openssl rand -base64 48 | Base64 string (64 chars) | Changing invalidates all sessions |
+| AAD-CLIENT-ID | From Entra ID app registration | UUID | See Part 1 above |
+| AAD-CLIENT-SECRET | From Entra ID app registration | String (40+ chars) | Rotate every 24 months |
+| STATS-HASH-SALT | openssl rand -hex 32 | 64 hex characters | Used by StructuredLogger |
+| Stats-API-Key | openssl rand -base64 32 | Base64 string | Stats API authentication |
+| AI-AUDIT-HMAC-KEY | openssl rand -hex 32 | 64 hex characters | HMAC-SHA256 on audit records |
+| GRAPH-CLIENT-ID | From Graph Daemon app registration | UUID | See Part 1 above |
+| GRAPH-CLIENT-SECRET | From Graph Daemon app registration | String (40+ chars) | Rotate every 24 months |
+| GRAPH-TENANT-ID | From Entra ID tenant | UUID | Same as TENANT_ID |
+| REDIS-HOST | From Azure Redis creation | Hostname | {name}.redis.cache.windows.net |
+| REDIS-PASSWORD | From Azure Redis access keys | String | Primary access key |
+| FUNCTION-APP-URL | From Azure Function App creation | HTTPS URL | https://{funcapp}.azurewebsites.net |
+| ExportFunctionKey | From Function App → App keys → default | String | Function-level auth key |
+| FinalizeDisposalFunctionKey | Same as above | String | Function-level auth key |
+| MEDIATOR-GROUP-ID | From Entra ID security group | UUID | Object ID of mediator group |
+| ADMIN-GROUP-ID | From Entra ID security group | UUID | Object ID of admin group |
+| STATS-ADMIN-GROUP-ID | From Entra ID security group | UUID | Object ID of stats group |
+| LOGINGOV-PRIVATE-KEY | openssl genrsa + pkcs8 conversion | PEM private key | See Part 2 |
+
+az keyvault secret set example:
+  az keyvault secret set \
+    --vault-name kv-eeoc-adr-prod \
+    --name FLASK-SECRET-KEY \
+    --value "$(openssl rand -base64 48)"
+
+=== PART 4: DNS and TLS Certificate Setup ===
+
+Create docs/DNS_and_TLS_Setup.md:
+
+1. Obtain TLS certificate:
+   - Request from EEOC's certificate authority (or Let's Encrypt for dev)
+   - Certificate must cover: adr.eeoc.gov (or your production domain)
+   - Export as PFX format with private key:
+     openssl pkcs12 -export \
+       -in cert.pem -inkey key.pem -certfile chain.pem \
+       -out adr-cert.pfx -passout pass:{PFX_PASSWORD}
+
+2. Upload to Key Vault:
+   az keyvault certificate import \
+     --vault-name kv-eeoc-adr-prod \
+     --name adr-tls-cert \
+     --file adr-cert.pfx \
+     --password {PFX_PASSWORD}
+
+3. Create DNS record:
+   After Application Gateway is created:
+   a. Get the Application Gateway's public IP:
+      az network public-ip show \
+        --resource-group rg-eeoc-adr-prod \
+        --name pip-eeoc-adr-appgw \
+        --query ipAddress -o tsv
+   b. Create DNS record with your DNS provider:
+      Type: A record
+      Name: adr (or adr.eeoc.gov)
+      Value: {PUBLIC_IP from above}
+      TTL: 300
+
+4. Certificate renewal:
+   - Set calendar reminder for 30 days before expiry
+   - Generate new PFX, import to Key Vault (same name)
+   - Application Gateway auto-detects new certificate version
+     (if using unversioned secret ID — verify in listener config)
+   - No downtime required for renewal
+
+=== PART 5: Environment Variable Dependency Table ===
+
+Create docs/Environment_Variable_Dependencies.md:
+
+Document every conditional dependency:
+
+| If This Is Set | Then These Are REQUIRED | What Breaks Without Them |
+|---|---|---|
+| LOGINGOV_ENABLED=true | LOGINGOV_CLIENT_ID, LOGINGOV_REDIRECT_URI, LOGINGOV-PRIVATE-KEY (KV) | Login.gov auth fails, external parties cannot log in |
+| ESIGNATURE-ENABLED=true (KV) | ESIGNATURE-PROVIDER, DOCUSIGN-API-KEY or ADOBE-SIGN-API-KEY (KV) | E-signature feature crashes |
+| PG_MIGRATION_MODE != "off" | PG_CONNECTION_STRING | App crashes on any database write |
+| MCP_ENABLED=true | MCP_CALLBACK_URL, MCP_WEBHOOK_SECRET | MCP event dispatch fails silently |
+| UDIP_PUSH_ENABLED=true | UDIP_INGEST_URL, UDIP_API_SCOPE | Analytics push crashes |
+| ARC_SYNC_ENABLED=true | ARC_INTEGRATION_API_URL or ARC_API_BASE_URL | ARC sync logs warning, skips |
+| TEAMS_ENABLED=true (KV) | GRAPH-CLIENT-ID, GRAPH-CLIENT-SECRET (KV) | Calendar/scheduling features fail |
+| TABLE_PARTITION_BY_OFFICE=true | Office structure must be configured | Queries may return empty results |
+
+Also document: which variables have safe defaults (most integration flags
+default to false/disabled), which have NO default and MUST be set
+(KEY_VAULT_URI, AZURE_STORAGE_ACCOUNT_NAME), and validation rules
+(TENANT_ID must be UUID format, GRAPH_RATE_LIMIT_PER_SEC must be 1-100).
+
+=== PART 6: Post-Deployment Health Check Script ===
+
+Create scripts/post_deploy_health_check.sh:
+
+#!/usr/bin/env bash
+# Verify all ADR components are connected and healthy after deployment.
+set -euo pipefail
+
+WEBAPP_URL="${1:?Usage: $0 <webapp-url> [funcapp-url]}"
+FUNCAPP_URL="${2:-}"
+PASS=0
+FAIL=0
+
+check() {
+    local name="$1" url="$2" expected="$3"
+    local status
+    status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$url" 2>/dev/null || echo "000")
+    if [ "$status" = "$expected" ]; then
+        echo "  PASS: $name ($status)"
+        ((PASS++))
+    else
+        echo "  FAIL: $name (got $status, expected $expected)"
+        ((FAIL++))
+    fi
+}
+
+echo "ADR Post-Deployment Health Check"
+echo "================================"
+echo ""
+echo "Web App: $WEBAPP_URL"
+
+# Basic health
+check "Health endpoint" "$WEBAPP_URL/health" "200"
+check "Integration health" "$WEBAPP_URL/healthz/integrations" "200"
+
+# Auth (should redirect to login)
+check "Login page loads" "$WEBAPP_URL/" "302"
+
+# Static assets
+check "CSS loads" "$WEBAPP_URL/static/css/app.css" "200"
+check "Accessibility CSS" "$WEBAPP_URL/static/css/accessibility.css" "200"
+
+# PWA manifest
+check "PWA manifest" "$WEBAPP_URL/manifest.json" "200"
+
+# API endpoints (should return 401 without auth)
+check "Stats API (auth required)" "$WEBAPP_URL/api/stats/health" "200"
+check "MCP endpoint (if enabled)" "$WEBAPP_URL/mcp" "404"
+
+if [ -n "$FUNCAPP_URL" ]; then
+    echo ""
+    echo "Function App: $FUNCAPP_URL"
+    check "Function health" "$FUNCAPP_URL/api/healthz" "200"
+fi
+
+echo ""
+echo "================================"
+echo "Results: $PASS passed, $FAIL failed"
+[ $FAIL -eq 0 ] && echo "ALL CHECKS PASSED" || echo "FAILURES DETECTED"
+exit $FAIL
+
+Also add to the script: a Key Vault connectivity test (curl the
+webapp health endpoint and check if it reports Key Vault as "connected"
+in the JSON response from /healthz/integrations).
+
+=== PART 7: First-Run Setup Guide ===
+
+Create docs/First_Run_Setup_Guide.md:
+
+After deployment, before the first user logs in:
+
+1. Create the first admin user:
+   a. Ensure your @eeoc.gov account is in the EEOC-ADR-Admins
+      security group in Entra ID
+   b. Navigate to https://{ADR_DOMAIN}/
+   c. Log in with your Entra ID credentials
+   d. You should see the admin dashboard (if not, verify group membership)
+
+2. Set up the office structure:
+   a. Navigate to /admin/offices
+   b. Create the root organization:
+      - Name: "EEOC"
+      - Type: organization
+   c. Create sectors:
+      - Name: "Office of Federal Operations" / Type: sector / Parent: EEOC
+      - Name: "Office of Field Programs" / Type: sector / Parent: EEOC
+   d. Create regions/districts under each sector as needed
+   e. Set timezone for each office
+
+3. Add the first mediator:
+   a. Navigate to /admin/staff
+   b. Click "Add Staff Member"
+   c. Enter a mediator's @eeoc.gov email
+   d. Select office, role=mediator, assign supervisor (yourself if needed)
+   e. Click Submit
+   f. Mediator can now log in and will see their empty case dashboard
+
+4. Configure feature flags (optional):
+   The app stores feature flags in the systemsettings Azure Table.
+   Most features default to disabled. To enable:
+   a. Open Azure Storage Explorer or Azure Portal → Storage Account →
+      Tables → systemsettings
+   b. Add entities:
+      PartitionKey: "settings", RowKey: "LOGINGOV_ENABLED", Value: "true"
+      PartitionKey: "settings", RowKey: "MCP_ENABLED", Value: "true"
+      (Add each feature flag you want to enable)
+
+5. Upload settlement template (optional):
+   a. Upload ADR_Settlement_Boilerplate.docx to the settlement-drafts
+      blob container
+   b. This enables AI-assisted settlement agreement generation
+
+6. Verify everything works:
+   a. Run: bash scripts/post_deploy_health_check.sh https://{ADR_DOMAIN}
+   b. Create a test case: navigate to case dashboard, create a new case
+   c. Assign the test case to the mediator you created
+   d. Log in as the mediator → verify they see the case
+   e. Open the case → verify AI chat works (if Azure OpenAI configured)
+   f. Delete the test case when satisfied
+
+=== PART 8: Cross-Reference Updates ===
+
+1. In docs/Azure_Portal_Provisioning_Guide.md:
+   - At the beginning of Section 5.2 (Key Vault secrets), add:
+     "For step-by-step generation of each secret, see
+     docs/Key_Vault_Secret_Generation.md (Part 3 above)."
+   - At the beginning of Section 5.3 (App settings), add:
+     "For conditional dependencies between environment variables, see
+     docs/Environment_Variable_Dependencies.md."
+
+2. In docs/Azure_Portal_Provisioning_Guide.md Section 5.2:
+   - Add: "Before configuring secrets, you must create two Entra ID
+     app registrations. See docs/Entra_ID_App_Registration_Guide.md
+     for complete step-by-step instructions."
+
+3. In docs/Configuration_Management_Plan.md:
+   - Add a "Dependencies" column to the env var table
+   - Add a "Required/Optional" column with clear YES/NO
+
+4. In provision_adr_system.sh:
+   - After the script completes, add a section that prints:
+     "Post-deployment steps:
+      1. Run: bash scripts/post_deploy_health_check.sh {WEBAPP_URL}
+      2. Follow: docs/First_Run_Setup_Guide.md
+      3. Review: docs/Entra_ID_App_Registration_Guide.md (if not done)"
+
+Write a CHANGES.md listing all new files created and existing files
+modified.
+```
+
+---
+
+## Prompt 92: ADR Audit Log Viewer, Per-Case Activity Timeline, and Security Audit Export
+
+**Repository:** `eeoc-ofs-adr/`
+**Owner:** ADR team
+**Phase:** 9 (production readiness)
+
+### Prompt
+
+```
+The admin audit log is currently a read-only feed of the latest 50
+records with no search, no filtering, and no export. There is no way
+to see all actions for a specific case, no way to search by user or
+date range, and no way to export multiple cases for a security audit.
+
+Build three features:
+1. A searchable audit log viewer for system admins
+2. A per-case activity timeline showing every action on a case
+3. A bulk security audit export for compliance reviews
+
+Read adr_webapp/routes/admin.py (audit log display), routes/foia_export.py
+(FOIA export pattern), shared_code/ai_audit_logger.py (AI audit queries),
+and templates/admin_dashboard.html (current audit feed) before writing.
+
+=== PART 1: Searchable Audit Log Viewer ===
+
+Create a dedicated audit log viewer page accessible to system admins.
+
+1. Create route in adr_webapp/routes/admin.py:
+   GET /admin/audit-logs
+   Auth: admin role required
+
+   Query parameters (all optional, combinable):
+   - case_id: filter to a specific case
+   - user: filter by user email or OID hash
+   - action: filter by action type (case_access, status_change,
+     document_upload, ai_generation, foia_export, staff_change, etc.)
+   - date_from: ISO date (start of range)
+   - date_to: ISO date (end of range)
+   - source: which audit table to query (all, ai_audit, api_audit,
+     office_audit) — default: all
+   - page: pagination (50 records per page)
+
+2. Query logic:
+   - Queries across THREE audit tables:
+     a. aigenerationaudit — AI interactions (filter by CaseID)
+     b. apiauditlog — API actions (filter by Details containing case_id)
+     c. officeauditlog — staff/office changes (filter by action type)
+   - Merges results into a unified timeline sorted by timestamp
+   - Each record shows: timestamp, action type, user (hashed), case ID
+     (if applicable), source table, summary of action
+   - Pagination via continuation tokens or offset
+
+3. Create template admin_audit_logs.html:
+   - Search/filter bar at top:
+     - Case ID text input
+     - User email/OID text input
+     - Action type dropdown (populated from distinct PartitionKeys)
+     - Date range picker (from/to)
+     - Source selector (All / AI Audit / API Audit / Office Audit)
+     - Search button + Clear filters button
+   - Results table:
+     - Timestamp | Action | User | Case ID | Source | Details
+     - Details column: expandable row showing full JSON
+     - Sortable by timestamp (default: newest first)
+   - Pagination controls (Previous / Next / Page N of M)
+   - Export button: "Export filtered results as CSV"
+   - Export button: "Export filtered results as JSON"
+   - 508 compliant: all interactive elements keyboard-navigable,
+     table headers with scope, aria-labels on buttons
+
+4. CSV/JSON export from the viewer:
+   - Exports whatever the current filter returns (not just current page)
+   - CSV: one row per audit record, flattened
+   - JSON: array of full audit records
+   - Rate limit: 5 exports per hour per user (same as FOIA)
+
+=== PART 2: Per-Case Activity Timeline ===
+
+Add a comprehensive activity timeline to the case detail view.
+
+5. Create route in adr_webapp/routes/admin.py (or mediator.py):
+   GET /cases/<case_id>/activity
+   Auth: user must have access to the case (RBAC check)
+
+   Queries ALL audit sources for the case and merges into a timeline:
+   a. aigenerationaudit: all AI interactions (CaseID eq case_id)
+   b. apiauditlog: all API actions mentioning this case
+   c. chatlogs: all messages (PartitionKey eq case_id) — count + date range
+   d. Case entity itself: created_at, status changes, assigned mediator,
+      closure date, settlement info
+
+   Returns unified timeline:
+   [
+     { timestamp, event_type, actor, summary, details, source },
+     ...
+   ]
+
+   Event types include:
+   - CASE_CREATED: case opened
+   - CASE_STATUS_CHANGE: status updated (with from/to)
+   - MEDIATOR_ASSIGNED: mediator assigned or changed
+   - DOCUMENT_UPLOADED: document added to case
+   - AI_GENERATION: AI analysis or draft generated (with task type)
+   - AI_CHAT_MESSAGE: message in AI-assisted chat
+   - MEETING_SCHEDULED: calendar event created
+   - SETTLEMENT_DRAFTED: settlement agreement generated
+   - CASE_CLOSED: case closed (with reason)
+   - FOIA_EXPORT: case was included in a FOIA export
+   - HOLD_ISSUED: litigation hold placed
+   - HOLD_RELEASED: litigation hold released
+
+6. Add activity tab to case detail view:
+   In the case detail template, add a "Case Activity" tab (or section)
+   that renders the timeline as:
+   - Vertical timeline (most recent at top)
+   - Each event: icon + timestamp + actor + summary
+   - Expandable details on click
+   - Color-coded by event type (508 compliant — use icons, not just color)
+   - Filter checkboxes: show/hide event types
+   - "Export case activity" button → downloads JSON or CSV of the timeline
+
+=== PART 3: Security Audit Bulk Export ===
+
+Add a bulk export for system admins conducting compliance reviews.
+
+7. Create route in adr_webapp/routes/admin.py:
+   POST /admin/security-audit-export
+   Auth: admin role ONLY (not legal_counsel — this is system-level)
+
+   Input:
+   {
+     "case_ids": ["case-1", "case-2", ...],  // optional, omit for all
+     "date_from": "2025-01-01",              // optional
+     "date_to": "2026-04-13",               // optional
+     "include_ai_audit": true,               // default true
+     "include_api_audit": true,              // default true
+     "include_office_audit": true,           // default true
+     "include_chat_logs": true,              // default true
+     "format": "zip"                         // zip or json
+   }
+
+   Processing:
+   a. If case_ids provided: export only those cases
+   b. If case_ids omitted: export ALL cases in date range (dangerous —
+      warn user, require confirmation checkbox)
+   c. For each case:
+      - Pull AI audit records
+      - Pull API audit records
+      - Pull chat message counts and date ranges
+      - Pull case metadata (status, mediator, office)
+   d. Package into ZIP:
+      security-audit-export-{export_id}/
+        manifest.json (export metadata, requester hash, date range,
+          case count, record count per table, export timestamp)
+        cases/
+          {case_id_1}/
+            ai_audit.json
+            api_audit.json
+            chat_summary.json (count + date range, not full messages)
+            case_metadata.json
+          {case_id_2}/
+            ...
+        global/
+          office_audit.json (all office/staff changes in date range)
+          system_summary.json (total records, date range, case count)
+   e. Compute SHA-256 of ZIP for integrity
+   f. Upload to foia-exports blob container
+   g. Generate 24-hour SAS download URL
+   h. Log to apiauditlog: SECURITY_AUDIT_EXPORT event with
+      export_id, requester_hash, case_count, record_count, zip_hash
+
+   Rate limit: 2 per hour (these are expensive queries)
+
+8. Add UI for security audit export:
+   Add a "Security Audit Export" card to /admin/tools (admin_tools.html):
+   - Date range picker
+   - Case ID list input (textarea, one per line, or "all cases" checkbox)
+   - Checkboxes: include AI audit, API audit, office audit, chat logs
+   - Warning text: "This export may take several minutes for large
+     date ranges. The download link will be available for 24 hours."
+   - Submit button → shows progress indicator → shows download link
+   - Confirmation dialog if "all cases" selected: "This will export
+     audit data for ALL cases. Are you sure?"
+
+9. Audit the export itself:
+   Every security audit export is logged with:
+   - Who requested it (hashed OID)
+   - What was included (case count, table flags, date range)
+   - ZIP hash (SHA-256)
+   - When it was created
+   - This ensures that the export mechanism itself has an audit trail
+
+=== PART 4: Wire Existing Audit Logs into Case Context ===
+
+10. In the existing FOIA export (foia_export.py):
+    - Add the per-case activity timeline to the FOIA export ZIP:
+      Include activity_timeline.json alongside the existing files
+    - This means FOIA responses now include a complete case timeline
+      without additional work
+
+11. In the admin dashboard (admin_dashboard.html):
+    - Replace the static "50 latest audit logs" feed with a link to
+      the new /admin/audit-logs viewer: "View full audit log →"
+    - Keep a compact "5 latest" feed on the dashboard for quick glance
+    - Add a link from each audit record to the case it references
+      (if CaseID is present)
+
+12. In the case detail view:
+    - Add a badge showing audit record count for the case
+    - Clicking the badge opens the audit log viewer pre-filtered to
+      that case: /admin/audit-logs?case_id={case_id}
+
+Write a CHANGES.md listing all new files and modifications.
+```
+
+---
+
+## Prompt 93: Python 3.13 Upgrade (All Repos)
+
+**Repositories:** All 7 EEOC repos (run per repo, all in parallel)
+**Owner:** All teams
+**Phase:** 9 (production readiness)
+
+### Prompt
+
+```
+Upgrade this repository from Python 3.12 to Python 3.13. Python 3.13
+extends EOL from October 2028 to October 2029. No application code
+changes are needed — our codebase has zero deprecated 3.13 patterns.
+
+The only dependency blocker is psycopg2-binary, which needs a version
+bump for 3.13 wheel availability. All other dependencies already have
+3.13 wheels on PyPI.
+
+Implement ALL of the following.
+
+=== PART 1: Dependency Version Bump ===
+
+1. If this repo has psycopg2-binary in ANY requirements file:
+   Change: psycopg2-binary==2.9.11 → psycopg2-binary==2.10.1
+   
+   Files to check:
+   - requirements.txt (root level)
+   - */requirements.txt (subdirectories like adr_webapp/, triage_webapp/,
+     case-processor-function/, learning-processor-function/,
+     trial_tool_webapp/, trial_tool_functionapp/, data-middleware/,
+     ai-assistant/, staff_portal/)
+   
+   psycopg2-binary 2.10.1 is API-compatible with 2.9.x — same
+   connection interface, same cursor behavior, same parameterized
+   query syntax. No code changes required.
+   
+   If psycopg2-binary is not in this repo's requirements, skip this step.
+
+2. Verify all other pinned dependencies have 3.13 wheels:
+   Run: pip install --dry-run --python-version 3.13 -r requirements.txt
+   (or equivalent check)
+   
+   If any dependency fails to resolve for 3.13, check PyPI for the
+   latest version that supports 3.13 and bump to that version.
+   
+   Known-good versions for Python 3.13:
+   - Flask>=3.0.0 (3.1.x preferred)
+   - gunicorn>=22.0.0
+   - gevent>=24.11.1 (has 3.13 wheels)
+   - cryptography>=42.0.0 (46.x preferred)
+   - lxml>=5.2.0 (5.4.x preferred)
+   - SQLAlchemy>=2.0.30
+   - openai>=1.14.0
+   - PyJWT>=2.8.0
+   - All azure-* SDKs (current versions support 3.13)
+   - redis>=5.0.0
+   - structlog>=24.0.0
+   - Pillow>=10.4.0
+   - pypdf>=4.0.0
+   - pdfplumber>=0.11.0
+   - hypothesis>=6.100.0
+
+=== PART 2: Dockerfile Update ===
+
+3. Find every Dockerfile in the repo. For each one:
+   Change: FROM python:3.12-slim-bookworm
+   To:     FROM python:3.13-slim-bookworm
+
+   If the Dockerfile uses a different base image pattern (e.g.,
+   python:3.12-bookworm without slim), match the same pattern:
+   FROM python:3.13-bookworm
+
+   If the Dockerfile uses a multi-stage build, update ALL stages
+   that reference python:3.12.
+
+   Do NOT change any other Dockerfile instructions (apt-get packages,
+   COPY commands, CMD, etc.).
+
+=== PART 3: CI/CD Workflow Update ===
+
+4. Find every GitHub Actions workflow file in .github/workflows/.
+   For each one that specifies python-version:
+
+   Change: python-version: "3.12"
+   To:     python-version: "3.13"
+
+   If the workflow uses a matrix strategy with multiple Python versions,
+   replace 3.12 with 3.13 (do not add 3.13 alongside 3.12 — we are
+   migrating, not supporting both).
+
+   Common files to check:
+   - .github/workflows/build-and-test.yml
+   - .github/workflows/security-audit-evidence.yml
+   - .github/workflows/portal-build-and-test.yml (if exists)
+
+=== PART 4: Configuration Files ===
+
+5. If pyproject.toml exists with a python_requires or requires-python:
+   Change: requires-python = ">=3.12"
+   To:     requires-python = ">=3.13"
+
+6. If setup.cfg or setup.py exists with python_requires:
+   Same change.
+
+7. If .python-version file exists:
+   Change contents to: 3.13
+
+8. Search the ENTIRE repo for any reference to Python 3.12 and update:
+
+   Run: grep -rn "3\.12" --include="*.md" --include="*.sh" --include="*.yaml" --include="*.yml" --include="*.toml" --include="*.cfg" --include="*.txt" --include="*.json" .
+
+   Specific files known to reference Python 3.12:
+
+   a. docs/SUPPLY_CHAIN_RISK.md:
+      - Update "Azure App Service (Python 3.12 runtime)" → 3.13
+      - Update "Python 3.12 runtime" references → 3.13
+
+   b. Provisioning scripts (provision_adr_system.sh or equivalent):
+      - Update --runtime "PYTHON:3.12" → --runtime "PYTHON:3.13"
+      - Update --runtime-version 3.12 → --runtime-version 3.13
+      - Update any log messages mentioning "Python 3.12" → "Python 3.13"
+
+   c. scripts/generate-sbom.sh (if exists):
+      - Update "runtime": "Python 3.12" → "Python 3.13" in SBOM metadata
+      - Update any comments referencing Python 3.12
+
+   d. shared_code/pyproject.toml or any pyproject.toml:
+      - Update requires-python = ">=3.12" → ">=3.13"
+
+   e. Azure deployment guides in docs/:
+      - docs/Azure_Portal_Provisioning_Guide.md
+      - docs/Azure_Portal_Development_Provisioning_Guide.md
+      - docs/Azure_Portal_Development_to_Production_Provisioning_Guide.md
+      - docs/Azure_Portal_ZIP_Deployment_Guide.md
+      - Any reference to "Runtime: Python 3.12" → "Runtime: Python 3.13"
+
+   f. requirements.txt comment headers mentioning Python 3.12
+
+   g. CLAUDE.md (workspace level — if it mentions Python 3.12)
+
+   Do NOT update:
+   - debug/ directory (historical logs, leave as-is)
+   - Implementation_Prompts.md (historical prompts, leave as-is)
+   - archive/ directory (superseded docs, leave as-is)
+   - Section numbers like "3.12" in documentation (e.g., "Section 3.12
+     FOIA Export Route" — this is a section number, not a Python version)
+
+   For each file modified, verify the change makes sense in context.
+   "3.12" in a section heading or a date is NOT a Python version reference.
+
+=== PART 5: Runtime Version File and Azure Provisioning ===
+
+9. For Azure App Service deployments: if a runtime.txt file exists:
+   Change: python-3.12
+   To:     python-3.13
+
+   Azure App Service supports Python 3.13 as of early 2025.
+
+10. For the workspace-level provisioning script
+    (provision_eeoc_ai_platform.sh in the workspace root, if accessible):
+    - Update --runtime-version 3.12 → --runtime-version 3.13
+    - Update any log messages: "Python 3.12" → "Python 3.13"
+    - This script provisions Azure Function Apps with the Python runtime
+      and the version must match what the containers/app service runs
+
+=== PART 6: Verify ===
+
+11. Run the full test suite:
+    python -m pytest tests/ -v --tb=short
+    (adjust path based on repo structure)
+
+    If tests fail due to the Python version change:
+    - Check if the failure is a genuine incompatibility (fix it)
+    - Check if the failure is a test environment issue (install missing deps)
+    - Do NOT skip failing tests
+
+12. Verify Python version in any health check or version endpoint:
+    If the app reports its Python version (e.g., in /healthz or logs),
+    confirm it now shows 3.13.
+
+=== SUMMARY OF CHANGES PER REPO ===
+
+| Repo | psycopg2 bump? | Dockerfile? | CI? | Other? |
+|------|---------------|-------------|-----|--------|
+| eeoc-ofs-adr | YES (multiple req files) | YES | YES | staff_portal Dockerfile too |
+| eeoc-ofs-triage | YES | Check | YES | |
+| eeoc-data-analytics-and-dashboard | YES (data-middleware) | YES | YES | |
+| eeoc-arc-integration-api | NO (no psycopg2) | YES | YES | |
+| eeoc-mcp-hub-functions | NO | YES | YES | |
+| eeoc-ogc-trialtool | NO | Check | YES | |
+| eeoc-ofs-adr-clean | SKIP (sync copy) | | | |
+
+Do NOT modify application code, route logic, templates, or business
+logic. This prompt changes ONLY: dependency versions, base images,
+and CI configuration.
+
+Write a CHANGES.md listing every file modified and the specific
+version changes made.
 ```
