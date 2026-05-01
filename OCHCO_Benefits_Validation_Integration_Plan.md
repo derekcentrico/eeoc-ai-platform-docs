@@ -287,7 +287,7 @@ source, the analytics dashboard is the consumer.
 
 | Resource | Purpose |
 |---|---|
-| Azure App Service (Linux, Python 3.11) | Flask web application |
+| Azure App Service (Linux, Python 3.13) | Flask web application |
 | Azure Table Storage | Overpayment cases, validation rule results, audit logs |
 | Azure Blob Storage | Uploaded SF-52 files (encrypted at rest, 7-year retention) |
 | Azure Key Vault | NFC connection credentials, HMAC signing key, encryption keys |
