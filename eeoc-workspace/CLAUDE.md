@@ -18,6 +18,7 @@ FedRAMP High · Azure Commercial · NIST 800-53 Rev5 · WCAG 2.1 AA · NARA 7-ye
 | `eeoc-ogc-trialtool` | OGC Trial Tool — attorney trial preparation | Yes |
 | `eeoc-data-analytics-and-dashboard` | Cross-platform leadership analytics | Yes |
 | `eeoc-ochco-benefits-validation` | OCHCO benefits coding validation and overpayment detection | Yes |
+| `eeoc-ai-platform-docs` | Consolidated platform documentation (architecture, deployment, compliance) | Yes |
 
 When a new repo is added: create its `.claude/CLAUDE.md` (~30 lines: purpose, test commands, gotchas), add one row to this table, done.
 
@@ -43,12 +44,28 @@ eeoc-workspace/
 ├── eeoc-ofs-triage/                      # Triage — charge intake and routing
 ├── eeoc-ochco-benefits-validation/        # OCHCO benefits coding validation
 ├── eeoc-ogc-trialtool/                   # OGC Trial Tool — attorney trial prep
-└── eeoc-data-analytics-and-dashboard/    # Cross-platform analytics
+├── eeoc-data-analytics-and-dashboard/    # Cross-platform analytics
+└── eeoc-ai-platform-docs/               # Consolidated platform documentation
 ```
 
 Each repo should have its own `.claude/CLAUDE.md` with repo-specific instructions.
 Paths in skills and agents (e.g., `eeoc-ofs-adr/docs/`) are relative to this workspace root.
 Directories ending in `-clean` (e.g., `eeoc-ofs-adr-clean/`) are sanitized export copies — ignore them entirely.
+
+### Documentation Repo Sync
+
+`eeoc-ai-platform-docs/` holds platform-wide documentation that spans multiple
+applications. When any of the following changes are made, sync the affected files
+to the docs repo before or alongside the PR:
+
+- New or updated platform architecture docs (cross-cutting, not app-specific)
+- Changes to workspace CLAUDE.md, skills, or agents
+- New application onboarded to the platform
+- Changes to unified access control, auth patterns, or deployment guides
+- New architecture decision documents (email_*.md at workspace root)
+
+Per-application docs stay in each repo's `docs/` directory. Only platform-level
+docs that reference multiple applications belong in the docs repo.
 
 ---
 
