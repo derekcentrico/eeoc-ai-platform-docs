@@ -24,14 +24,24 @@ Bootstrap ships color utilities that fail WCAG 1.4.3 (4.5:1 text) and
 
 ### Text Utilities (4.5:1 minimum on white `#fff` / body `#f8f9fa`)
 
-| Utility | Bootstrap Default | Ratio | EEOC Override | Ratio | CSS Rule |
+Ratios below use the WCAG 2.x piecewise sRGB-to-linear formula
+(IEC 61966-2-1), verified 2026-04-15. Earlier revisions of this table used
+a gamma-2.2 approximation that inflated values; do not revert to those.
+
+| Utility | Bootstrap Default | Ratio | EEOC Override | Ratio (white / #f8f9fa) | CSS Rule |
 |---|---|---|---|---|---|
-| `.text-primary` | `#0d6efd` | ~4.5:1 / ~4.3:1 | `#0a58ca` | ~7.0:1 / ~6.7:1 | `.text-primary { color: #0a58ca !important; }` |
-| `.text-info` | `#0dcaf0` | ~2.9:1 | `#087990` | ~7.1:1 / ~6.8:1 | `.text-info { color: #087990 !important; }` |
-| `.text-warning` | `#ffc107` | ~1.9:1 | `#997404` | ~5.7:1 / ~5.4:1 | `.text-warning { color: #997404 !important; }` |
-| `.text-danger` | `#dc3545` | ~4.3:1 | `#b02a37` | ~6.5:1 / ~6.2:1 | `.text-danger { color: #b02a37 !important; }` |
-| `.text-success` | `#198754` | ~4.4:1 / ~4.2:1 | `#146c43` | ~6.5:1 / ~6.2:1 | `.text-success { color: #146c43 !important; }` |
-| `.text-muted` | `#6c757d` | ~4.45:1 | `#5a6472` | ~6.0:1 / ~5.7:1 | `.text-muted { color: #5a6472 !important; }` |
+| `.text-primary` | `#0d6efd` | ~4.5:1 | `#0a58ca` | 6.44:1 / 6.11:1 | `.text-primary { color: #0a58ca !important; }` |
+| `.text-info` | `#0dcaf0` | ~1.9:1 | `#087990` | 5.06:1 / 4.80:1 | `.text-info { color: #087990 !important; }` |
+| `.text-warning` | `#ffc107` | ~1.6:1 | `#7f6500` | 5.58:1 / 5.29:1 | `.text-warning { color: #7f6500 !important; }` |
+| `.text-danger` | `#dc3545` | ~4.0:1 | `#b02a37` | 6.50:1 / 6.16:1 | `.text-danger { color: #b02a37 !important; }` |
+| `.text-success` | `#198754` | ~4.0:1 | `#146c43` | 6.45:1 / 6.12:1 | `.text-success { color: #146c43 !important; }` |
+| `.text-muted` | `#6c757d` | ~4.45:1 | `#5a6472` | 6.00:1 / 5.69:1 | `.text-muted { color: #5a6472 !important; }` |
+
+**History:** The previous `.text-warning` override `#997404` was published in
+this table as "~5.7:1 / ~5.4:1". Correct WCAG 2.x math gives 4.33:1 / 4.10:1 —
+fails AA. All EEOC repos using `#997404` for `.text-warning` are being
+corrected to `#7f6500`. When reading past POA&M entries that cite `#997404`
+with a passing ratio, treat the ratio as the error — the color itself fails.
 
 ### Button Variants — CSS Custom Property Overrides Required
 
@@ -71,12 +81,12 @@ direct property overrides.** Template for each variant:
 
 | Variant | OVERRIDE color | Hover text |
 |---|---|---|
-| `.btn-outline-primary` | `#0a58ca` (~7.0:1) | `#fff` |
-| `.btn-outline-info` | `#087990` (~7.1:1) | `#fff` |
-| `.btn-outline-warning` | `#997404` (~5.7:1) | `#fff` |
-| `.btn-outline-danger` | `#b02a37` (~6.5:1) | `#fff` |
-| `.btn-outline-success` | `#146c43` (~6.5:1) | `#fff` |
-| `.btn-outline-secondary` | `#5a6472` (~6.0:1) | `#fff` |
+| `.btn-outline-primary` | `#0a58ca` (6.44:1) | `#fff` |
+| `.btn-outline-info` | `#087990` (5.06:1) | `#fff` |
+| `.btn-outline-warning` | `#7f6500` (5.58:1) | `#fff` |
+| `.btn-outline-danger` | `#b02a37` (6.50:1) | `#fff` |
+| `.btn-outline-success` | `#146c43` (6.45:1) | `#fff` |
+| `.btn-outline-secondary` | `#5a6472` (6.00:1) | `#fff` |
 | `.btn-info` | N/A (light bg) | `#000` |
 | `.btn-warning` | N/A (light bg) | `#000` |
 | `.btn-danger` | bg `#b02a37` | `#fff` |
@@ -436,7 +446,8 @@ grep -rin '<img ' templates/ | grep -vi 'alt='
 grep -rinE '<input|<select|<textarea' templates/ | grep -viE 'aria-label|<label|aria-labelledby'
 
 # Unsafe use of | safe filter on potentially user-controlled data
-grep -rn '| safe' templates/
+# Pattern matches both "| safe" and "|safe" (Jinja2 filter, optional whitespace)
+grep -rnE '\|\s*safe\b' templates/
 
 # Missing lang attribute
 grep -rn '<html' templates/ | grep -v 'lang='

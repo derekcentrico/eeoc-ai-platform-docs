@@ -1,7 +1,7 @@
 # EEOC AI Platform
 **Author:** Derek Gordon
 
-Python 3.11 · Flask · Azure Functions · Azure Table Storage · Azure Blob · Redis · Azure OpenAI  
+Python 3.13 · Flask · Azure Functions · Azure Table Storage · Azure Blob · Redis · Azure OpenAI  
 FedRAMP High · Azure Commercial · NIST 800-53 Rev5 · WCAG 2.1 AA · NARA 7-year AI retention
 
 ---
@@ -17,6 +17,7 @@ FedRAMP High · Azure Commercial · NIST 800-53 Rev5 · WCAG 2.1 AA · NARA 7-ye
 | `eeoc-ofs-triage` | Triage — charge intake and program routing | Yes |
 | `eeoc-ogc-trialtool` | OGC Trial Tool — attorney trial preparation | Yes |
 | `eeoc-data-analytics-and-dashboard` | Cross-platform leadership analytics | Yes |
+| `eeoc-ochco-benefits-validation` | OCHCO benefits coding validation and overpayment detection | Yes |
 
 When a new repo is added: create its `.claude/CLAUDE.md` (~30 lines: purpose, test commands, gotchas), add one row to this table, done.
 
@@ -40,6 +41,7 @@ eeoc-workspace/
 ├── eeoc-mcp-hub-functions/               # MCP aggregator (APIM + Functions)
 ├── eeoc-ofs-adr/                         # ADR Portal — mediation case management
 ├── eeoc-ofs-triage/                      # Triage — charge intake and routing
+├── eeoc-ochco-benefits-validation/        # OCHCO benefits coding validation
 ├── eeoc-ogc-trialtool/                   # OGC Trial Tool — attorney trial prep
 └── eeoc-data-analytics-and-dashboard/    # Cross-platform analytics
 ```
@@ -100,6 +102,7 @@ Read the relevant skill before starting work in that domain.
 | Any new document | `.claude/skills/doc-style/SKILL.md` |
 | Any ARC integration code | `.claude/skills/arc/SKILL.md` |
 | Any comment, docstring, markdown, or prose review | `.claude/skills/human-tone/SKILL.md` |
+| Pre-commit security hardening (all PRs) | `.claude/skills/pre-pentest/SKILL.md` |
 
 ---
 
@@ -137,12 +140,17 @@ After completing any code change and before creating a PR, delegate to the
 `post-impl-verifier` agent. Do not skip any pass. Do not ask whether to run
 them. Run them automatically.
 
-The verifier runs five passes on the changeset:
+The verifier runs six passes on the changeset:
 1. **Docs accuracy** (2 loops) — verify `docs/` references match changed code
 2. **AI-language tone** (2 loops) — eliminate AI-generated prose patterns
 3. **Security** — OWASP Top 10, secrets scan, injection review
 4. **Functionality** (4 loops) — parse, trace, callers, tests
 5. **SCA/SAST/DAST compliance** — license, lint, CSP, eval/exec
+6. **Pre-pen-test hardening** — static analysis against the 10 pen-test
+   categories in `.claude/skills/pre-pentest/SKILL.md`. Scoped to the
+   changeset's affected files and the routes/endpoints they touch. Any
+   CRITICAL or HIGH finding blocks the PR. MEDIUM findings are noted
+   but do not block. Output appended to the verifier report.
 
 If any pass fails and cannot be auto-fixed, stop and report. Do not create a
 PR with outstanding failures.
@@ -168,3 +176,7 @@ No conclusion sections in markdown. No pedagogical framing.
 4. Never skip AI audit logging on any AI generation
 5. Never disable or bypass 508 accessibility requirements
 6. Never skip post-implementation verification before PR creation
+7. Never skip reading the 508 skill before writing any template or HTML
+8. Never pass a verification check by noting "tool not installed" — install it or fail the check
+9. Never commit templates without running the 508 audit grep commands from the skill file
+10. Never create a PR with CRITICAL or HIGH pre-pen-test findings unresolved
