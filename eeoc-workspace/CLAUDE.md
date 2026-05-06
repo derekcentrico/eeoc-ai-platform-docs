@@ -18,6 +18,7 @@ FedRAMP High · Azure Commercial · NIST 800-53 Rev5 · WCAG 2.1 AA · NARA 7-ye
 | `eeoc-ogc-trialtool` | OGC Trial Tool — attorney trial preparation | Yes |
 | `eeoc-data-analytics-and-dashboard` | Cross-platform leadership analytics | Yes |
 | `eeoc-ochco-benefits-validation` | OCHCO benefits coding validation and overpayment detection | Yes |
+| `eeoc-ai-platform-docs` | Consolidated platform documentation (architecture, deployment, compliance) | Yes |
 
 When a new repo is added: create its `.claude/CLAUDE.md` (~30 lines: purpose, test commands, gotchas), add one row to this table, done.
 
@@ -43,12 +44,28 @@ eeoc-workspace/
 ├── eeoc-ofs-triage/                      # Triage — charge intake and routing
 ├── eeoc-ochco-benefits-validation/        # OCHCO benefits coding validation
 ├── eeoc-ogc-trialtool/                   # OGC Trial Tool — attorney trial prep
-└── eeoc-data-analytics-and-dashboard/    # Cross-platform analytics
+├── eeoc-data-analytics-and-dashboard/    # Cross-platform analytics
+└── eeoc-ai-platform-docs/               # Consolidated platform documentation
 ```
 
 Each repo should have its own `.claude/CLAUDE.md` with repo-specific instructions.
 Paths in skills and agents (e.g., `eeoc-ofs-adr/docs/`) are relative to this workspace root.
 Directories ending in `-clean` (e.g., `eeoc-ofs-adr-clean/`) are sanitized export copies — ignore them entirely.
+
+### Documentation Repo Sync
+
+`eeoc-ai-platform-docs/` holds platform-wide documentation that spans multiple
+applications. When any of the following changes are made, sync the affected files
+to the docs repo before or alongside the PR:
+
+- New or updated platform architecture docs (cross-cutting, not app-specific)
+- Changes to workspace CLAUDE.md, skills, or agents
+- New application onboarded to the platform
+- Changes to unified access control, auth patterns, or deployment guides
+- New architecture decision documents (email_*.md at workspace root)
+
+Per-application docs stay in each repo's `docs/` directory. Only platform-level
+docs that reference multiple applications belong in the docs repo.
 
 ---
 
@@ -87,6 +104,85 @@ cyclonedx-py requirements requirements.txt -o sbom.json --format json
 pip-licenses --order=license --fail-on="GNU General Public License"
 trivy image --exit-code 1 --severity CRITICAL,HIGH --ignore-unfixed "$IMAGE"
 ```
+
+---
+
+## Local CI (no GitHub Actions required)
+
+GitHub Actions billing may be off — every gate that CI runs is also runnable
+locally. Always run the local sweep before pushing or opening a PR; do not wait
+for CI to surface findings that the local stack would catch.
+
+### One-shot local evidence sweep (per repo)
+
+```bash
+# Full sweep — every gate the CI pipeline runs, in one command
+bash scripts/local-ci.sh
+
+# Skip slow gates (ScanCode, Trivy image build) when iterating
+bash scripts/local-ci.sh --fast
+
+# Config/scan only, no pytest
+bash scripts/local-ci.sh --skip-tests
+```
+
+`local-ci.sh` exists in eeoc-ofs-adr; copy and adapt the per-repo source paths
+when adding it to other repos. The script summarizes PASS / SKIP / FAIL across
+all gates and exits non-zero on the first hard failure.
+
+### Individual gates (when triaging a single failure)
+
+| Gate | Command | Notes |
+|---|---|---|
+| Lint | `ruff check <src-dirs>` | Auto-fix safe issues with `--fix` |
+| Format | `ruff format --check <src-dirs>` | Apply with `ruff format` (no `--check`) |
+| Types | `mypy <src-dirs> --ignore-missing-imports` | Informational, non-gating |
+| Tests | `python -m pytest tests/ -v` | Includes Hypothesis fuzz |
+| SAST: Bandit | `bandit -r <src-dirs> --severity-level medium` | |
+| SAST: Semgrep + PII rules | `semgrep scan --config .semgrep/ --severity ERROR --error <src-dirs>` | Gating |
+| SCA: pip-audit | `pip-audit -r <component>/requirements.txt` | Per component |
+| SCA: OSV-Scanner | `osv-scanner --recursive .` | Soft fail in local-ci.sh |
+| SCA: Grype | `grype dir:. --fail-on high` | |
+| License | `bash scripts/license-scan.sh` | Copyleft gate |
+| License (deep) | `scancode --license --copyright --json-pp results.json .` | Slow |
+| Secrets | `gitleaks detect --source . --redact` | Full git history |
+| SBOM | `bash scripts/generate-sbom.sh` | CycloneDX + Syft |
+| IaC | `checkov -d deploy/ --soft-fail` | Per IaC dir |
+| Container (fs) | `trivy fs --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 .` | Gates on findings |
+| Container (image) | `trivy image --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 <image>` | Build first; gates on findings |
+| DAST | `bash scripts/dast-baseline.sh` | Needs Docker + staging URL |
+
+### Required local tools
+
+All installed at `~/.local/bin/` on the platform host.
+
+```bash
+# Python (pip --break-system-packages)
+ruff mypy pytest hypothesis bandit semgrep pip-audit pip-licenses
+cyclonedx-bom scancode-toolkit pre-commit
+# Checkov in its own venv at ~/.local/checkov-venv (cyclonedx-python-lib conflict)
+
+# Binaries
+gitleaks syft grype trivy osv-scanner
+# cosign — only needed in CI (keyless OIDC requires GitHub Actions runner)
+```
+
+### Pre-commit hook (per repo, one-time setup)
+
+```bash
+cd <repo> && pre-commit install
+```
+
+Runs gitleaks + ruff on every `git commit`. Some repos also wire `lint-508`
+and `post-impl-verify` (conditional on workspace `.claude/hooks/` existing).
+
+### Verification step requirement
+
+Every code change must pass the local sweep before commit. The four-loop
+functionality audit and the security audit in the user-global CLAUDE.md are
+both satisfied by `bash scripts/local-ci.sh` returning exit 0. PII rule
+findings (Semgrep ERROR severity) are gating — fix them in the same branch
+or refactor to format-args style; do not weaken the rule.
 
 ---
 
