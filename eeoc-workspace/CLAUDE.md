@@ -139,7 +139,7 @@ all gates and exits non-zero on the first hard failure.
 | Types | `mypy <src-dirs> --ignore-missing-imports` | Informational, non-gating |
 | Tests | `python -m pytest tests/ -v` | Includes Hypothesis fuzz |
 | SAST: Bandit | `bandit -r <src-dirs> --severity-level medium` | |
-| SAST: Semgrep + PII rules | `semgrep --config .semgrep/ --severity ERROR --error <src-dirs>` | Gating |
+| SAST: Semgrep + PII rules | `semgrep scan --config .semgrep/ --severity ERROR --error <src-dirs>` | Gating |
 | SCA: pip-audit | `pip-audit -r <component>/requirements.txt` | Per component |
 | SCA: OSV-Scanner | `osv-scanner --recursive .` | Soft fail in local-ci.sh |
 | SCA: Grype | `grype dir:. --fail-on high` | |
@@ -148,8 +148,8 @@ all gates and exits non-zero on the first hard failure.
 | Secrets | `gitleaks detect --source . --redact` | Full git history |
 | SBOM | `bash scripts/generate-sbom.sh` | CycloneDX + Syft |
 | IaC | `checkov -d deploy/ --soft-fail` | Per IaC dir |
-| Container (fs) | `trivy fs --severity CRITICAL,HIGH --ignore-unfixed .` | |
-| Container (image) | `trivy image --severity CRITICAL,HIGH --ignore-unfixed <image>` | Build first |
+| Container (fs) | `trivy fs --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 .` | Gates on findings |
+| Container (image) | `trivy image --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 <image>` | Build first; gates on findings |
 | DAST | `bash scripts/dast-baseline.sh` | Needs Docker + staging URL |
 
 ### Required local tools
