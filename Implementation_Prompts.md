@@ -7149,13 +7149,13 @@ in eeoc-arc-payloads/FederalHearings-ims-aks/:
 
 Shared reference/lookup tables (populated — data loaded from Shakil Aryal's
 ARC export, May 2026; DDL at data-middleware/sql/seed_replica_reference_tables.sql):
-  hearing_shared_code     — 1,360 rows (view alias to shared_code)
-  hearing_shared_doc_type — 262 rows
-  hearing_shared_office_info — 63 rows
-  hearing_event_code      — 116 rows
-  fed_shared_basis        — 117 rows (view alias to shared_basis)
-  fed_shared_issue        — 89 rows (view alias to shared_issue)
-  fed_shared_statute      — 9 rows (view alias to shared_statute)
+  hearing_shared_code     — 1,360 rows (domain, code, description) (view alias to shared_code)
+  hearing_shared_doc_type — 262 rows (document_code, description, permission flags)
+  hearing_shared_office_info — 63 rows (office_code, city, state, district_office_code)
+  hearing_event_code      — 116 rows (event_code, event_group, event_description)
+  fed_shared_basis        — 117 rows (basis_code, short_name) (view alias to shared_basis)
+  fed_shared_issue        — 89 rows (issue_code, short_name) (view alias to shared_issue)
+  fed_shared_statute      — 9 rows (statute_code, short_name) (view alias to shared_statute)
 
 FILE 2: analytics-db/postgres/005-replica-public-extensions.sql
 
