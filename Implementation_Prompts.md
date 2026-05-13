@@ -4992,8 +4992,9 @@ BUILD THE FOLLOWING:
               pii_tier: 1
             # ... hundreds of entries covering all known EEOC columns
           ```
-          Pre-populate this registry from the PrEPA JPA entity analysis
-          we already have (see data-middleware/source_mappings/NEEDS_DATA.md).
+          Pre-populate this registry from the ARC IMS schema reference
+          (data-middleware/arc_ims_schema/ — 333 table YAMLs from Shakil Aryal)
+          and the loaded reference tables (data-middleware/source_mappings/lookups/arc_reference/).
           Every column from every PrEPA entity should have an entry.
 
       ii. PATTERN-BASED INFERENCE: For columns NOT in the registry,
@@ -7146,14 +7147,15 @@ in eeoc-arc-payloads/FederalHearings-ims-aks/:
   hearing_case_transfer  — from_office, to_office, transfer_date,
                            reason_code, case_id
 
-Also create shared reference/lookup tables in fed_hearings schema:
-  hearing_shared_code     — domain, code, description, active_flag
-  hearing_shared_doc_type — doc_type_code, description
-  hearing_shared_office_info — office_code, office_name, region
-  hearing_event_code      — event_code, category, description
-  fed_shared_basis        — basis_code, basis_description
-  fed_shared_issue        — issue_code, issue_description
-  fed_shared_statute      — statute_code, statute_name, citation
+Shared reference/lookup tables (populated — data loaded from Shakil Aryal's
+ARC export, May 2026; DDL at data-middleware/sql/seed_replica_reference_tables.sql):
+  hearing_shared_code     — 1,360 rows (domain, code, description) (view alias to shared_code)
+  hearing_shared_doc_type — 262 rows (document_code, description, permission flags)
+  hearing_shared_office_info — 63 rows (office_code, city, state, district_office_code)
+  hearing_event_code      — 116 rows (event_code, event_group, event_description)
+  fed_shared_basis        — 117 rows (basis_code, short_name) (view alias to shared_basis)
+  fed_shared_issue        — 89 rows (issue_code, short_name) (view alias to shared_issue)
+  fed_shared_statute      — 9 rows (statute_code, short_name) (view alias to shared_statute)
 
 FILE 2: analytics-db/postgres/005-replica-public-extensions.sql
 
