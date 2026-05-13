@@ -1,50 +1,50 @@
-# EEOC UDIP — Authentication and Authorization
+# EEOC UDAP — Authentication and Authorization
 
 **Author:** Derek Gordon
 
 ## Authentication Flow
 
-UDIP uses a **consolidated gateway authentication** pattern. A single OIDC login occurs at the portal-nginx level via the AI Assistant's Entra ID integration. All downstream services (Superset, JupyterHub) receive pre-authenticated identity through `X-UDIP-*` HTTP headers — they do not perform their own OAuth flows.
+UDAP uses a **consolidated gateway authentication** pattern. A single OIDC login occurs at the portal-nginx level via the AI Assistant's Entra ID integration. All downstream services (Superset, JupyterHub) receive pre-authenticated identity through `X-UDAP-*` HTTP headers — they do not perform their own OAuth flows.
 
 **Code Reference:** `ai-assistant/app/auth.py`, `deploy/k8s/portal-nginx/nginx.conf`
 
 ### Gateway Authentication Pattern
 
-Portal-nginx uses the `auth_request` directive to call the AI Assistant's `/auth/verify` endpoint on every inbound request. If the user has a valid session, `/auth/verify` returns HTTP 200 and sets response headers (`X-UDIP-User`, `X-UDIP-Role`, `X-UDIP-Regions`, `X-UDIP-Office`, `X-UDIP-PII-Tier`, `X-UDIP-Permitted-Schemas`). Nginx forwards these headers to the upstream service. If the user is not authenticated, `/auth/verify` returns HTTP 401 and nginx redirects to `/auth/login`.
+Portal-nginx uses the `auth_request` directive to call the AI Assistant's `/auth/verify` endpoint on every inbound request. If the user has a valid session, `/auth/verify` returns HTTP 200 and sets response headers (`X-UDAP-User`, `X-UDAP-Role`, `X-UDAP-Regions`, `X-UDAP-Office`, `X-UDAP-PII-Tier`, `X-UDAP-Permitted-Schemas`). Nginx forwards these headers to the upstream service. If the user is not authenticated, `/auth/verify` returns HTTP 401 and nginx redirects to `/auth/login`.
 
 Only **one Entra ID app registration** is required (the AI Assistant's `AZURE_CLIENT_ID`). Superset and JupyterHub no longer need their own client IDs or secrets.
 
-**Security:** Nginx strips any client-supplied `X-UDIP-*` headers before invoking `auth_request`. The headers are only set from the `/auth/verify` response, preventing spoofing.
+**Security:** Nginx strips any client-supplied `X-UDAP-*` headers before invoking `auth_request`. The headers are only set from the `/auth/verify` response, preventing spoofing.
 
 ### Step-by-Step Flow
 
-1. **User visits UDIP** → portal-nginx invokes `auth_request` to `/auth/verify`
+1. **User visits UDAP** → portal-nginx invokes `auth_request` to `/auth/verify`
 2. `/auth/verify` checks for a valid Flask session in Redis
 3. If no valid session → nginx redirects to `/auth/login`
 4. `/auth/login` builds MSAL `ConfidentialClientApplication` with tenant ID, client ID, and client secret from Key Vault (`auth.py` — MSAL `ConfidentialClientApplication` setup)
 5. MSAL generates authorization URL with `openid`, `profile`, `email`, `offline_access` scopes and a random `state` parameter for CSRF protection (`auth.py` — authorization URL generation)
 6. **User authenticates** at `login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize`
 7. **Entra ID callback** → `/auth/callback` with authorization code
-8. UDIP validates `state` parameter to prevent CSRF (`auth.py` — `state` parameter CSRF validation)
+8. UDAP validates `state` parameter to prevent CSRF (`auth.py` — `state` parameter CSRF validation)
 9. Exchanges authorization code for tokens via `acquire_token_by_authorization_code` (`auth.py` — `acquire_token_by_authorization_code`)
 10. Extracts user claims from ID token: `preferred_username`, `name`, `email`, `groups` (`auth.py` — ID token claim extraction)
 11. Resolves user attributes from group memberships:
     - Role via `_resolve_role()` — priority chain lookup
-    - Regions via `_resolve_regions()` — UDIP-Data-Region-* prefix matching
-    - Office via `_resolve_office()` — UDIP-Office-* prefix matching (EEOC office assignment)
+    - Regions via `_resolve_regions()` — UDAP-Data-Region-* prefix matching
+    - Office via `_resolve_office()` — UDAP-Office-* prefix matching (EEOC office assignment)
     - PII tier via `_resolve_pii_tier()` — tier group membership
     - Permitted schemas via `_resolve_permitted_schemas()` — governed view catalog
-12. Creates `UDIPUser` object and stores in Redis server-side session (`auth.py` — `UDIPUser` object creation)
+12. Creates `UDAPUser` object and stores in Redis server-side session (`auth.py` — `UDAPUser` object creation)
 13. Redirects to requested page or chat index
-14. **Subsequent requests:** `/auth/verify` returns `X-UDIP-*` headers from the session, and nginx forwards them to the target service
+14. **Subsequent requests:** `/auth/verify` returns `X-UDAP-*` headers from the session, and nginx forwards them to the target service
 
 ### Downstream Service Authentication
 
 | Service | Auth Method | How It Receives Identity |
 |---------|-----------|--------------------------|
-| AI Assistant | Direct session (Flask-Login) | Reads `UDIPUser` from Redis session |
-| Superset | `AUTH_REMOTE_USER` | Reads `X-UDIP-User`, `X-UDIP-Role` headers set by nginx from `/auth/verify` |
-| JupyterHub | `UDIPHeaderAuthenticator` | Reads `X-UDIP-User`, `X-UDIP-Role`, `X-UDIP-Regions` headers set by nginx from `/auth/verify` |
+| AI Assistant | Direct session (Flask-Login) | Reads `UDAPUser` from Redis session |
+| Superset | `AUTH_REMOTE_USER` | Reads `X-UDAP-User`, `X-UDAP-Role` headers set by nginx from `/auth/verify` |
+| JupyterHub | `UDAPHeaderAuthenticator` | Reads `X-UDAP-User`, `X-UDAP-Role`, `X-UDAP-Regions` headers set by nginx from `/auth/verify` |
 
 ### Logout
 
@@ -54,7 +54,7 @@ Only **one Entra ID app registration** is required (the AI Assistant's `AZURE_CL
 
 ## Role Mapping
 
-UDIP defines five roles with a strict priority chain. Users receive the highest-privilege role from their Entra ID group memberships.
+UDAP defines five roles with a strict priority chain. Users receive the highest-privilege role from their Entra ID group memberships.
 
 **Code Reference:** `ai-assistant/app/auth.py` — `_resolve_role()`
 
@@ -68,11 +68,11 @@ Admin > Director > LegalCounsel > Analyst > Viewer
 
 | Role | Config Variable | Entra ID Group |
 |------|----------------|---------------|
-| Admin | `ENTRA_GROUP_ADMINS` | UDIP-Admins |
-| Director | `ENTRA_GROUP_DIRECTORS` | UDIP-Directors |
-| LegalCounsel | `ENTRA_GROUP_LEGAL_COUNSEL` | UDIP-LegalCounsel |
-| Analyst | `ENTRA_GROUP_ANALYSTS` | UDIP-Analysts |
-| Viewer | `ENTRA_GROUP_VIEWERS` | UDIP-Viewers |
+| Admin | `ENTRA_GROUP_ADMINS` | UDAP-Admins |
+| Director | `ENTRA_GROUP_DIRECTORS` | UDAP-Directors |
+| LegalCounsel | `ENTRA_GROUP_LEGAL_COUNSEL` | UDAP-LegalCounsel |
+| Analyst | `ENTRA_GROUP_ANALYSTS` | UDAP-Analysts |
+| Viewer | `ENTRA_GROUP_VIEWERS` | UDAP-Viewers |
 
 The `_resolve_role()` function iterates the priority list and returns the first match. If no group matches and `ENTRA_GROUP_VIEWERS` is not configured, the user is denied access (HTTP 403).
 
@@ -90,8 +90,8 @@ When overage is detected, the AI Assistant auth callback falls back to the Micro
 | Component | Overage Handling |
 |-----------|-----------------|
 | AI Assistant | Graph API fallback via `_fetch_groups_from_graph()` with SSRF validation |
-| Superset | Receives pre-resolved role via `X-UDIP-Role` header (overage handled at gateway) |
-| JupyterHub | Receives pre-resolved attributes via `X-UDIP-*` headers (overage handled at gateway) |
+| Superset | Receives pre-resolved role via `X-UDAP-Role` header (overage handled at gateway) |
+| JupyterHub | Receives pre-resolved attributes via `X-UDAP-*` headers (overage handled at gateway) |
 
 GCC-High environments use `graph.microsoft.us` instead of `graph.microsoft.com` (configured via `AZURE_CLOUD` environment variable).
 
@@ -109,22 +109,22 @@ GCC-High environments use `graph.microsoft.us` instead of `graph.microsoft.com` 
 
 ## Region Mapping
 
-UDIP restricts data access by EEOC region via Entra ID group membership.
+UDAP restricts data access by EEOC region via Entra ID group membership.
 
 **Code Reference:** `ai-assistant/app/auth.py` — `_resolve_regions()`
 
 ### Group Naming Convention
 
-Groups use the `UDIP-Data-Region-` prefix (configurable via `ENTRA_REGION_GROUP_PREFIX`):
+Groups use the `UDAP-Data-Region-` prefix (configurable via `ENTRA_REGION_GROUP_PREFIX`):
 
 | Entra ID Group | Region |
 |----------------|--------|
-| `UDIP-Data-Region-Southeast` | Southeast |
-| `UDIP-Data-Region-Northeast` | Northeast |
-| `UDIP-Data-Region-Midwest` | Midwest |
-| `UDIP-Data-Region-Southwest` | Southwest |
-| `UDIP-Data-Region-West` | West |
-| `UDIP-Data-Region-National` | National (all regions) |
+| `UDAP-Data-Region-Southeast` | Southeast |
+| `UDAP-Data-Region-Northeast` | Northeast |
+| `UDAP-Data-Region-Midwest` | Midwest |
+| `UDAP-Data-Region-Southwest` | Southwest |
+| `UDAP-Data-Region-West` | West |
+| `UDAP-Data-Region-National` | National (all regions) |
 
 The `_resolve_regions()` function extracts region names by stripping the prefix from matching group display names. Regions are sorted alphabetically and stored in the session as `user_regions`.
 
@@ -136,7 +136,7 @@ Regions are passed to `SESSION_CONTEXT` as a comma-separated list and enforced b
 
 ## PII Tier Mapping
 
-UDIP implements three PII access tiers.
+UDAP implements three PII access tiers.
 
 **Code Reference:** `ai-assistant/app/auth.py` — `_resolve_pii_tier()`
 
@@ -245,7 +245,7 @@ Legacy decorator that requires any authenticated user with a valid role. Equival
 | Redis connection | TLS on port 6380 (`rediss://`) | `config.py:37` |
 | Session lifetime | 30 minutes | `config.py:34` — `PERMANENT_SESSION_LIFETIME = 1800` |
 | Session permanent | True (enables lifetime enforcement) | `config.py:33` |
-| Key prefix | `udip:session:` | `config.py:35` |
+| Key prefix | `udap:session:` | `config.py:35` |
 | Signed cookies | Yes | `config.py:36` — `SESSION_USE_SIGNER = True` |
 | Cookie secure | True (HTTPS only) | `config.py:26` |
 | Cookie HttpOnly | True (no JavaScript access) | `config.py:27` |
@@ -257,7 +257,7 @@ The 30-minute session lifetime aligns with NIST 800-53 AC-12 (Session Terminatio
 
 ## Rate Limiting (NIST 800-53 SC-5)
 
-UDIP enforces rate limiting at two layers:
+UDAP enforces rate limiting at two layers:
 
 ### Edge Layer (NGINX)
 
@@ -287,16 +287,16 @@ Flask-Limiter is initialized in the app factory with per-user keys:
 
 **Code Reference:** `deploy/docker/superset/superset_config.py`, `deploy/docker/superset/custom_security.py`
 
-Superset uses `AUTH_REMOTE_USER` mode with auto-registration. Authentication is handled at the portal gateway — Superset receives the authenticated user's identity via `X-UDIP-*` headers forwarded by nginx from the AI Assistant's `/auth/verify` endpoint.
+Superset uses `AUTH_REMOTE_USER` mode with auto-registration. Authentication is handled at the portal gateway — Superset receives the authenticated user's identity via `X-UDAP-*` headers forwarded by nginx from the AI Assistant's `/auth/verify` endpoint.
 
 | Setting | Value | Purpose |
 |---------|-------|---------|
 | `AUTH_TYPE` | `AUTH_REMOTE_USER` | Trust pre-authenticated identity from gateway headers |
 | `AUTH_USER_REGISTRATION` | `True` | Allows first-login provisioning |
 | `AUTH_USER_REGISTRATION_ROLE` | `Public` | No-access default role |
-| `AUTH_ROLES_SYNC_AT_LOGIN` | `True` | Updates roles from `X-UDIP-Role` header on every request |
+| `AUTH_ROLES_SYNC_AT_LOGIN` | `True` | Updates roles from `X-UDAP-Role` header on every request |
 
-Superset reads `X-UDIP-User` for the username and `X-UDIP-Role` for role mapping. Users whose role does not map to a Superset role receive the `Public` role, which has no dashboard or dataset access. Superset no longer requires its own `AZURE_CLIENT_ID` or `AZURE_CLIENT_SECRET`. This satisfies AC-2 account management requirements without requiring manual provisioning.
+Superset reads `X-UDAP-User` for the username and `X-UDAP-Role` for role mapping. Users whose role does not map to a Superset role receive the `Public` role, which has no dashboard or dataset access. Superset no longer requires its own `AZURE_CLIENT_ID` or `AZURE_CLIENT_SECRET`. This satisfies AC-2 account management requirements without requiring manual provisioning.
 
 ---
 
@@ -307,7 +307,7 @@ Superset reads `X-UDIP-User` for the username and `X-UDIP-Role` for role mapping
 | **Version** | 2.0 |
 | **Created** | March 2026 |
 | **Author** | EEOC OCIO |
-| **Classification** | CUI // SP-UDIP |
+| **Classification** | CUI // SP-UDAP |
 | **Review Cycle** | Quarterly |
 | **Next Review** | June 2026 |
 
@@ -317,7 +317,7 @@ Superset reads `X-UDIP-User` for the username and `X-UDIP-Role` for role mapping
 
 ### Overview
 
-UDIP serves as the centralized access management hub for all EEOC user-facing
+UDAP serves as the centralized access management hub for all EEOC user-facing
 applications. The admin interface at `/admin` → Applications tab allows
 authorized administrators to assign app-level roles without requiring Entra ID
 group modifications or IT tickets.
@@ -328,7 +328,7 @@ group modifications or IT tickets.
 
 ```
 ┌──────────────┐     ┌──────────────────────┐     ┌──────────────┐
-│  ADR Portal  │     │  UDIP Access Store    │     │  Admin UX    │
+│  ADR Portal  │     │  UDAP Access Store    │     │  Admin UX    │
 │  Triage      │────▶│  /api/v1/access/check │◀────│  /admin      │
 │  Trial Tool  │     │  (M2M bearer auth)    │     │  (browser)   │
 │  Benefits    │     └──────────────────────┘     └──────────────┘
@@ -368,7 +368,7 @@ App grants use the `app` grant type with value format `app:<app_name>:<role>`:
 All consuming apps use `UNIFIED_ACCESS_ENABLED=false` by default. When enabled:
 
 1. App resolves roles from Entra ID groups (existing behavior)
-2. App calls UDIP `/api/v1/access/check` with user email and app name
+2. App calls UDAP `/api/v1/access/check` with user email and app name
 3. Response roles are merged with Entra-derived roles (dual-authority)
 4. If API call fails (timeout, 5xx, network): Entra-only, warning logged
 
@@ -376,9 +376,9 @@ All consuming apps use `UNIFIED_ACCESS_ENABLED=false` by default. When enabled:
 
 | Phase | State | Admin Workflow |
 |---|---|---|
-| 1. Import | Flag off | Run `scripts/import_entra_grants.py` to seed UDIP with Entra data |
-| 2. Dual-authority | Flag on | Both Entra groups and UDIP grants active (union) |
-| 3. Cutover | Flag on, Entra frozen | UDIP is source of truth; Entra simplified to auth-only |
+| 1. Import | Flag off | Run `scripts/import_entra_grants.py` to seed UDAP with Entra data |
+| 2. Dual-authority | Flag on | Both Entra groups and UDAP grants active (union) |
+| 3. Cutover | Flag on, Entra frozen | UDAP is source of truth; Entra simplified to auth-only |
 
 ### Available App Roles
 
@@ -394,7 +394,7 @@ All consuming apps use `UNIFIED_ACCESS_ENABLED=false` by default. When enabled:
 | Variable | Default | Description |
 |---|---|---|
 | `UNIFIED_ACCESS_ENABLED` | `false` | Enable/disable unified access check |
-| `UNIFIED_ACCESS_URL` | (empty) | UDIP access check endpoint URL |
+| `UNIFIED_ACCESS_URL` | (empty) | UDAP access check endpoint URL |
 | `UNIFIED_ACCESS_CLIENT_ID` | (empty) | M2M client ID for token acquisition |
 | `UNIFIED_ACCESS_CLIENT_SECRET` | (empty) | M2M client secret (Key Vault) |
 | `UNIFIED_ACCESS_TIMEOUT` | `2.0` | Timeout in seconds for API call |

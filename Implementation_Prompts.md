@@ -26,8 +26,8 @@ This service has two jobs:
    and action dates from downstream apps and translate them into PrEPA's internal
    API calls.
 
-NOTE: This service does NOT feed bulk data to UDIP. UDIP gets its data via a
-WAL/CDC pipeline (PrEPA PostgreSQL → Debezium → Event Hub → UDIP Data Middleware).
+NOTE: This service does NOT feed bulk data to UDAP. UDAP gets its data via a
+WAL/CDC pipeline (PrEPA PostgreSQL → Debezium → Event Hub → UDAP Data Middleware).
 See Prompt 9 for the CDC pipeline and Prompt 14 for the Debezium infrastructure.
 
 CONTEXT:
@@ -61,7 +61,7 @@ BUILD THE FOLLOWING:
    - Transform Service Bus messages into MCP Hub's standardized event format
    - Forward to MCP Hub's /api/v1/events endpoint with HMAC-SHA256 signature
    - Use for inter-app notifications (e.g., ADR notified of case status changes)
-   - NOT for UDIP data feed (WAL/CDC handles that independently)
+   - NOT for UDAP data feed (WAL/CDC handles that independently)
 
 4. Case push endpoints (targeted reads for specific apps):
    - GET /arc/v1/mediation/eligible-cases -- mediation-eligible cases for ADR's
@@ -74,7 +74,7 @@ BUILD THE FOLLOWING:
    - GET /arc/v1/cases/{charge_number}/documents/{doc_id} -- binary download
    - GET /arc/v1/litigation/cases/{charge_number} -- litigation detail for OGC
    These are the only read endpoints apps call directly. Everything else goes
-   through UDIP.
+   through UDAP.
 
 5. Mediation write-back endpoints (ADR pushing results to ARC):
    - GET /arc/v1/mediation/eligible-cases -- query PrEPA for cases that are formalized,
@@ -133,7 +133,7 @@ BUILD THE FOLLOWING:
      Body: array of { event_code, event_date, comments, attributes }.
      Maps to: PrEPA POST /v1/cases/{caseId}/events. Requires ARC.Write.
 
-7. Reference data endpoints (cached 24h, also ingested by UDIP feed):
+7. Reference data endpoints (cached 24h, also ingested by UDAP feed):
    - GET /arc/v1/reference/sbi-combinations -- from FEPA Gateway /fepagateway/v1/sbi-combo
    - GET /arc/v1/reference/offices -- from PrEPA /v1/offices
    - GET /arc/v1/reference/document-types -- from FEPA Gateway /fepagateway/v1/documents/type
@@ -257,16 +257,16 @@ Include a unified diff. Do not touch anything outside the audit correlation path
 
 ---
 
-## Prompt 4: UDIP Audit Correlation and OBO Preparation
+## Prompt 4: UDAP Audit Correlation and OBO Preparation
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 5 (Weeks 8-10)
 
 ### Prompt
 
 ```
-In the UDIP Analytics Platform codebase, make these changes:
+In the UDAP Analytics Platform codebase, make these changes:
 
 PART 1: Audit correlation (required for hub integration)
 
@@ -287,7 +287,7 @@ PART 2: OBO token delegation support (required for RLS to work through the hub)
    - When the bearer token contains a "regions" or region-related claim
      (from the original caller's token via OBO flow), extract it and use it
      for RLS session context instead of requiring the caller to be in a
-     UDIP-Data-Region-* group
+     UDAP-Data-Region-* group
    - Preserve the existing group-based region resolution as a fallback
      when region claims are not present in the token
 
@@ -406,14 +406,14 @@ services configured through the Azure Portal:
 - **Azure Event Grid** — inter-spoke event routing
 - **Azure Key Vault** — secrets (HMAC keys, hash salt, credentials)
 - **Azure Table Storage + Blob (WORM)** — audit logging
-- **Entra ID** — app registrations, M2M auth, OBO for UDIP
+- **Entra ID** — app registrations, M2M auth, OBO for UDAP
 
 The only custom code is a lightweight Azure Function for tool catalog
-aggregation (UDIP's dynamic catalog requires periodic reconciliation).
+aggregation (UDAP's dynamic catalog requires periodic reconciliation).
 
 See `Azure_MCP_Hub_Setup_Guide.md` for complete portal-based setup
 instructions covering Steps 1-12 (resource group, VNet, Key Vault, storage,
-Entra app registrations, APIM configuration, OBO for UDIP, Event Grid,
+Entra app registrations, APIM configuration, OBO for UDAP, Event Grid,
 health monitoring, audit logging, and connection sequence).
 
 ### Prompt (for the aggregator function only)
@@ -427,8 +427,8 @@ Azure Portal (see Azure_MCP_Hub_Setup_Guide.md).
 CONTEXT:
 - Azure API Management handles routing, auth, and proxying
 - Each spoke has a POST /mcp endpoint with tools/list capability
-- UDIP's tool catalog changes whenever dbt runs (dynamic)
-- APIM routes tools/call by prefix (adr.*, ofs-triage.*, udip.*, etc.)
+- UDAP's tool catalog changes whenever dbt runs (dynamic)
+- APIM routes tools/call by prefix (adr.*, ofs-triage.*, udap.*, etc.)
 - APIM needs a backend to handle tools/list aggregation
 
 BUILD THE FOLLOWING:
@@ -450,7 +450,7 @@ BUILD THE FOLLOWING:
    - Merge all tool lists into single catalog
    - Cache merged catalog in Redis (key: "mcp:tool_catalog", TTL: 10 min)
    - Handle spokes that are unreachable (skip, log warning, use stale cache)
-   - Handle UDIP tools appearing/disappearing between refreshes
+   - Handle UDAP tools appearing/disappearing between refreshes
 
 3. HTTP trigger — GetToolCatalog:
    - GET /api/tools — return merged catalog from Redis cache
@@ -461,7 +461,7 @@ BUILD THE FOLLOWING:
 
 4. Spoke registry table schema (Azure Table Storage: "mcpspokes"):
    PartitionKey: "spoke"
-   RowKey: spoke name (adr, ofs-triage, udip, ogc-trial-tool, arc-integration)
+   RowKey: spoke name (adr, ofs-triage, udap, ogc-trial-tool, arc-integration)
    Fields: url, capability_categories (comma-separated), auth_scope,
      protocol_version, health_endpoint, timeout_seconds, last_healthy_at,
      last_catalog_refresh_at, tool_count, is_healthy
@@ -607,7 +607,7 @@ behind a feature flag; existing behavior must be preserved when the flag is off.
 
 | Prompt | Repository | Creates/Modifies | Phase |
 |--------|-----------|-----------------|-------|
-| 1 | NEW: `eeoc-arc-integration-api/` | Creates service (write-back + targeted reads, no UDIP feed) | Phase 1 | DONE 2026-04-03 |
+| 1 | NEW: `eeoc-arc-integration-api/` | Creates service (write-back + targeted reads, no UDAP feed) | Phase 1 | DONE 2026-04-03 |
 | 2 | `eeoc-ofs-adr/` | Modifies audit correlation (3-4 files) | Phase 4 | DONE 2026-04-03 |
 | 3 | `eeoc-ofs-triage/` | Modifies audit correlation (4-5 files) | Phase 5 | DONE 2026-04-03 |
 | 4 | `eeoc-data-analytics-and-dashboard/` | Modifies audit + adds OBO support (4-5 files) | Phase 3 | DONE 2026-04-03 |
@@ -615,12 +615,12 @@ behind a feature flag; existing behavior must be preserved when the flag is off.
 | 6 | NEW: `eeoc-mcp-hub-functions/` | Tool catalog aggregator function (hub is Azure APIM + portal config, see Azure_MCP_Hub_Setup_Guide.md) | Phase 2 | DONE 2026-04-03 |
 | 7 | `eeoc-ofs-adr/` | Modifies ARCSyncImporter + arc_client (3-4 files) | Phase 4 | DONE 2026-04-03 |
 | 8 | `eeoc-ofs-triage/` | Adds ARC lookup module + wires into upload (3-4 files) | Phase 5 | DONE 2026-04-03 |
-| 9 | `eeoc-data-analytics-and-dashboard/` | UDIP WAL/CDC driver + reconciliation engine + data lifecycle schema + new ADR/Triage tables | Phase 1 | DONE 2026-04-03 |
-| 10 | `eeoc-ofs-adr/` | ADR → UDIP analytics push (new Azure Function) | Phase 4 | DONE 2026-04-03 |
-| 11 | `eeoc-ofs-triage/` | Triage → UDIP analytics push (new Azure Function) | Phase 5 | DONE 2026-04-03 |
+| 9 | `eeoc-data-analytics-and-dashboard/` | UDAP WAL/CDC driver + reconciliation engine + data lifecycle schema + new ADR/Triage tables | Phase 1 | DONE 2026-04-03 |
+| 10 | `eeoc-ofs-adr/` | ADR → UDAP analytics push (new Azure Function) | Phase 4 | DONE 2026-04-03 |
+| 11 | `eeoc-ofs-triage/` | Triage → UDAP analytics push (new Azure Function) | Phase 5 | DONE 2026-04-03 |
 | 12 | `eeoc-ogc-trialtool/` | CI/CD pipeline (GitHub Actions) | Phase 6 | DONE 2026-04-03 |
 | 13 | NEW repos | CI/CD pipelines for ARC Integration API + MCP Hub aggregator function | Phase 1-2 | DONE 2026-04-03 |
-| 14 | `eeoc-data-analytics-and-dashboard/` | Debezium CDC pipeline from PrEPA to Event Hub (ran with UDIP) | Phase 1 | DONE 2026-04-03 |
+| 14 | `eeoc-data-analytics-and-dashboard/` | Debezium CDC pipeline from PrEPA to Event Hub (ran with UDAP) | Phase 1 | DONE 2026-04-03 |
 | 15 | `eeoc-data-analytics-and-dashboard/` | Data lifecycle automation (state machine, access tracking, purge, FOIA holds) | Phase 1-2 | DONE 2026-04-03 |
 | 16 | `eeoc-data-analytics-and-dashboard/` | Schema completion: 6 missing tables, RLS policies, vw_charges, dbt models | Phase 1 | DONE 2026-04-03 |
 | 17 | `eeoc-data-analytics-and-dashboard/` | Middleware engine extensions: lookup_table, UUID_V5, fiscal_year, PII patterns | Phase 1 | DONE 2026-04-03 |
@@ -642,7 +642,7 @@ behind a feature flag; existing behavior must be preserved when the flag is off.
 | 33 | `eeoc-data-analytics-and-dashboard/` | Read replica routing: primary for writes, replica for reads, PgBouncer dual-backend | Phase 2 | DONE 2026-04-05 |
 | 34 | `eeoc-data-analytics-and-dashboard/` | AI Assistant fix-up: get_messages→get_history, tiktoken context window, error refinement loop | Phase 2 | DONE 2026-04-05 |
 | 35 | `eeoc-ofs-triage/` | Move MSAL token cache from session cookie to Redis-keyed storage | Phase 2 | DONE 2026-04-05 |
-| 36 | `eeoc-data-analytics-and-dashboard/` | Schema design: ADR + Triage operational tables in UDIP PostgreSQL (long-term data consolidation) | Phase 3 | DONE 2026-04-05 |
+| 36 | `eeoc-data-analytics-and-dashboard/` | Schema design: ADR + Triage operational tables in UDAP PostgreSQL (long-term data consolidation) | Phase 3 | DONE 2026-04-05 |
 | 37 | `eeoc-ofs-adr/` | Data layer migration: Azure Table Storage → PostgreSQL via SQLAlchemy (phased, behind feature flag) | Phase 4 | DONE 2026-04-05 |
 | 38 | `eeoc-ofs-triage/` | Data layer migration: Azure Table Storage → PostgreSQL via SQLAlchemy (phased, behind feature flag) | Phase 4 | DONE 2026-04-05 |
 | 39 | `eeoc-data-analytics-and-dashboard/` | FOIA/NARA: conversation history 7-year retention, litigation hold, case lifecycle linking | Phase 2 | PENDING |
@@ -669,9 +669,9 @@ behind a feature flag; existing behavior must be preserved when the flag is off.
 | 60 | `eeoc-ogc-trialtool/` | REMEDIATION: Remove pdf2image/poppler, replace python-jose→PyJWT, pin deps, MODEL_LICENSES.md, build-and-test.yml | Phase 2 | PENDING |
 | 61 | `eeoc-ofs-triage/` | REMEDIATION: Reconstruct OFPCaseMonitor/__init__.py (P54 source file missing) | Phase 3 | PENDING |
 | 62 | Workspace root | REMEDIATION: Create Azure_M2131_EL3_Infrastructure_Guide.md (P45 was not implemented) | Phase 3 | PENDING |
-| 63 | Multiple repos | REMEDIATION: HMAC-SHA256 upgrade for Triage+UDIP audit loggers, OGC 508 CSS, retention string standardization, ADR MCP protocol version | Phase 2 | PENDING |
-| 64 | UDIP + Triage | WIRING FIX: Connect conversation lifecycle to case closure/holds (UDIP), wire session population into login flow (Triage), fix ScheduledDisposal (Triage) | Phase 2 | PENDING |
-| 65 | ALL repos | FINAL HARDENING: 7 missing test suites, UDIP PDBs, HMAC key out of ConfigMaps, SQL roles, search function ordering, startup probes, doc cross-references | Phase 2 | PENDING |
+| 63 | Multiple repos | REMEDIATION: HMAC-SHA256 upgrade for Triage+UDAP audit loggers, OGC 508 CSS, retention string standardization, ADR MCP protocol version | Phase 2 | PENDING |
+| 64 | UDAP + Triage | WIRING FIX: Connect conversation lifecycle to case closure/holds (UDAP), wire session population into login flow (Triage), fix ScheduledDisposal (Triage) | Phase 2 | PENDING |
+| 65 | ALL repos | FINAL HARDENING: 7 missing test suites, UDAP PDBs, HMAC key out of ConfigMaps, SQL roles, search function ordering, startup probes, doc cross-references | Phase 2 | PENDING |
 | 66 | `eeoc-data-analytics-and-dashboard/` | Debezium schema expansion: `schema.include.list` → `"public,fed_hearings"` + PII column exclusions + runbook | Phase 4a | PENDING |
 | 67 | `eeoc-data-analytics-and-dashboard/` | Replica schema DDL: 24 new tables (13 fed_hearings + 11 public gaps) | Phase 4a | PENDING |
 | 68 | `eeoc-data-analytics-and-dashboard/` | Analytics target tables: 17 new analytics schema tables + lifecycle triggers + indexes | Phase 4a | PENDING |
@@ -696,7 +696,7 @@ behind a feature flag; existing behavior must be preserved when the flag is off.
 | 87 | `eeoc-ogc-trialtool/` | Case-scoped AI Assistant: per-case conversation store, dual-corpus RAG, Bluebook citation engine, case chat UI | Phase 7 | PENDING |
 | 88 | `eeoc-ogc-trialtool/` | Case lifecycle: closure → retention → disposal, FOIA export, ARC status pull (read-only), litigation hold integration | Phase 7 | PENDING |
 | 89 | `eeoc-ogc-trialtool/` | Word Add-in: secure API layer + SSO + manifest + security docs (foundation — full UI is future phase) | Phase 8 | PENDING |
-| 90 | ADR + Triage + Trial Tool + UDIP | PWA support: manifest.json, service worker, generated icons, taskbar/desktop install | Phase 7 | PENDING |
+| 90 | ADR + Triage + Trial Tool + UDAP | PWA support: manifest.json, service worker, generated icons, taskbar/desktop install | Phase 7 | PENDING |
 | 91 | `eeoc-ofs-adr/` | Production deployment docs: Entra ID app registration guide, Login.gov prod setup, Key Vault secret generation, DNS/TLS, env var dependencies, health check script, first-run setup guide | Phase 9 | PENDING |
 | 92 | `eeoc-ofs-adr/` | Audit log viewer (search/filter/export), per-case activity timeline, bulk security audit export for compliance reviews | Phase 9 | PENDING |
 | 93 | All repos | Python 3.13 upgrade: psycopg2-binary bump, Dockerfile base image, CI python-version, config files | Phase 9 | PENDING |
@@ -706,15 +706,15 @@ behind a feature flag; existing behavior must be preserved when the flag is off.
 - **Prompts 2, 3, 4, 7, 8, 9, 10, 11, 15** are modifications to existing repos. Each asks for a unified diff and a CHANGES.md so the repository owner can see exactly what changed, why, and what configuration is needed.
 - **Prompts 1, 6, 12, 13, 14** create new repositories, infrastructure, or CI/CD pipelines. Each asks for a complete file listing so all code can be reviewed before merging.
 - **Prompt 5** is the largest single-repo change (auth replacement + MCP server), but it is isolated to the trial tool and does not affect any shared infrastructure.
-- **Prompt 9** is the largest UDIP change: CDC driver, reconciliation engine, data lifecycle schema (partitioning, metadata columns, lifecycle state machine, access tracking, FOIA/NARA holds, monitoring views), and new ADR/Triage analytics tables.
+- **Prompt 9** is the largest UDAP change: CDC driver, reconciliation engine, data lifecycle schema (partitioning, metadata columns, lifecycle state machine, access tracking, FOIA/NARA holds, monitoring views), and new ADR/Triage analytics tables.
 - **Prompt 15** builds the automation that operates on Prompt 9's lifecycle schema: state transitions, access stats snapshots, purge candidate identification, archive/purge execution, FOIA hold management, and Data Steward CLI.
-- **Prompts 16-17** complete UDIP schema and middleware gaps identified in the security audit. Must run before first CDC data sync.
+- **Prompts 16-17** complete UDAP schema and middleware gaps identified in the security audit. Must run before first CDC data sync.
 - **Prompts 18-20** harden Triage and ADR codebases based on security audit findings. Must run before hub connection and production deployment.
 
 ### Execution order:
 
 **Phase 1 (parallel start):**
-Prompts 1, 6, 9, 14 can start in parallel (new services + CDC infrastructure + UDIP middleware).
+Prompts 1, 6, 9, 14 can start in parallel (new services + CDC infrastructure + UDAP middleware).
 Prompt 14 is the first dependency for Prompt 9 (Event Hub must exist before CDC driver testing).
 Prompt 13 runs alongside 1 and 6 (CI/CD for the new repos).
 Prompts 16, 17 run immediately after Prompt 9 schema is deployed (complete missing tables, engine extensions). Must finish before first CDC sync.
@@ -722,16 +722,16 @@ Prompt 15 depends on Prompt 9 (lifecycle schema must exist before automation).
 
 **Phase 2 (after Phase 1 deployed):**
 Prompt 4 depends on OBO decision being finalized.
-Prompts 2, 7, 10 run together (ADR audit correlation + ARCSyncImporter + UDIP push).
-Prompts 3, 8, 11 run together (Triage audit correlation + ARC lookup + UDIP push).
+Prompts 2, 7, 10 run together (ADR audit correlation + ARCSyncImporter + UDAP push).
+Prompts 3, 8, 11 run together (Triage audit correlation + ARC lookup + UDAP push).
 Prompt 18 runs in Phase 2 (Triage security hardening — critical fixes before hub connection).
 Prompt 19 runs in Phase 2 (ADR security hardening — before hub connection).
 
 **Phase 2 (scaling hardening, before hub connection):**
 Prompts 21, 22 run in Phase 2 (ADR + Triage horizontal scaling — distributed locking, Redis caches, repartitioning). Must complete before connecting to hub (hub will send concurrent requests to spokes).
-Prompt 23 runs in Phase 1-2 (UDIP scaling — PgBouncer, connection pool, thread safety). Must complete before MCP queries go live.
+Prompt 23 runs in Phase 1-2 (UDAP scaling — PgBouncer, connection pool, thread safety). Must complete before MCP queries go live.
 
-**Phase 2 (AI Assistant — after UDIP data pipeline is live):**
+**Phase 2 (AI Assistant — after UDAP data pipeline is live):**
 Prompt 24 runs after data is flowing (conversation memory + multi-turn context). This is the highest-impact AI feature — leadership wants conversational interaction.
 Prompt 25 runs after Prompt 24 (visualization generation depends on conversation context for follow-up chart modifications). Can start in parallel if visualization is independent of history.
 
@@ -803,20 +803,20 @@ All code must pass the established FedRAMP NIST 800-53 security toolchain:
 
 ---
 
-## Prompt 9: UDIP WAL/CDC Pipeline + Reconciliation Engine + New Analytics Tables
+## Prompt 9: UDAP WAL/CDC Pipeline + Reconciliation Engine + New Analytics Tables
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 1 (Weeks 2-6)
 
 ### Prompt
 
 ```
-The UDIP Analytics Platform needs three changes to become the central data store:
+The UDAP Analytics Platform needs three changes to become the central data store:
 
 1. An Event Hub consumer driver for the sync engine so it can ingest WAL/CDC
    change events from PrEPA's PostgreSQL (via Debezium and Azure Event Hub)
-2. A reconciliation engine that compares UDIP analytics tables against IDR
+2. A reconciliation engine that compares UDAP analytics tables against IDR
    (the nightly SQL Server snapshot) twice weekly to catch any missed records
 3. New PostgreSQL tables and dbt models for ADR and Triage operational analytics
    pushed via the existing ingest API
@@ -825,7 +825,7 @@ PART 1: Event Hub Consumer Driver for Sync Engine
 
 In data-middleware/sync_engine.py, the current sync engine only supports SQL
 sources (pyodbc for SQL Server, psycopg2 for PostgreSQL). Add an Azure Event Hub
-(Kafka protocol) consumer driver so UDIP can consume WAL/CDC change events from
+(Kafka protocol) consumer driver so UDAP can consume WAL/CDC change events from
 PrEPA's PostgreSQL database via Debezium.
 
 1. Create data-middleware/eventhub_source.py:
@@ -884,13 +884,13 @@ PrEPA's PostgreSQL database via Debezium.
 
 4. Configuration:
    - EVENTHUB_CONNECTION_STRING (Event Hub namespace connection)
-   - EVENTHUB_CONSUMER_GROUP (default: "udip-middleware")
+   - EVENTHUB_CONSUMER_GROUP (default: "udap-middleware")
    - CDC_TOPIC_PREFIX (default: "prepa", maps to Debezium server.name)
 
 PART 2A: Reconciliation Engine
 
 5. Create data-middleware/reconciliation.py:
-   - Class ReconciliationEngine that compares UDIP analytics tables against
+   - Class ReconciliationEngine that compares UDAP analytics tables against
      IDR SQL Server snapshot to detect missing or stale records
    - reconcile_table(config) method:
      a. Count rows in IDR where modified > last_reconciliation_timestamp
@@ -968,7 +968,7 @@ usage-based pruning decisions.
     ADR/Triage tables defined in PART 3):
 
     - first_synced_at (TIMESTAMPTZ DEFAULT NOW())
-      When the record first entered UDIP. Set on INSERT only, never
+      When the record first entered UDAP. Set on INSERT only, never
       overwritten on UPDATE. Use INSERT ... ON CONFLICT DO UPDATE with
       a check: SET first_synced_at = COALESCE(EXCLUDED.first_synced_at,
       analytics.charges.first_synced_at) to preserve the original value.
@@ -1128,7 +1128,7 @@ Write a CHANGES.md explaining all three parts. Include a unified diff.
 
 ---
 
-## Prompt 10: ADR → UDIP Analytics Push
+## Prompt 10: ADR → UDAP Analytics Push
 
 **Repository:** `eeoc-ofs-adr/`
 **Owner:** ADR team
@@ -1138,44 +1138,44 @@ Write a CHANGES.md explaining all three parts. Include a unified diff.
 
 ```
 Add an Azure Function to the ADR Mediation Platform that pushes operational
-analytics to UDIP's centralized data store on a daily schedule.
+analytics to UDAP's centralized data store on a daily schedule.
 
-UDIP has an ingest API at POST /api/v1/mcp/ingest that accepts JSON records
+UDAP has an ingest API at POST /api/v1/mcp/ingest that accepts JSON records
 with an Analytics.Write bearer token. ADR needs to push its daily metrics,
-AI reliance scores, and model drift data to UDIP so the agency has a unified
+AI reliance scores, and model drift data to UDAP so the agency has a unified
 analytics picture.
 
-1. Create adr_functionapp/UDIPAnalyticsPush/__init__.py:
+1. Create adr_functionapp/UDAPAnalyticsPush/__init__.py:
    - Timer trigger: runs daily at 04:00 UTC (after MetricsRollupDaily at 02:00)
-   - ShedLock: lock name "udip-analytics-push", lock for PT15M
+   - ShedLock: lock name "udap-analytics-push", lock for PT15M
    - Reads from ADR's Azure Table Storage:
      a. metricsrollupdaily — last 2 days of daily metrics
      b. reliancescores — last 2 days of reliance data
      c. modeldrift — last 2 days of drift data
-   - Transforms each into the UDIP target schema:
+   - Transforms each into the UDAP target schema:
      a. metricsrollupdaily → analytics.adr_daily_metrics
      b. reliancescores → analytics.adr_reliance_scores
      c. modeldrift → analytics.adr_model_drift
-   - Calls UDIP's ingest API:
-     POST {UDIP_INGEST_URL}/api/v1/mcp/ingest
-     Authorization: Bearer {managed identity token for UDIP scope}
+   - Calls UDAP's ingest API:
+     POST {UDAP_INGEST_URL}/api/v1/mcp/ingest
+     Authorization: Bearer {managed identity token for UDAP scope}
      Body: { "dataset": "adr_daily_metrics", "records": [...] }
    - Repeats for each dataset
    - Logs success/failure per dataset to application insights
 
-2. Create adr_functionapp/UDIPAnalyticsPush/function.json:
+2. Create adr_functionapp/UDAPAnalyticsPush/function.json:
    - Timer trigger with schedule "0 0 4 * * *"
 
-3. Auth: Use DefaultAzureCredential to acquire token for UDIP's app
-   registration scope (env: UDIP_API_SCOPE)
+3. Auth: Use DefaultAzureCredential to acquire token for UDAP's app
+   registration scope (env: UDAP_API_SCOPE)
 
 4. Configuration:
-   - UDIP_INGEST_URL (base URL of UDIP analytics platform)
-   - UDIP_API_SCOPE (Entra ID scope, e.g., api://<udip-client-id>/.default)
-   - UDIP_PUSH_ENABLED (feature flag, default: false)
+   - UDAP_INGEST_URL (base URL of UDAP analytics platform)
+   - UDAP_API_SCOPE (Entra ID scope, e.g., api://<udap-client-id>/.default)
+   - UDAP_PUSH_ENABLED (feature flag, default: false)
 
 5. Error handling:
-   - If UDIP is unreachable, log warning and retry next cycle (not fatal)
+   - If UDAP is unreachable, log warning and retry next cycle (not fatal)
    - If a dataset push fails, continue with remaining datasets
    - Track last successful push timestamp in systemsettings table
 
@@ -1188,7 +1188,7 @@ must not be modified.
 
 ---
 
-## Prompt 11: Triage → UDIP Analytics Push
+## Prompt 11: Triage → UDAP Analytics Push
 
 **Repository:** `eeoc-ofs-triage/`
 **Owner:** Triage team
@@ -1198,30 +1198,30 @@ must not be modified.
 
 ```
 Add an Azure Function to the OFS Triage System that pushes operational
-analytics to UDIP's centralized data store on a daily schedule.
+analytics to UDAP's centralized data store on a daily schedule.
 
-Same pattern as the ADR analytics push. UDIP has an ingest API at
+Same pattern as the ADR analytics push. UDAP has an ingest API at
 POST /api/v1/mcp/ingest that accepts JSON records with Analytics.Write.
 
-1. Create case-processor-function/UDIPAnalyticsPush/__init__.py:
+1. Create case-processor-function/UDAPAnalyticsPush/__init__.py:
    - Timer trigger: runs daily at 04:30 UTC (after MetricsRollupDaily)
    - Reads from Triage's Azure Table Storage:
      a. metricsdaily — last 2 days of daily metrics
      b. modeldrift — last 2 days of correction flow data
      c. reliancescores — last 2 days of reliance data
-   - Transforms to UDIP target schema:
+   - Transforms to UDAP target schema:
      a. metricsdaily → analytics.triage_daily_metrics
      b. modeldrift → analytics.triage_correction_flows
      c. reliancescores → analytics.triage_reliance_scores
-   - Calls UDIP ingest API for each dataset
+   - Calls UDAP ingest API for each dataset
    - Logs success/failure
 
-2. Create case-processor-function/UDIPAnalyticsPush/function.json
+2. Create case-processor-function/UDAPAnalyticsPush/function.json
 
-3. Auth: DefaultAzureCredential for UDIP scope
+3. Auth: DefaultAzureCredential for UDAP scope
 
 4. Configuration:
-   - UDIP_INGEST_URL, UDIP_API_SCOPE, UDIP_PUSH_ENABLED (default: false)
+   - UDAP_INGEST_URL, UDAP_API_SCOPE, UDAP_PUSH_ENABLED (default: false)
 
 5. Error handling: same resilience pattern as ADR (non-fatal, retry next cycle)
 
@@ -1286,7 +1286,7 @@ For EACH repository, create:
 
 1. .github/workflows/security-audit-evidence.yml:
    - Trigger: push to main, pull_request to main, weekly schedule, manual
-   - Jobs matching the ADR/Triage/UDIP pattern:
+   - Jobs matching the ADR/Triage/UDAP pattern:
      a. sbom-generation (CycloneDX)
      b. sast-scan (Bandit + Semgrep + pip-audit + secrets)
      c. dependency-check (OWASP with NVD API key)
@@ -1349,9 +1349,9 @@ BUILD THE FOLLOWING:
 
 1. PostgreSQL logical replication setup:
    - SQL script to create a logical replication slot on PrEPA's PostgreSQL:
-     SELECT pg_create_logical_replication_slot('udip_cdc', 'pgoutput');
+     SELECT pg_create_logical_replication_slot('udap_cdc', 'pgoutput');
    - SQL script to create a publication for ALL tables:
-     CREATE PUBLICATION udip_publication FOR ALL TABLES;
+     CREATE PUBLICATION udap_publication FOR ALL TABLES;
      This streams every table in PrEPA's database -- charges, allegations,
      staff, reference tables (shared_basis, shared_issue, shared_statute,
      offices), mediation, closures, events, everything. When PrEPA adds
@@ -1368,17 +1368,17 @@ BUILD THE FOLLOWING:
    - Topic naming: prepa.public.{table_name}
    - Snapshot mode: initial (full snapshot on first start, then streaming)
    - Heartbeat interval: 30 seconds
-   - Slot name: udip_cdc
-   - Publication name: udip_publication
+   - Slot name: udap_cdc
+   - Publication name: udap_publication
    - Tombstone on delete: true
-   - Column filtering: exclude PII columns that UDIP does not need
+   - Column filtering: exclude PII columns that UDAP does not need
      (e.g., charging_party.ssn — never transmitted, redacted at source)
 
 3. Azure Event Hub namespace:
    - Kafka-enabled Event Hub namespace
    - One Event Hub (topic) per PrEPA table
-   - Retention: 7 days (enough buffer for UDIP outages)
-   - Consumer group: udip-middleware
+   - Retention: 7 days (enough buffer for UDAP outages)
+   - Consumer group: udap-middleware
    - Partition count: 4 (sufficient for current volume)
 
 4. Monitoring:
@@ -1403,16 +1403,16 @@ BUILD THE FOLLOWING:
 
 ---
 
-## Prompt 15: UDIP Data Lifecycle Automation
+## Prompt 15: UDAP Data Lifecycle Automation
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 1-2 (after Prompt 9 schema is deployed)
 
 ### Prompt
 
 ```
-Add automated data lifecycle management to the UDIP Analytics Platform.
+Add automated data lifecycle management to the UDAP Analytics Platform.
 Prompt 9 defines the schema (partitioning, lifecycle metadata columns,
 lifecycle_audit_log, access_stats tables, monitoring views). This prompt
 builds the automation that operates on that schema.
@@ -1577,10 +1577,10 @@ fiscal year.
 
 ---
 
-## Prompt 16: UDIP Schema Completion (Missing Tables, RLS, dbt)
+## Prompt 16: UDAP Schema Completion (Missing Tables, RLS, dbt)
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 1 (before first CDC sync)
 
 ### Prompt
@@ -1681,7 +1681,7 @@ dbt models reference a non-existent view. Fix all of these.
      (same pattern as adr_outcomes, investigations, angular_cases)
    - PII policy on charging_parties: block tier 3 columns unless
      current_pii_tier >= 3
-   - Writer policy: FOR ALL TO udip_writer USING (TRUE)
+   - Writer policy: FOR ALL TO udap_writer USING (TRUE)
    - Add RLS policies for lifecycle tables (lifecycle_audit_log,
      access_stats, sync_dead_letter, reconciliation_log) — writer-only
 
@@ -1709,10 +1709,10 @@ Write a CHANGES.md and unified diff.
 
 ---
 
-## Prompt 17: UDIP Middleware Engine Extensions
+## Prompt 17: UDAP Middleware Engine Extensions
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 1 (before first CDC sync)
 
 ### Prompt
@@ -2221,16 +2221,16 @@ Write a CHANGES.md and unified diff.
 
 ---
 
-## Prompt 23: UDIP Horizontal Scaling Remediation
+## Prompt 23: UDAP Horizontal Scaling Remediation
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 1-2 (before production queries)
 
 ### Prompt
 
 ```
-Scalability audit identified 2 blockers and 5 risks in UDIP. Fix all to
+Scalability audit identified 2 blockers and 5 risks in UDAP. Fix all to
 support 500+ concurrent MCP queries and continuous CDC ingestion.
 
 SCALING BLOCKERS:
@@ -2296,13 +2296,13 @@ Write a CHANGES.md and unified diff.
 ## Prompt 24: AI Assistant — Conversation Memory and Multi-Turn Context
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 2
 
 ### Prompt
 
 ```
-The UDIP AI Assistant is currently a stateless single-turn query service.
+The UDAP AI Assistant is currently a stateless single-turn query service.
 Each request is independent — the AI does not see prior messages or results.
 Users cannot ask follow-up questions like "break that down by region" because
 the AI has no context from the previous exchange.
@@ -2432,7 +2432,7 @@ Write a CHANGES.md and unified diff.
 ## Prompt 25: AI Assistant — Interactive Visualization Generation
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 2
 
 ### Prompt
@@ -2554,7 +2554,7 @@ Write a CHANGES.md and unified diff.
 ## Prompt 26: AI Assistant — Dynamic Dashboard Creation and Superset Integration
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 3
 
 ### Prompt
@@ -2661,10 +2661,10 @@ Write a CHANGES.md and unified diff.
 **Owner:** All teams
 **Phase:** Parallel with deployment
 
-### Prompt (UDIP — run in eeoc-data-analytics-and-dashboard/)
+### Prompt (UDAP — run in eeoc-data-analytics-and-dashboard/)
 
 ```
-The cross-ecosystem audit found 5 new modules in UDIP with zero test
+The cross-ecosystem audit found 5 new modules in UDAP with zero test
 coverage. Write comprehensive unit tests for each. Follow the existing
 test patterns in ai-assistant/tests/ and data-middleware/tests/.
 
@@ -2751,16 +2751,16 @@ Write unit tests for 3 uncovered new modules in ADR.
    - test_concurrent_acquire: only one of two concurrent acquire calls succeeds
    Mock: azure.storage.blob.BlobLeaseClient, BlobClient
 
-2. adr_functionapp/tests/test_udip_analytics_push.py:
-   Test the UDIPAnalyticsPush Azure Function.
-   - test_push_daily_metrics: reads from metricsrollupdaily, transforms, posts to UDIP
+2. adr_functionapp/tests/test_udap_analytics_push.py:
+   Test the UDAPAnalyticsPush Azure Function.
+   - test_push_daily_metrics: reads from metricsrollupdaily, transforms, posts to UDAP
    - test_push_reliance_scores: reads from reliancescores, transforms, posts
    - test_push_model_drift: reads from modeldrift, transforms, posts
-   - test_udip_unreachable: logs warning, does not crash, continues with next dataset
+   - test_udap_unreachable: logs warning, does not crash, continues with next dataset
    - test_dataset_push_failure: one dataset fails, others still pushed
    - test_empty_records: no records in source → skip push, log info
-   - test_auth_token_acquisition: managed identity token acquired for UDIP scope
-   Mock: requests.post (UDIP ingest), azure.data.tables.TableClient (source tables)
+   - test_auth_token_acquisition: managed identity token acquired for UDAP scope
+   Mock: requests.post (UDAP ingest), azure.data.tables.TableClient (source tables)
 
 3. adr_functionapp/tests/test_arc_sync_importer.py:
    Test ARCSyncImporter with new ARC Integration API endpoint.
@@ -2792,15 +2792,15 @@ Write unit tests for 3 uncovered new modules in Triage.
      basis_codes, issue_codes, statute_codes, office_code, filing_date, status
    Mock: requests.get (ARC API), azure.identity.DefaultAzureCredential
 
-2. case-processor-function/tests/test_udip_analytics_push.py:
-   Test Triage's UDIPAnalyticsPush Azure Function.
+2. case-processor-function/tests/test_udap_analytics_push.py:
+   Test Triage's UDAPAnalyticsPush Azure Function.
    - test_push_daily_metrics: reads metricsdaily, transforms, posts with "dataset" key
    - test_push_correction_flows: reads modeldrift, transforms, posts
    - test_push_reliance_scores: reads reliancescores, transforms, posts
    - test_payload_key_is_dataset: verify payload uses "dataset" not "target_table"
-   - test_udip_unreachable: logs warning, continues with next dataset
+   - test_udap_unreachable: logs warning, continues with next dataset
    - test_empty_records: skip push for empty source tables
-   Mock: requests.post (UDIP ingest), azure.data.tables.TableClient
+   Mock: requests.post (UDAP ingest), azure.data.tables.TableClient
 
 3. case-processor-function/tests/test_openai_retry.py:
    Test OpenAI exponential backoff retry logic.
@@ -2928,7 +2928,7 @@ CREATE THE FOLLOWING:
    - REDIS_URL: (from secret)
    - KEY_VAULT_URI: (from secret)
    - ARC_INTEGRATION_API_URL: (internal service URL)
-   - UDIP_INGEST_URL: (internal service URL)
+   - UDAP_INGEST_URL: (internal service URL)
    - MCP_ENABLED: "true"
    - MCP_PROTOCOL_ENABLED: "true"
 
@@ -3151,7 +3151,7 @@ Write a CHANGES.md and unified diff.
 ```
 ADR must continue operating independently while the integration ecosystem
 is brought online over the next two months. Every external dependency
-(ARC Integration API, MCP Hub, UDIP ingest, Event Grid) must be optional.
+(ARC Integration API, MCP Hub, UDAP ingest, Event Grid) must be optional.
 If a dependency is unreachable or not yet deployed, ADR continues working
 with zero impact on core mediation functionality.
 
@@ -3185,14 +3185,14 @@ Audit every integration point and ensure graceful degradation:
    - Add: MCP_EVENTS_ENABLED feature flag (default: false). Events only
      dispatch when explicitly enabled AND callback URL is configured.
 
-3. UDIP analytics push graceful fallback:
-   In adr_functionapp/UDIPAnalyticsPush/__init__.py:
-   - If UDIP_PUSH_ENABLED is false (default): skip entirely, log info
-   - If UDIP_INGEST_URL is empty: skip, log warning
-   - If UDIP is unreachable: log error, skip, retry next cycle
+3. UDAP analytics push graceful fallback:
+   In adr_functionapp/UDAPAnalyticsPush/__init__.py:
+   - If UDAP_PUSH_ENABLED is false (default): skip entirely, log info
+   - If UDAP_INGEST_URL is empty: skip, log warning
+   - If UDAP is unreachable: log error, skip, retry next cycle
    - Track last successful push timestamp in systemsettings table
    - If push hasn't succeeded in 48 hours: log CRITICAL for alerting
-   - Do NOT affect any ADR operation if UDIP is down
+   - Do NOT affect any ADR operation if UDAP is down
 
 4. MCP server endpoint graceful behavior:
    In adr_webapp/mcp_server.py:
@@ -3218,7 +3218,7 @@ Audit every integration point and ensure graceful degradation:
    | MCP_PROTOCOL_ENABLED | false | MCP protocol disabled |
    | MCP_EVENTS_ENABLED | false | No event dispatch |
    | ARC_SYNC_ENABLED | true | Sync runs if URL configured |
-   | UDIP_PUSH_ENABLED | false | No UDIP push |
+   | UDAP_PUSH_ENABLED | false | No UDAP push |
    | ARC_LOOKUP_ENABLED | false | No ARC charge lookup |
    | ARC_WRITEBACK_ENABLED | false | No ARC write-back |
 
@@ -3240,7 +3240,7 @@ Audit every integration point and ensure graceful degradation:
 8. Health endpoint integration status:
    In the /healthz endpoint (or a new /healthz/integrations):
    - Return the status of each integration dependency:
-     {"arc_sync": "disabled", "mcp_hub": "disabled", "udip_push": "disabled"}
+     {"arc_sync": "disabled", "mcp_hub": "disabled", "udap_push": "disabled"}
    - When enabled: check connectivity and report "healthy" or "unreachable"
    - /healthz itself always returns 200 (ADR is healthy regardless of integrations)
 
@@ -3251,10 +3251,10 @@ dependency is unavailable.
 
 ---
 
-## Prompt 33: UDIP Read Replica Configuration
+## Prompt 33: UDAP Read Replica Configuration
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 2 (before production query load)
 
 ### Prompt
@@ -3293,8 +3293,8 @@ to route read queries to a replica and write operations to the primary.
    - Add a second database section for the replica:
      DB_REPLICA_HOST, DB_REPLICA_PORT
    - PgBouncer can route to different backends per database name:
-     "udip_analytics" → primary, "udip_analytics_ro" → replica
-   - Application connects to "udip_analytics_ro" for reads
+     "udap_analytics" → primary, "udap_analytics_ro" → replica
+   - Application connects to "udap_analytics_ro" for reads
 
 Write a CHANGES.md and unified diff.
 ```
@@ -3304,7 +3304,7 @@ Write a CHANGES.md and unified diff.
 ## Prompt 34: AI Assistant Fix-Up (Method Mismatch, Context Window, Error Refinement)
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 2 (critical — conversation feature is broken without this)
 
 ### Prompt
@@ -3384,18 +3384,18 @@ Write a CHANGES.md and unified diff.
 
 ---
 
-## Prompt 36: UDIP Schema for ADR + Triage Operational Data
+## Prompt 36: UDAP Schema for ADR + Triage Operational Data
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 3 (after integration platform is stable)
 
 ### Prompt
 
 ```
-Design and create PostgreSQL tables in UDIP to hold ADR and Triage
+Design and create PostgreSQL tables in UDAP to hold ADR and Triage
 operational data. This is the long-term data consolidation: moving from
-37 Azure Table Storage tables across 2 apps into UDIP's central PostgreSQL
+37 Azure Table Storage tables across 2 apps into UDAP's central PostgreSQL
 database. All AI tools, dashboards, and queries will draw from one source.
 
 CONTEXT:
@@ -3583,9 +3583,9 @@ write also writes to PostgreSQL. Reads gradually shift from Table Storage
 to PostgreSQL as confidence grows.
 
 1. Create adr_webapp/data/pg_client.py:
-   - PostgreSQL client using SQLAlchemy (same engine pattern as UDIP)
-   - Connection via PgBouncer (UDIP's PgBouncer, shared)
-   - RLS session context set per connection (same pattern as UDIP)
+   - PostgreSQL client using SQLAlchemy (same engine pattern as UDAP)
+   - Connection via PgBouncer (UDAP's PgBouncer, shared)
+   - RLS session context set per connection (same pattern as UDAP)
    - Methods mirror existing Table Storage patterns:
      a. get_case(case_id) -> dict
      b. list_cases(filters) -> list[dict]
@@ -3676,10 +3676,10 @@ Write a CHANGES.md and MIGRATION_GUIDE.md.
 
 ---
 
-## Prompt 39: UDIP Conversation History — FOIA/NARA 7-Year Retention
+## Prompt 39: UDAP Conversation History — FOIA/NARA 7-Year Retention
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 2 (critical — before AI Assistant goes live)
 
 ### Prompt
@@ -3758,10 +3758,10 @@ Write a CHANGES.md and unified diff.
 **Owner:** All teams
 **Phase:** 2 (before production)
 
-### Prompt (UDIP — run in eeoc-data-analytics-and-dashboard/)
+### Prompt (UDAP — run in eeoc-data-analytics-and-dashboard/)
 
 ```
-Add a FOIA export endpoint to the UDIP AI Assistant. Triage already has
+Add a FOIA export endpoint to the UDAP AI Assistant. Triage already has
 ExportTriageRecord as a template. FOIA requests require exporting all AI
 interaction records for a specific case or date range.
 
@@ -3799,7 +3799,7 @@ Write a CHANGES.md and unified diff.
 ### Prompt (ADR — run in eeoc-ofs-adr/)
 
 ```
-Add FOIA export to ADR. Same pattern as UDIP (Prompt 40 above).
+Add FOIA export to ADR. Same pattern as UDAP (Prompt 40 above).
 
 1. Create adr_webapp/routes/foia_export.py:
    - POST /api/v1/foia-export
@@ -3829,11 +3829,11 @@ Write a CHANGES.md and unified diff.
 
 ## Prompt 41: Centralized Litigation Hold Mechanism
 
-**Repositories:** All 4 app repos + UDIP for central hold table
+**Repositories:** All 4 app repos + UDAP for central hold table
 **Owner:** All teams
 **Phase:** 2 (before production)
 
-### Prompt (UDIP — central hold table, run in eeoc-data-analytics-and-dashboard/)
+### Prompt (UDAP — central hold table, run in eeoc-data-analytics-and-dashboard/)
 
 ```
 Create a centralized litigation hold mechanism that prevents deletion of
@@ -3853,7 +3853,7 @@ litigation hold is issued.
    - released_by VARCHAR(128)
    - released_at TIMESTAMPTZ
    - is_active BOOLEAN DEFAULT TRUE
-   - affects_systems TEXT[] DEFAULT ARRAY['adr','triage','udip','ogc']
+   - affects_systems TEXT[] DEFAULT ARRAY['adr','triage','udap','ogc']
    - INDEX (charge_number, is_active)
 
    operations.hold_audit_log:
@@ -3887,7 +3887,7 @@ litigation hold is issued.
      c. Log to lifecycle_audit_log
 
 4. MCP tool for hold checking:
-   - Add hold_check_tool to UDIP's MCP server:
+   - Add hold_check_tool to UDAP's MCP server:
      Input: charge_number
      Output: { has_hold: bool, holds: [...] }
    - Other apps can call this through the MCP Hub before disposal
@@ -3898,18 +3898,18 @@ Write a CHANGES.md and unified diff.
 ### Prompt (ADR + Triage + OGC — run in each repo)
 
 ```
-Integrate with UDIP's centralized litigation hold service.
+Integrate with UDAP's centralized litigation hold service.
 
 1. In FinalizeDisposal function:
-   - Before processing disposal, call UDIP's hold check API:
-     GET {UDIP_API_URL}/api/holds/check/{charge_number}
+   - Before processing disposal, call UDAP's hold check API:
+     GET {UDAP_API_URL}/api/holds/check/{charge_number}
    - If hold exists: abort disposal, log reason, return without deleting
-   - If UDIP is unreachable: abort disposal (fail-closed), log error
+   - If UDAP is unreachable: abort disposal (fail-closed), log error
    - Feature flag: LITIGATION_HOLD_CHECK_ENABLED (default: true)
 
 2. In application startup:
    - Log: "Litigation hold checking: enabled/disabled"
-   - If enabled but UDIP URL not configured: log warning, operate without hold checks
+   - If enabled but UDAP URL not configured: log warning, operate without hold checks
 
 Write a CHANGES.md and unified diff.
 ```
@@ -3929,9 +3929,9 @@ The compliance audit found the ARC Integration API is missing HMAC audit
 signing (AU-9, AU-10), persistent audit storage (AU-4), and explicit
 retention policies (AU-11). It uses structlog for structured JSON which
 is good, but lacks the tamper protection and immutability that ADR, Triage,
-and UDIP already implement.
+and UDAP already implement.
 
-Bring the ARC Integration API to parity with ADR/Triage/UDIP audit logging.
+Bring the ARC Integration API to parity with ADR/Triage/UDAP audit logging.
 Use the shared_code/ai_audit_logger.py pattern from ADR as the template.
 
 1. Create app/audit_logger.py:
@@ -4057,7 +4057,7 @@ Write a CHANGES.md and unified diff.
 ```
 The OGC Trial Tool has the weakest logging compliance: plain text format,
 no HMAC signing, no correlation IDs, no PII hashing, no structured JSON,
-and no explicit retention policy. Bring it to parity with ADR/Triage/UDIP.
+and no explicit retention policy. Bring it to parity with ADR/Triage/UDAP.
 
 The Trial Tool already has shared_code/ai_audit_logger.py (same as ADR).
 The issue is that the main application logging (trial_tool_app.py) does
@@ -4230,7 +4230,7 @@ dependencies are unpinned — a supply chain risk that fails SI-2.
    - In trial_tool_webapp/ code, replace:
      from jose import jwt → from jwt import PyJWT (or import jwt)
    - Update any jwt.decode() calls to match PyJWT API
-   - PyJWT is already proven in ADR, Triage, UDIP, ARC API
+   - PyJWT is already proven in ADR, Triage, UDAP, ARC API
 
 3. Document Ollama model licenses (MEDIUM):
    Create trial_tool_webapp/MODEL_LICENSES.md documenting:
@@ -4487,7 +4487,7 @@ CHANGES:
    - DocumentIndexer uses Ollama for text cleanup and summarization
    - Replace with FoundryModelProvider calls
    - If DocumentIndexer also uses Ollama for embeddings: replace with
-     Azure OpenAI text-embedding-3-small (same as UDIP and Triage)
+     Azure OpenAI text-embedding-3-small (same as UDAP and Triage)
 
 4. Remove ollama from requirements.txt:
    - trial_tool_webapp/requirements.txt: remove ollama
@@ -4696,7 +4696,7 @@ PART 4: POST-PROVISIONING CONFIGURATION
 - How to verify each spoke is connected and healthy
 
 PART 5: FIRST DATA FLOW VERIFICATION
-- How to verify CDC is streaming data from PrEPA to UDIP
+- How to verify CDC is streaming data from PrEPA to UDAP
 - How to verify the middleware is translating data correctly
 - How to verify RLS is working (test with 2 different regional users)
 - How to verify the AI Assistant responds to a query
@@ -4716,7 +4716,7 @@ PART 6: GOING LIVE CHECKLIST
 
 PART 7: TROUBLESHOOTING
 Common problems and solutions:
-- UDIP returns empty results → OBO not configured, check caller region
+- UDAP returns empty results → OBO not configured, check caller region
 - ADR login fails → Entra ID redirect URI misconfigured
 - CDC consumer not processing → Event Hub connection string, consumer group
 - Tool not found in hub → spoke not registered, check APIM routing
@@ -4781,7 +4781,7 @@ SECTION 2: Configuration variables
   EEOC_RG="rg-eeoc-ai-platform-${EEOC_ENV}"
   EEOC_VNET="vnet-eeoc-ai-${EEOC_ENV}"
   EEOC_KV="kv-eeoc-ai-${EEOC_ENV}"
-  EEOC_PG_SERVER="pg-eeoc-udip-${EEOC_ENV}"
+  EEOC_PG_SERVER="pg-eeoc-udap-${EEOC_ENV}"
   ... etc for ALL resources
 
 SECTION 3: Safety checks
@@ -4829,7 +4829,7 @@ SECTION 10: Azure Cache for Redis
 
 SECTION 11: Azure Event Hub Namespace
 - Kafka-enabled, Standard tier
-- Consumer group: udip-middleware
+- Consumer group: udap-middleware
 - Store connection string in Key Vault
 
 SECTION 12: Azure OpenAI
@@ -4923,7 +4923,7 @@ documentation density of provision_adr_system.sh.
 ## Prompt 52: Auto-Schema Detection, Labeling, and AI Discovery
 
 **Repository:** `eeoc-data-analytics-and-dashboard/`
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 3 (after CDC pipeline is stable)
 
 ### Prompt
@@ -5054,7 +5054,7 @@ BUILD THE FOLLOWING:
         create region policy inherited from analytics.charges
       - If table has PII columns (tier 2/3):
         create PII tier policy
-      - Always create writer policy for udip_writer role
+      - Always create writer policy for udap_writer role
       - Execute against PostgreSQL
 
    c. generate_yaml_mapping(source_schema, table_name, labeled_columns):
@@ -5369,7 +5369,7 @@ PREREQUISITE: Prompt 53 (multi-tenancy) must be complete. Prompt 57
 1. OFP case detection from CDC pipeline:
    Create case-processor-function/OFPCaseMonitor/__init__.py:
    - Timer trigger: runs every 15 minutes
-   - Queries UDIP analytics tables (via UDIP API or direct PostgreSQL read replica)
+   - Queries UDAP analytics tables (via UDAP API or direct PostgreSQL read replica)
      for new charges matching OFP criteria:
      a. accountabilityOfficeCode maps to an OFP district office
      b. Status = CHARGE_FILED (or configurable status list)
@@ -6248,7 +6248,7 @@ __init__.py (which exists and works, 401 lines) as the structural template.
 
    Main function flow:
    a. Acquire distributed lock (same pattern as OFSSubmissionMonitor)
-   b. Query UDIP analytics tables (via read replica or UDIP API) for new
+   b. Query UDAP analytics tables (via read replica or UDAP API) for new
       charges matching OFP criteria:
       - accountabilityOfficeCode maps to an OFP district office
         (use office hierarchy lookup from triage_webapp/helpers/office_hierarchy.py)
@@ -6282,7 +6282,7 @@ __init__.py (which exists and works, 401 lines) as the structural template.
    - OFP_CASE_MONITOR_INTERVAL_MINUTES: 15
    - ARC_INTEGRATION_API_URL: (required)
    - ARC_INTEGRATION_API_SCOPE: (Entra ID scope)
-   - UDIP_API_URL or PG_READ_REPLICA_CONNECTION_STRING: for querying new cases
+   - UDAP_API_URL or PG_READ_REPLICA_CONNECTION_STRING: for querying new cases
    - OFP_CALIBRATION_PHASE: true (log calibration warnings)
 
 2. Create or verify case-processor-function/OFPCaseMonitor/function.json:
@@ -6438,11 +6438,11 @@ correctly. Bring Triage to parity.
 Write a CHANGES.md and unified diff.
 ```
 
-### Prompt (UDIP — run in eeoc-data-analytics-and-dashboard/)
+### Prompt (UDAP — run in eeoc-data-analytics-and-dashboard/)
 
 ```
 POST-AUDIT REMEDIATION: Same HMAC-SHA256 and retention string issue as
-Triage. The UDIP analytics dashboard audit logger uses SHA-256 only.
+Triage. The UDAP analytics dashboard audit logger uses SHA-256 only.
 
 1. Upgrade shared_code/ai_audit_logger.py to use HMAC-SHA256:
    - Same changes as Triage prompt above:
@@ -6510,13 +6510,13 @@ Write a CHANGES.md and unified diff.
 
 ---
 
-## Prompt 64: Final Wiring Fixes — UDIP Conversation Lifecycle + Triage Session Population + ScheduledDisposal
+## Prompt 64: Final Wiring Fixes — UDAP Conversation Lifecycle + Triage Session Population + ScheduledDisposal
 
 **Repositories:** `eeoc-data-analytics-and-dashboard/` and `eeoc-ofs-triage/`
-**Owner:** UDIP team + Triage team
+**Owner:** UDAP team + Triage team
 **Phase:** 2 (CRITICAL — dead code paths that break compliance and multi-tenancy)
 
-### Prompt (UDIP — run in eeoc-data-analytics-and-dashboard/)
+### Prompt (UDAP — run in eeoc-data-analytics-and-dashboard/)
 
 ```
 POST-AUDIT WIRING FIX: The full wiring audit found two methods in
@@ -6761,11 +6761,11 @@ PART B — K8s ConfigMap hygiene:
 Write a CHANGES.md and unified diff.
 ```
 
-### Prompt (UDIP — run in eeoc-data-analytics-and-dashboard/)
+### Prompt (UDAP — run in eeoc-data-analytics-and-dashboard/)
 
 ```
 FINAL HARDENING: The comprehensive audit identified the following issues
-in the UDIP repo. Fix ALL of them.
+in the UDAP repo. Fix ALL of them.
 
 PART A — Missing unit tests (4 gaps):
 
@@ -6830,7 +6830,7 @@ PART B — K8s PodDisruptionBudgets:
    kind: PodDisruptionBudget
    metadata:
      name: ai-assistant-pdb
-     namespace: udip
+     namespace: udap
    spec:
      minAvailable: 1
      selector:
@@ -6844,7 +6844,7 @@ PART B — K8s PodDisruptionBudgets:
    kind: PodDisruptionBudget
    metadata:
      name: superset-web-pdb
-     namespace: udip
+     namespace: udap
    spec:
      minAvailable: 1
      selector:
@@ -6855,7 +6855,7 @@ PART B — K8s PodDisruptionBudgets:
    kind: PodDisruptionBudget
    metadata:
      name: superset-worker-pdb
-     namespace: udip
+     namespace: udap
    spec:
      minAvailable: 1
      selector:
@@ -6869,7 +6869,7 @@ PART B — K8s PodDisruptionBudgets:
    kind: PodDisruptionBudget
    metadata:
      name: pgbouncer-pdb
-     namespace: udip
+     namespace: udap
    spec:
      minAvailable: 1
      selector:
@@ -6883,7 +6883,7 @@ PART B — K8s PodDisruptionBudgets:
    kind: PodDisruptionBudget
    metadata:
      name: portal-nginx-pdb
-     namespace: udip
+     namespace: udap
    spec:
      minAvailable: 1
      selector:
@@ -7025,13 +7025,13 @@ FINAL HARDENING: Cross-reference and consistency fixes.
 3. In provision_eeoc_ai_platform.sh, Section 8 (PostgreSQL), verify
    the SCHEMA_FILES array includes all 19 SQL files in correct order.
    If 050-search-functions.sql was renamed to 017-search-functions.sql
-   (per UDIP prompt above), update the array accordingly.
+   (per UDAP prompt above), update the array accordingly.
 
 4. In provision_eeoc_ai_platform.sh, Section 8, add application role
    creation BEFORE running schema files (if not already present):
 
    log_info "Creating application roles..."
-   psql -h "$PG_HOST" -U "$PG_ADMIN_USER" -d udip -c "
+   psql -h "$PG_HOST" -U "$PG_ADMIN_USER" -d udap -c "
      DO \$\$ BEGIN
        IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'adr_app') THEN
          CREATE ROLE adr_app NOLOGIN;
@@ -7056,7 +7056,7 @@ Write a CHANGES.md for the documentation updates.
 ## Prompt 66: Debezium Schema Expansion for Federal Hearings
 
 **Repository:** eeoc-data-analytics-and-dashboard/
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 4a
 
 ### Prompt
@@ -7108,7 +7108,7 @@ Write CHANGES.md summarizing all files modified and created.
 ## Prompt 67: Replica Schema DDL for New Entities
 
 **Repository:** eeoc-data-analytics-and-dashboard/
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 4a
 
 ### Prompt
@@ -7118,7 +7118,7 @@ Create replica schema DDL files for Federal Hearings entities and
 public schema gap entities. Follow the exact pattern established in
 analytics-db/postgres/003-replica-schema.sql: integer PKs, no FK
 constraints, updated_on TIMESTAMPTZ NOT NULL DEFAULT now(), GRANT
-SELECT/INSERT/UPDATE/DELETE ON all tables TO udip_writer.
+SELECT/INSERT/UPDATE/DELETE ON all tables TO udap_writer.
 
 FILE 1: analytics-db/postgres/004-replica-fed-hearings.sql
 
@@ -7185,7 +7185,7 @@ gaps identified from PrEPA JPA entities:
   charge_review_assignment   — charge_number, reviewer_id,
     assigned_date, review_type, completed_date, updated_on TIMESTAMPTZ
 
-Grant all tables to udip_writer. Add COMMENT ON TABLE for each table
+Grant all tables to udap_writer. Add COMMENT ON TABLE for each table
 briefly describing its source system.
 
 Write CHANGES.md listing both files and the table count in each.
@@ -7196,7 +7196,7 @@ Write CHANGES.md listing both files and the table count in each.
 ## Prompt 68: Analytics Target Tables for New Entities
 
 **Repository:** eeoc-data-analytics-and-dashboard/
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 4a
 
 ### Prompt
@@ -7206,7 +7206,7 @@ Create analytics target table DDL for Federal Hearings and Enforcement
 entities. Follow the lifecycle pattern from
 analytics-db/postgres/016-cdc-target-tables.sql exactly: UUID PKs
 (DEFAULT gen_random_uuid()), lifecycle columns, retention trigger,
-hold-reason CHECK constraint, GRANT to udip_writer and udip_reader.
+hold-reason CHECK constraint, GRANT to udap_writer and udap_reader.
 
 FILE 1: analytics-db/postgres/017-fed-hearings-analytics-tables.sql
 
@@ -7251,8 +7251,8 @@ For each table:
 - Add CHECK (lifecycle_state IN ('active','closed','purged','held'))
 - Create trigger set_updated_at BEFORE UPDATE using the shared
   trigger function from 016-cdc-target-tables.sql
-- GRANT SELECT ON table TO udip_reader
-- GRANT SELECT, INSERT, UPDATE ON table TO udip_writer
+- GRANT SELECT ON table TO udap_reader
+- GRANT SELECT, INSERT, UPDATE ON table TO udap_writer
 - CREATE INDEX ON hearing_cases (agency_code, fiscal_year)
 - CREATE INDEX ON hearing_cases (lifecycle_state)
 
@@ -7307,7 +7307,7 @@ function.
 ## Prompt 69: YAML Mappings for Federal Hearings CDC Entities
 
 **Repository:** eeoc-data-analytics-and-dashboard/
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 4a
 
 ### Prompt
@@ -7369,7 +7369,7 @@ Write CHANGES.md listing each yaml file reviewed, what was corrected
 ## Prompt 70: YAML Mappings for Public Schema Gap Entities
 
 **Repository:** eeoc-data-analytics-and-dashboard/
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 4a
 
 ### Prompt
@@ -7417,7 +7417,7 @@ them.
    block (driver: rest, base_url, auth_type) is documented. If the
    REST driver is not yet implemented in data-middleware/engine/,
    add a comment block: "# REST driver — requires engine v2 support"
-   and a JIRA/backlog reference format: "# Backlog: UDIP-XXX".
+   and a JIRA/backlog reference format: "# Backlog: UDAP-XXX".
 
    prepa_benefits.yaml — this denormalizes benefit_group into
    beneficiary rows. Verify the join_key and denormalization transform
@@ -8255,7 +8255,7 @@ Write CHANGES.md listing all files modified.
 ## Prompt 81: Analytics Dashboard — Federal Hearing and Enforcement Views
 
 **Repository:** eeoc-data-analytics-and-dashboard/
-**Owner:** UDIP team
+**Owner:** UDAP team
 **Phase:** 5
 
 ### Prompt
@@ -8321,7 +8321,7 @@ writing.
    Follow the pattern of existing tool files in that directory.
    Four async tool functions:
 
-   async def udip_get_hearing_caseload(
+   async def udap_get_hearing_caseload(
      agency_code: str | None = None,
      fiscal_year: int | None = None
    ) -> dict:
@@ -8329,20 +8329,20 @@ writing.
      If no filters: return current fiscal year. Never return individual
      case records — aggregate only.
 
-   async def udip_get_enforcement_metrics(
+   async def udap_get_enforcement_metrics(
      fiscal_year: int | None = None
    ) -> dict:
      Query vw_enforcement_summary. Return case counts and success
      rate by outcome_code.
 
-   async def udip_get_conciliation_rates(
+   async def udap_get_conciliation_rates(
      office_id: str | None = None,
      fiscal_year: int | None = None
    ) -> dict:
      Query vw_conciliation_outcomes. Return success_rate by office
      and fiscal year.
 
-   async def udip_get_court_hearing_schedule(
+   async def udap_get_court_hearing_schedule(
      upcoming_only: bool = True
    ) -> dict:
      Query vw_court_hearings. Return count of upcoming hearings by
@@ -8593,7 +8593,7 @@ eeoc-ofs-triage/deploy/ before writing to match conventions.
    unless that would break a known constraint.
 
 3. Create staff_portal/deploy/k8s/portal-deployment.yaml:
-   Deployment in namespace udip (or match existing app namespace).
+   Deployment in namespace udap (or match existing app namespace).
    Image: pulled from ACR, tag from CI (use image: PORTAL_IMAGE
    placeholder with a comment). Replicas: 2.
    Resources: requests cpu=250m memory=512Mi, limits cpu=1000m
@@ -9365,7 +9365,7 @@ Write a CHANGES.md and unified diff.
 ### Prompt
 
 ```
-Build a case-scoped AI Assistant for the OGC Trial Tool. Unlike UDIP's
+Build a case-scoped AI Assistant for the OGC Trial Tool. Unlike UDAP's
 cross-system analytics assistant, this one operates WITHIN a single case
 and NEVER mixes data between cases. It answers questions about case
 documents, generates citations in Bluebook format, and helps attorneys
@@ -9386,7 +9386,7 @@ PREREQUISITE: Prompts 85 (case registry) and 86 (document ingestion).
 1. Case-scoped conversation store:
 
    Create trial_tool_webapp/conversation_store.py:
-   Copy the pattern from UDIP's conversation_store.py but with case_id
+   Copy the pattern from UDAP's conversation_store.py but with case_id
    as the mandatory scoping field.
 
    - Every conversation belongs to exactly one case
@@ -9397,8 +9397,8 @@ PREREQUISITE: Prompts 85 (case registry) and 86 (document ingestion).
      created_at, updated_at, lifecycle_state, retention_expires_at,
      charge_number (optional, if OFP-linked)
    - HMAC-SHA256 on every audit record
-   - WORM archival on case closure (same as UDIP)
-   - Litigation hold support (same as UDIP)
+   - WORM archival on case closure (same as UDAP)
+   - Litigation hold support (same as UDAP)
 
    Retention:
    - Active case: conversations retained indefinitely
@@ -9552,13 +9552,13 @@ PREREQUISITE: Prompts 85 (case registry), 86 (documents), 87 (AI assistant).
 
    States: open → discovery → trial_prep → trial → post_trial → appeal →
            settled | closed
-   Plus: any state can transition to "held" (litigation hold from UDIP)
+   Plus: any state can transition to "held" (litigation hold from UDAP)
 
    On case closure (settled or closed):
    a. Set closed_at = now()
    b. Set retention_expires_at = closed_at + 7 years (2555 days)
    c. Set lifecycle_state = "retained"
-   d. Archive all AI conversations to WORM blob (same as UDIP pattern)
+   d. Archive all AI conversations to WORM blob (same as UDAP pattern)
    e. Archive case documents metadata to WORM blob
    f. Documents themselves remain in blob storage until retention expires
    g. Log to audit trail: CASE_CLOSED event with HMAC signature
@@ -9600,9 +9600,9 @@ PREREQUISITE: Prompts 85 (case registry), 86 (documents), 87 (AI assistant).
 4. Litigation hold integration:
 
    Same pattern as ADR/Triage:
-   - Before any disposal: check UDIP hold API
-     GET {UDIP_API_URL}/api/holds/check/{charge_number_or_case_id}
-   - Fail-closed: if UDIP unreachable, block disposal
+   - Before any disposal: check UDAP hold API
+     GET {UDAP_API_URL}/api/holds/check/{charge_number_or_case_id}
+   - Fail-closed: if UDAP unreachable, block disposal
    - When hold is issued on a linked charge: freeze case and all
      conversations (set lifecycle_state="held")
    - Feature flag: LITIGATION_HOLD_CHECK_ENABLED (default: true)
@@ -9814,7 +9814,7 @@ Write a CHANGES.md and unified diff.
 
 ---
 
-## Prompt 90: Progressive Web App (PWA) Installation for ADR, Triage, Trial Tool, UDIP
+## Prompt 90: Progressive Web App (PWA) Installation for ADR, Triage, Trial Tool, UDAP
 
 **Repositories:** `eeoc-ofs-adr/`, `eeoc-ofs-triage/`, `eeoc-ogc-trialtool/`, `eeoc-data-analytics-and-dashboard/`
 **Owner:** All teams
@@ -9851,7 +9851,7 @@ Implement ALL of the following in this repository.
    #   ADR repo:     APP_NAME="ADR",    BG_COLOR="#1a5276", TEXT_COLOR="#ffffff"
    #   Triage repo:  APP_NAME="Triage", BG_COLOR="#1a5276", TEXT_COLOR="#ffffff"
    #   Trial Tool:   APP_NAME="Trial",  BG_COLOR="#1a5276", TEXT_COLOR="#ffffff"
-   #   UDIP repo:    APP_NAME="UDIP",   BG_COLOR="#1a5276", TEXT_COLOR="#ffffff"
+   #   UDAP repo:    APP_NAME="UDAP",   BG_COLOR="#1a5276", TEXT_COLOR="#ffffff"
    APP_NAME = "ADR"  # CHANGE PER REPO
    BG_COLOR = "#1a5276"  # EEOC navy
    TEXT_COLOR = "#ffffff"
@@ -9861,7 +9861,7 @@ Implement ALL of the following in this repository.
        # ADR: "adr_webapp/static/icons"
        # Triage: "triage_webapp/static/icons"
        # Trial Tool: "trial_tool_webapp/static/icons"
-       # UDIP: "ai-assistant/app/static/icons"
+       # UDAP: "ai-assistant/app/static/icons"
        "REPLACE_WITH_CORRECT_PATH/static/icons")
    os.makedirs(output_dir, exist_ok=True)
 
@@ -9888,7 +9888,7 @@ Implement ALL of the following in this repository.
    - eeoc-ofs-adr: APP_NAME="ADR", path="adr_webapp/static/icons"
    - eeoc-ofs-triage: APP_NAME="Triage", path="triage_webapp/static/icons"
    - eeoc-ogc-trialtool: APP_NAME="Trial", path="trial_tool_webapp/static/icons"
-   - eeoc-data-analytics-and-dashboard: APP_NAME="UDIP", path="ai-assistant/app/static/icons"
+   - eeoc-data-analytics-and-dashboard: APP_NAME="UDAP", path="ai-assistant/app/static/icons"
 
    Run the script: python3 scripts/generate_pwa_icons.py
    Commit the generated PNG files.
@@ -9924,7 +9924,7 @@ Implement ALL of the following in this repository.
 
    For Triage: name="EEOC Triage", short_name="Triage"
    For Trial Tool: name="EEOC Trial Tool", short_name="Trial"
-   For UDIP: name="EEOC Analytics & AI", short_name="UDIP"
+   For UDAP: name="EEOC Analytics & AI", short_name="UDAP"
 
 3. Create service worker (minimal, no offline caching):
 
@@ -10242,7 +10242,7 @@ Document every conditional dependency:
 | ESIGNATURE-ENABLED=true (KV) | ESIGNATURE-PROVIDER, DOCUSIGN-API-KEY or ADOBE-SIGN-API-KEY (KV) | E-signature feature crashes |
 | PG_MIGRATION_MODE != "off" | PG_CONNECTION_STRING | App crashes on any database write |
 | MCP_ENABLED=true | MCP_CALLBACK_URL, MCP_WEBHOOK_SECRET | MCP event dispatch fails silently |
-| UDIP_PUSH_ENABLED=true | UDIP_INGEST_URL, UDIP_API_SCOPE | Analytics push crashes |
+| UDAP_PUSH_ENABLED=true | UDAP_INGEST_URL, UDAP_API_SCOPE | Analytics push crashes |
 | ARC_SYNC_ENABLED=true | ARC_INTEGRATION_API_URL or ARC_API_BASE_URL | ARC sync logs warning, skips |
 | TEAMS_ENABLED=true (KV) | GRAPH-CLIENT-ID, GRAPH-CLIENT-SECRET (KV) | Calendar/scheduling features fail |
 | TABLE_PARTITION_BY_OFFICE=true | Office structure must be configured | Queries may return empty results |

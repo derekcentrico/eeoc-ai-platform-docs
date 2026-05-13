@@ -124,7 +124,7 @@ Application Insights data flows to the same `log-eeoc-ai-prod` workspace. No add
 ```kql
 AppRequests
 | where AppRoleName in (
-    "ca-udip-ai-assistant-prod",
+    "ca-udap-ai-assistant-prod",
     "ca-adr-webapp-prod",
     "ca-adr-functionapp-prod",
     "ca-triage-webapp-prod",
@@ -247,7 +247,7 @@ Click **Next: Automated response** > attach `playbook-notify-security` > **Creat
 **Rule query:**
 ```kql
 AppRequests
-| where AppRoleName == "ca-udip-ai-assistant-prod"
+| where AppRoleName == "ca-udap-ai-assistant-prod"
 | where Name has "/api/query" or Name has "/api/chat" or Name has "/api/search"
 | extend UserPrincipal = tostring(Properties["user_id"])
 | summarize QueryCount = count() by UserPrincipal, bin(TimeGenerated, 1h)
@@ -1002,7 +1002,7 @@ datatable(Application:string, EL1:string, EL2:string, EL3:string, Status:string)
 [
     "ADR Web Application", "Complete", "Complete", "Complete", "EL3 Achieved",
     "ADR Function App", "Complete", "Complete", "Complete", "EL3 Achieved",
-    "UDIP AI Assistant", "Complete", "Complete", "Complete", "EL3 Achieved",
+    "UDAP AI Assistant", "Complete", "Complete", "Complete", "EL3 Achieved",
     "Triage Web Application", "Complete", "Complete", "Complete", "EL3 Achieved",
     "Triage Function App", "Complete", "Complete", "Complete", "EL3 Achieved",
     "MCP Hub Aggregator", "Complete", "Complete", "Complete", "EL3 Achieved"
@@ -1012,7 +1012,7 @@ datatable(Application:string, EL1:string, EL2:string, EL3:string, Status:string)
 5. Visualization: `Grid`
 6. Click **Done Editing**
 
-> This is a static reference table. Update the `Status` column manually if an application falls out of compliance. Alternatively, replace with a dynamic query against a compliance tracking table in UDIP if one is implemented.
+> This is a static reference table. Update the `Status` column manually if an application falls out of compliance. Alternatively, replace with a dynamic query against a compliance tracking table in UDAP if one is implemented.
 
 #### 8.2.2 AU Control Compliance Status
 

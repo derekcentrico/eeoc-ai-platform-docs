@@ -20,7 +20,7 @@ The hub is a routing layer. It does not store case data, run AI models, or make 
 
 That is the entire scope. If you find yourself building business logic into the hub, stop and push it to a spoke instead.
 
-**Important architectural context:** UDIP is the central internal data repository. It ingests a full replica of ARC's database in real-time via a WAL/CDC pipeline (PrEPA PostgreSQL → logical replication FOR ALL TABLES → Debezium → Azure Event Hub → UDIP replica schema → Data Middleware → analytics schema). All data passes through the UDIP Data Middleware, which provides YAML-driven column translation, value mapping, PII redaction, and schema validation. The IDR (nightly SQL Server snapshot) serves as a twice-weekly reconciliation source to verify CDC pipeline completeness. UDIP serves as the primary query target for analytics, cross-system lookups, and AI consumers. When an AI consumer asks a data question, the hub should route it to UDIP, not to ARC. The ARC Integration API spoke exists solely for **write-back** (pushing mediation outcomes and triage results back to ARC) and a small number of **targeted real-time lookups** (mediation eligibility, charge metadata at upload time, document metadata from ECM). It does not feed bulk data to UDIP — the CDC pipeline handles that independently.
+**Important architectural context:** UDAP is the central internal data repository. It ingests a full replica of ARC's database in real-time via a WAL/CDC pipeline (PrEPA PostgreSQL → logical replication FOR ALL TABLES → Debezium → Azure Event Hub → UDAP replica schema → Data Middleware → analytics schema). All data passes through the UDAP Data Middleware, which provides YAML-driven column translation, value mapping, PII redaction, and schema validation. The IDR (nightly SQL Server snapshot) serves as a twice-weekly reconciliation source to verify CDC pipeline completeness. UDAP serves as the primary query target for analytics, cross-system lookups, and AI consumers. When an AI consumer asks a data question, the hub should route it to UDAP, not to ARC. The ARC Integration API spoke exists solely for **write-back** (pushing mediation outcomes and triage results back to ARC) and a small number of **targeted real-time lookups** (mediation eligibility, charge metadata at upload time, document metadata from ECM). It does not feed bulk data to UDAP — the CDC pipeline handles that independently.
 
 ---
 
@@ -92,56 +92,56 @@ Decide with the Triage team before connecting. The recommendation is Option A.
 2. Hub tool router configured to show Triage tools only in `case_management`, `analytics`, or `document_storage` contexts
 3. Hub timeout set to 30+ seconds for read tools, 60+ seconds for batch operations
 
-### Spoke 3: UDIP Analytics Platform
+### Spoke 3: UDAP Analytics Platform
 
 - **MCP endpoint:** `POST /mcp` (JSON-RPC 2.0, protocol version 2025-03-26)
 - **Feature gate:** `MCP_ENABLED=true`, `MCP_PROTOCOL_ENABLED=true`, `MCP_SERVER_EXPOSE=true`
 - **Auth:** Entra ID M2M bearer token. App roles: `Analytics.Read`, `Analytics.Write` (NOT MCP.Read/MCP.Write — this is intentional)
 - **Tools:** 3 built-in (`search_narratives`, `get_metrics`, `get_dashboards`) plus N auto-generated `query_{dataset_name}` tools from dbt models. N changes whenever dbt runs.
 - **Capability categories:** `analytics`, `narrative_search`, `reporting`
-- **Events:** UDIP does not push events natively.
+- **Events:** UDAP does not push events natively.
 
-**Critical: The tool catalog is dynamic.** UDIP regenerates its tool list whenever dbt models are updated. A `query_fct_charges` tool that exists today might be renamed to `query_fct_charge_details` tomorrow if the dbt model name changes. New models create new tools automatically.
+**Critical: The tool catalog is dynamic.** UDAP regenerates its tool list whenever dbt models are updated. A `query_fct_charges` tool that exists today might be renamed to `query_fct_charge_details` tomorrow if the dbt model name changes. New models create new tools automatically.
 
 **What this means for the hub:**
-- Your tool registry reconciliation loop (the 5-minute refresh) must call `tools/list` on UDIP every cycle, not just on initial connection
+- Your tool registry reconciliation loop (the 5-minute refresh) must call `tools/list` on UDAP every cycle, not just on initial connection
 - You must handle tools appearing and disappearing between cycles without erroring
 - When a tool disappears, remove it from the merged catalog. When a new one appears, add it
-- Cap the number of UDIP tools shown in any single AI context to ~10. If UDIP has 30 dataset tools, showing all of them wastes context window and confuses the model
+- Cap the number of UDAP tools shown in any single AI context to ~10. If UDAP has 30 dataset tools, showing all of them wastes context window and confuses the model
 
 **Critical: Row-Level Security is a blocker until token delegation is resolved.**
 
-UDIP enforces row-level security at the PostgreSQL layer. Every SQL query runs with session context set from the caller's Entra ID token:
+UDAP enforces row-level security at the PostgreSQL layer. Every SQL query runs with session context set from the caller's Entra ID token:
 - `app.current_regions` — comma-separated list of regions the caller can see
 - `app.current_role` — the caller's role (Admin, Director, Analyst, etc.)
 - `app.current_pii_tier` — what level of PII the caller can access (1, 2, or 3)
 
-The hub's managed identity has no region claim, no role beyond `Analytics.Read`, and no PII tier. If the hub calls UDIP with its own token:
+The hub's managed identity has no region claim, no role beyond `Analytics.Read`, and no PII tier. If the hub calls UDAP with its own token:
 - Queries return zero rows (not an error — just empty results)
 - The connection appears to work
 - The data is silently wrong
 - This is harder to diagnose than a connection failure
 
-**Token delegation options (decide before connecting UDIP):**
+**Token delegation options (decide before connecting UDAP):**
 
-**Option 1: Explicit region parameter.** Add a `region` parameter to each `query_{dataset}` tool on the UDIP side. The hub passes the caller's region from the original request context. UDIP uses this parameter instead of the token claim to set session context.
+**Option 1: Explicit region parameter.** Add a `region` parameter to each `query_{dataset}` tool on the UDAP side. The hub passes the caller's region from the original request context. UDAP uses this parameter instead of the token claim to set session context.
 - Pro: Simple to implement
-- Con: Changes UDIP's security model. Callers can request any region. UDIP team may not approve this
+- Con: Changes UDAP's security model. Callers can request any region. UDAP team may not approve this
 
-**Option 2: OAuth 2.0 On-Behalf-Of (OBO) flow.** The hub acquires a token for UDIP on behalf of the original caller, preserving their identity, region claims, and PII tier.
-- Pro: Most architecturally correct. UDIP's security model stays unchanged
+**Option 2: OAuth 2.0 On-Behalf-Of (OBO) flow.** The hub acquires a token for UDAP on behalf of the original caller, preserving their identity, region claims, and PII tier.
+- Pro: Most architecturally correct. UDAP's security model stays unchanged
 - Con: Requires additional Entra ID configuration (OBO must be explicitly enabled on both app registrations). The hub must receive the original caller's token (not just a request from an AI consumer)
 
-**Option 3: Hub-managed region mapping.** The hub maintains a table mapping caller identities to their regions. When calling UDIP, the hub injects the region as a tool parameter.
-- Pro: No UDIP changes needed
+**Option 3: Hub-managed region mapping.** The hub maintains a table mapping caller identities to their regions. When calling UDAP, the hub injects the region as a tool parameter.
+- Pro: No UDAP changes needed
 - Con: Hub now owns region assignment data, which is a maintenance burden and a potential source of drift
 
 **The recommendation is Option 2 (OBO).** It is more work upfront but avoids creating security model exceptions or data maintenance obligations.
 
-**What the hub needs to provide to UDIP before connecting:**
-1. Hub's managed identity granted `Analytics.Read` on UDIP's app registration
+**What the hub needs to provide to UDAP before connecting:**
+1. Hub's managed identity granted `Analytics.Read` on UDAP's app registration
 2. Token delegation approach agreed upon and implemented
-3. Hub tool router configured to show UDIP tools only in `analytics`, `narrative_search`, or `reporting` contexts
+3. Hub tool router configured to show UDAP tools only in `analytics`, `narrative_search`, or `reporting` contexts
 4. Hub reconciler handling dynamic tool catalogs (tools appearing/disappearing between refreshes)
 5. Verification that a regional caller token returns correct regional data, not empty results
 
@@ -172,7 +172,7 @@ Both are being handled separately (see the implementation prompts document). The
 - **Capability categories:** `case_management`, `reference_data`, `document_storage`
 - **Events:** Forwards PrEPA's Service Bus events to the hub as HTTPS/HMAC webhook calls
 
-**This service does not exist yet.** It is being built as a separate workstream (see the ARC Integration API section of the architecture plan). The hub team does not build this, but you need to know what it provides. Note: this service does NOT feed bulk data to UDIP. UDIP gets its data via a WAL/CDC pipeline (PrEPA PostgreSQL → Debezium → Event Hub → UDIP Data Middleware) that operates independently of the hub. The ARC Integration API provides write-back tools and a small number of targeted read tools:
+**This service does not exist yet.** It is being built as a separate workstream (see the ARC Integration API section of the architecture plan). The hub team does not build this, but you need to know what it provides. Note: this service does NOT feed bulk data to UDAP. UDAP gets its data via a WAL/CDC pipeline (PrEPA PostgreSQL → Debezium → Event Hub → UDAP Data Middleware) that operates independently of the hub. The ARC Integration API provides write-back tools and a small number of targeted read tools:
 
 **Read tools (ARC.Read):**
 
@@ -283,11 +283,11 @@ The hub maintains a merged tool catalog from all spokes. This is the most import
 
 Example filtering:
 - `categories=["case_management"]` → ADR case tools + Triage case tools + ARC case tools (~12 tools)
-- `categories=["analytics", "reporting"]` → Triage analytics + UDIP query tools (~6-10 tools)
+- `categories=["analytics", "reporting"]` → Triage analytics + UDAP query tools (~6-10 tools)
 - `categories=["litigation"]` → OGC Trial Tool + ARC litigation tools (~5 tools)
 - No categories parameter → all tools (use sparingly)
 
-**Handling dynamic catalogs (UDIP):** The reconciliation loop must handle tools that appear or disappear between cycles. When a tool was in the catalog last cycle but is not in this cycle's `tools/list` response, remove it. When a new tool appears, add it. Do not cache tool catalogs across hub restarts — always reconcile from spokes on startup.
+**Handling dynamic catalogs (UDAP):** The reconciliation loop must handle tools that appear or disappear between cycles. When a tool was in the catalog last cycle but is not in this cycle's `tools/list` response, remove it. When a new tool appears, add it. Do not cache tool catalogs across hub restarts — always reconcile from spokes on startup.
 
 **Naming collisions:** If two spokes register tools with the same name, prefix with the spoke name. For example, both ADR and Triage have a tool called `list_cases`. In the merged catalog, these become `adr.list_cases` and `ofs-triage.list_cases`. Apply this prefixing to all tools to avoid ambiguity.
 
@@ -305,7 +305,7 @@ When an AI consumer calls `tools/call` on the hub, the hub must:
 
 **Token acquisition:** Use `DefaultAzureCredential` with the spoke's auth scope. Each spoke has a different scope (e.g., `api://adr-client-id/.default`, `api://triage-client-id/.default`). Cache tokens with a 60-second pre-expiry buffer.
 
-**OBO for UDIP:** When routing to UDIP, the hub must use OBO to preserve the original caller's identity. This means the hub needs the original caller's token (not just a client credentials token). The hub's inbound auth must preserve the caller's access token so it can be exchanged via OBO for UDIP calls.
+**OBO for UDAP:** When routing to UDAP, the hub must use OBO to preserve the original caller's identity. This means the hub needs the original caller's token (not just a client credentials token). The hub's inbound auth must preserve the caller's access token so it can be exchanged via OBO for UDAP calls.
 
 **Error handling:**
 - Spoke unreachable → return JSON-RPC error with code -32603 (internal error) and message "Spoke {name} is not available"
@@ -315,7 +315,7 @@ When an AI consumer calls `tools/call` on the hub, the hub must:
 
 ### 4. Event Ingestion and Forwarding
 
-The hub accepts events from spokes and the ARC Integration API, validates them, and optionally forwards them to interested subscribers. These events are for inter-spoke notifications (e.g., ADR needs to know when a case status changes in ARC). This is separate from the WAL/CDC pipeline that feeds UDIP — UDIP gets its data independently via PostgreSQL logical replication through the Data Middleware, not through the hub's event system.
+The hub accepts events from spokes and the ARC Integration API, validates them, and optionally forwards them to interested subscribers. These events are for inter-spoke notifications (e.g., ADR needs to know when a case status changes in ARC). This is separate from the WAL/CDC pipeline that feeds UDAP — UDAP gets its data independently via PostgreSQL logical replication through the Data Middleware, not through the hub's event system.
 
 **Ingestion endpoint:** `POST /api/v1/events`
 
@@ -355,7 +355,7 @@ The hub accepts events from spokes and the ARC Integration API, validates them, 
 | ADR | `case.closed` | (log only — no subscribers initially) |
 | ADR | `case.reassigned` | (log only) |
 
-UDIP does not subscribe to real-time events. It uses watermark-based batch sync on its own schedule.
+UDAP does not subscribe to real-time events. It uses watermark-based batch sync on its own schedule.
 
 ### 5. Audit Logging
 
@@ -403,13 +403,13 @@ Every tool invocation and every event must be logged to an immutable audit trail
 **Outbound (hub calling spokes):**
 - For each spoke, acquire a token using `DefaultAzureCredential` with the spoke's auth scope
 - Cache tokens with 60-second pre-expiry buffer
-- Different spokes may require different scopes (ADR uses `api://adr-client-id/.default`, UDIP uses `api://udip-client-id/.default`)
+- Different spokes may require different scopes (ADR uses `api://adr-client-id/.default`, UDAP uses `api://udap-client-id/.default`)
 
-**OBO flow (hub calling UDIP on behalf of the original caller):**
+**OBO flow (hub calling UDAP on behalf of the original caller):**
 - The hub must receive the caller's access token in the inbound request
-- Use MSAL's `acquire_token_on_behalf_of()` with the caller's token and UDIP's scope
+- Use MSAL's `acquire_token_on_behalf_of()` with the caller's token and UDAP's scope
 - The resulting OBO token carries the original caller's claims (including region groups)
-- Only needed for UDIP. All other spokes work fine with client credentials
+- Only needed for UDAP. All other spokes work fine with client credentials
 
 ### 7. Health and Readiness
 
@@ -428,10 +428,10 @@ Do not connect all five spokes at once. Follow this sequence:
 | Step | What Connects | Gate Criteria |
 |------|--------------|---------------|
 | 1 | Hub infrastructure only | Health, auth, events, and VNet are all working. All Build Guide acceptance tests pass |
-| 2 | ARC Integration API (as first spoke) | Write-back tools and targeted read tools return correct data. Event forwarding from Service Bus works. Audit records are being written. Note: UDIP data currency is handled by the WAL/CDC pipeline, not this spoke |
+| 2 | ARC Integration API (as first spoke) | Write-back tools and targeted read tools return correct data. Event forwarding from Service Bus works. Audit records are being written. Note: UDAP data currency is handled by the WAL/CDC pipeline, not this spoke |
 | 3 | ADR | All 10 tools callable. Events round-trip (ADR -> hub -> audit). Audit correlation (request_id) verified in both hub and ADR audit tables |
 | 4 | OFS Triage | Read tools return live data. Async submit_case pattern is documented or wrapped. Charge metadata auto-population working through ARC spoke |
-| 5 | UDIP (after token delegation is resolved) | OBO token returns correct regional data. Dynamic tool catalog reconciles cleanly. Empty results confirmed to be a scoping issue, not a bug. Verify UDIP's WAL/CDC pipeline is populating data independently — the hub routes queries TO UDIP but does not feed data INTO UDIP |
+| 5 | UDAP (after token delegation is resolved) | OBO token returns correct regional data. Dynamic tool catalog reconciles cleanly. Empty results confirmed to be a scoping issue, not a bug. Verify UDAP's WAL/CDC pipeline is populating data independently — the hub routes queries TO UDAP but does not feed data INTO UDAP |
 | 6 | OGC Trial Tool (after auth replacement is done) | Entra ID auth is live. MCP server responds. Litigation data flows from ARC spoke through hub to trial tool |
 | 7 | Cross-spoke verification | An AI query that touches two or more spokes returns a correct combined result |
 
@@ -447,7 +447,7 @@ All spoke connections are HTTPS on port 443. No exceptions.
 |-----------|------|------|------|
 | Hub -> ADR | Hub Container App | `adr-app.azurewebsites.net/mcp` | Hub managed identity -> ADR scope |
 | Hub -> Triage | Hub Container App | `ofs-triage.azurewebsites.net/mcp` | Hub managed identity -> Triage scope |
-| Hub -> UDIP | Hub Container App | `udip.azurewebsites.net/mcp` | OBO token (carries caller identity) |
+| Hub -> UDAP | Hub Container App | `udap.azurewebsites.net/mcp` | OBO token (carries caller identity) |
 | Hub -> OGC Trial Tool | Hub Container App | `ogc-trialtool.azurewebsites.net/mcp` | Hub managed identity -> Trial Tool scope |
 | Hub -> ARC Integration API | Hub Container App | `arc-integration.azurewebsites.net/mcp` | Hub managed identity -> ARC scope |
 | ADR -> Hub (events) | ADR App Service | Hub Container App internal FQDN | HMAC signature + service principal token |
@@ -520,11 +520,11 @@ Before declaring each phase complete, verify these:
 - [ ] `ofs-triage.submit_case` returns a tracking ID (not a completed result)
 - [ ] Subsequent `ofs-triage.get_case` shows the case status progressing
 
-### UDIP Connection (Phase 5)
+### UDAP Connection (Phase 5)
 - [ ] OBO token delegation is working (test with a user who has region groups)
-- [ ] `tools/list` includes UDIP built-in tools plus dynamic query tools
-- [ ] `udip.get_metrics` returns the dbt metrics catalog
-- [ ] `udip.query_fct_charges` returns data scoped to the caller's region (not empty, not all regions)
+- [ ] `tools/list` includes UDAP built-in tools plus dynamic query tools
+- [ ] `udap.get_metrics` returns the dbt metrics catalog
+- [ ] `udap.query_fct_charges` returns data scoped to the caller's region (not empty, not all regions)
 - [ ] After a dbt run that adds a new model, the new `query_{model}` tool appears in the next reconciliation cycle
 
 ### OGC Trial Tool Connection (Phase 6)
@@ -544,18 +544,18 @@ Before declaring each phase complete, verify these:
 
 1. **Do not build business logic into the hub.** If you find yourself writing code that understands what a "charge" is or how mediation eligibility works, that logic belongs in a spoke (probably the ARC Integration API).
 
-2. **Do not assume tool catalogs are stable.** UDIP's catalog changes. Test with tools appearing and disappearing.
+2. **Do not assume tool catalogs are stable.** UDAP's catalog changes. Test with tools appearing and disappearing.
 
 3. **Do not hardcode spoke URLs.** They come from the registration payload.
 
-4. **Do not use the hub's own managed identity token when calling UDIP.** You will get empty results and think something is broken. Use OBO.
+4. **Do not use the hub's own managed identity token when calling UDAP.** You will get empty results and think something is broken. Use OBO.
 
 5. **Do not forward Service Bus events without transforming them.** PrEPA's event format is internal to ARC. Transform to the standardized event payload format before forwarding to spokes.
 
 6. **Do not delete anything from the audit archive.** The WORM policy should prevent it, but also do not write code that tries. The application should have no delete permissions on that container.
 
-7. **Do not connect spokes out of sequence.** ARC Integration API first, then ADR, then Triage, then UDIP, then OGC Trial Tool. Each step validates assumptions that the next step depends on.
+7. **Do not connect spokes out of sequence.** ARC Integration API first, then ADR, then Triage, then UDAP, then OGC Trial Tool. Each step validates assumptions that the next step depends on.
 
-8. **Do not ignore the UDIP RLS problem.** A connection that returns 200 OK with empty data is worse than a connection that fails. Test with a real user who has region groups. Verify the data is correct, not just present.
+8. **Do not ignore the UDAP RLS problem.** A connection that returns 200 OK with empty data is worse than a connection that fails. Test with a real user who has region groups. Verify the data is correct, not just present.
 
-9. **Do not confuse UDIP's data ingestion with the hub's event routing.** UDIP gets its data from PrEPA via WAL/CDC (PostgreSQL logical replication → Debezium → Event Hub → UDIP Data Middleware). The hub routes queries TO UDIP and forwards event notifications between spokes. These are separate paths. The hub does not feed data into UDIP.
+9. **Do not confuse UDAP's data ingestion with the hub's event routing.** UDAP gets its data from PrEPA via WAL/CDC (PostgreSQL logical replication → Debezium → Event Hub → UDAP Data Middleware). The hub routes queries TO UDAP and forwards event notifications between spokes. These are separate paths. The hub does not feed data into UDAP.

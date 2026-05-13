@@ -8,7 +8,7 @@
 
 ## What This Project Is
 
-The EEOC (Equal Employment Opportunity Commission) is building an enterprise AI integration platform that connects 5 internal applications to a central data store (UDIP), enabling real-time case data access, AI-powered analytics, cross-system decision support, and bidirectional write-back to the ARC system of record — all on Azure Government (FedRAMP High).
+The EEOC (Equal Employment Opportunity Commission) is building an enterprise AI integration platform that connects 5 internal applications to a central data store (UDAP), enabling real-time case data access, AI-powered analytics, cross-system decision support, and bidirectional write-back to the ARC system of record — all on Azure Government (FedRAMP High).
 
 The platform replaces fragmented, siloed applications with a unified data backbone where every app feeds and every app queries the same governed data.
 
@@ -16,7 +16,7 @@ The platform replaces fragmented, siloed applications with a unified data backbo
 
 ## Architecture (One Paragraph)
 
-PrEPA (ARC's PostgreSQL system of record) streams all database changes via WAL/CDC (logical replication → Debezium → Azure Event Hub) into UDIP's PostgreSQL database, where the Data Middleware (YAML-driven column translation, PII redaction, validation) transforms raw ARC data into clean, AI-ready analytics tables. The MCP Hub (Azure API Management + lightweight aggregator function) routes tool calls from AI consumers to 5 spoke applications (ADR Mediation, OFS Triage, UDIP Analytics, OGC Trial Tool, ARC Integration API). ADR and Triage push operational analytics to UDIP daily and write mediation/classification results back to ARC through the Integration API. The AI Assistant in UDIP provides multi-turn conversations, SQL generation, interactive chart/dashboard creation, all governed by row-level security. ARC requires only 2 SQL commands (replication slot + publication) and read-only DB credentials — zero code changes on their side.
+PrEPA (ARC's PostgreSQL system of record) streams all database changes via WAL/CDC (logical replication → Debezium → Azure Event Hub) into UDAP's PostgreSQL database, where the Data Middleware (YAML-driven column translation, PII redaction, validation) transforms raw ARC data into clean, AI-ready analytics tables. The MCP Hub (Azure API Management + lightweight aggregator function) routes tool calls from AI consumers to 5 spoke applications (ADR Mediation, OFS Triage, UDAP Analytics, OGC Trial Tool, ARC Integration API). ADR and Triage push operational analytics to UDAP daily and write mediation/classification results back to ARC through the Integration API. The AI Assistant in UDAP provides multi-turn conversations, SQL generation, interactive chart/dashboard creation, all governed by row-level security. ARC requires only 2 SQL commands (replication slot + publication) and read-only DB credentials — zero code changes on their side.
 
 ---
 
@@ -24,7 +24,7 @@ PrEPA (ARC's PostgreSQL system of record) streams all database changes via WAL/C
 
 | Repo | Path | What |
 |------|------|------|
-| UDIP Analytics | `eeoc-data-analytics-and-dashboard/` | Central data store, AI assistant, CDC pipeline, middleware, lifecycle management |
+| UDAP Analytics | `eeoc-data-analytics-and-dashboard/` | Central data store, AI assistant, CDC pipeline, middleware, lifecycle management |
 | ADR Mediation | `eeoc-ofs-adr/` | Public-facing mediation case management (staff + external parties via Login.gov) |
 | OFS Triage | `eeoc-ofs-triage/` | AI-powered charge classification with GPT-4o |
 | OGC Trial Tool | `eeoc-ogc-trialtool/` | Litigation support, case analysis (replacing Ollama with Azure OpenAI) |
@@ -47,7 +47,7 @@ PrEPA (ARC's PostgreSQL system of record) streams all database changes via WAL/C
 | `EEOC_AI_Platform_Azure_Overview.md` | 3-page CIO briefing: architecture, security, cost comparison (in-house $1.8M vs commercial $18-33M over 5 years) | ~180 |
 | `OCIO_Leadership_Briefing.md` | Executive summary with mermaid diagrams for leadership | ~430 |
 | `MCP_Hub_Build_Guide_Supplement.md` | Detailed hub build guide covering all 5 spokes | ~560 |
-| `UDIP_Database_Selection_PostgreSQL_vs_Azure_SQL.md` | PostgreSQL vs Azure SQL justification | ~150 |
+| `UDAP_Database_Selection_PostgreSQL_vs_Azure_SQL.md` | PostgreSQL vs Azure SQL justification | ~150 |
 | `draft.email.to.fix.docx` | Email draft to leadership (updated for WAL/CDC approach) | docx |
 
 ---
@@ -108,15 +108,15 @@ Prompts targeting multiple repos (27, 40, 41, 47) should be run once per repo.
 
 | Bug | Repo | Status | Prompt |
 |-----|------|--------|--------|
-| `chat.py` calls `store.get_messages()` but method is `get_history()` | UDIP | **FIXED** (Prompt 34 ran) | 34 |
-| No tiktoken context window management | UDIP | **FIXED** (Prompt 34 ran) | 34 |
-| Conversation history 90-day TTL (FOIA requires 7 years) | UDIP | **FIXED** (Prompt 39 ran) | 39 |
+| `chat.py` calls `store.get_messages()` but method is `get_history()` | UDAP | **FIXED** (Prompt 34 ran) | 34 |
+| No tiktoken context window management | UDAP | **FIXED** (Prompt 34 ran) | 34 |
+| Conversation history 90-day TTL (FOIA requires 7 years) | UDAP | **FIXED** (Prompt 39 ran) | 39 |
 | `call_openai_with_retry()` not wired to actual calls | Triage | **FIXED** (Prompt 31 ran) | 31 |
 | Cases table `PartitionKey = "cases"` hot partition | Triage | **FIXED** (Prompt 31 ran) | 31 |
 | CaseFileProcessor ZIP `io.BytesIO(myblob.read())` OOM risk | Triage | **FIXED** (Prompt 31 ran) | 31 |
 | `case_partition_key` missing from ADR constants.py | ADR | **FIXED** (direct push) | — |
 | MCP Hub protocol version 2024-11-05 | Hub | **FIXED** (direct push) | — |
-| Triage UDIP ingest payload key `target_table` | Triage | **FIXED** (direct push) | — |
+| Triage UDAP ingest payload key `target_table` | Triage | **FIXED** (direct push) | — |
 
 **All known bugs fixed.** Conversation 90-day TTL resolved by Prompt 39.
 
@@ -154,12 +154,12 @@ Prompts targeting multiple repos (27, 40, 41, 47) should be run once per repo.
 ### Audits Completed (2026-04-03 to 2026-04-04)
 1. **Cross-repo interface audit** (96 checks): 92 passed, 2 fixed (protocol version + ingest payload key), 2 noted
 2. **Test coverage audit**: 9 of 14 new modules uncovered → Prompt 27
-3. **Scaling verification** (ADR/Triage/UDIP): Found case_partition_key missing in ADR (fixed), OpenAI retry unwired in Triage, ZIP still BytesIO in Triage
+3. **Scaling verification** (ADR/Triage/UDAP): Found case_partition_key missing in ADR (fixed), OpenAI retry unwired in Triage, ZIP still BytesIO in Triage
 4. **Security fixes verification** (Prompts 18-20): 19/20 landed, only MSAL token cache still in cookie
 5. **AI Assistant verification** (Prompts 24-26): 14/17, crash bug (get_messages vs get_history), missing tiktoken, incomplete error refinement
 6. **OGC + CI/CD verification** (Prompts 5, 12-13): 17/17 all clean
 7. **ADR + Triage integration verification** (Prompts 2-3, 7-8, 10-11): 22/22 all clean
-8. **UDIP core pipeline verification** (Prompts 4, 9, 15-17): 20/20 all clean
+8. **UDAP core pipeline verification** (Prompts 4, 9, 15-17): 20/20 all clean
 9. **FOIA/NARA compliance audit**: Conversation 90-day TTL violates 7-year requirement, no FOIA export API (3 repos), no litigation hold mechanism
 10. **M-21-31 EL3 + FedRAMP Rev5 audit**: ARC API, Hub, OGC missing HMAC audit logging; no Sentinel/SOAR/UBA; no container scanning
 11. **License/SCA audit**: OGC has poppler (GPL), python-jose (deprecated), all deps unpinned; Ollama not production-grade
@@ -172,7 +172,7 @@ Prompts targeting multiple repos (27, 40, 41, 47) should be run once per repo.
 |------|------|--------|
 | Added `case_partition_key()` to ADR constants.py | eeoc-ofs-adr | `c714e25` |
 | Fixed MCP Hub protocol version `2024-11-05` → `2025-03-26` | eeoc-mcp-hub-functions | `041be2d` |
-| Fixed Triage UDIP ingest payload key `target_table` → `dataset` | eeoc-ofs-triage | `81c604c` |
+| Fixed Triage UDAP ingest payload key `target_table` → `dataset` | eeoc-ofs-triage | `81c604c` |
 | PgBouncer configmap: 500/50 → 3000/80/200 (two commits) | eeoc-data-analytics-and-dashboard | `31b13c0`, `7b8488d` |
 | Lifecycle schema + RLS (PR #61, merged) | eeoc-data-analytics-and-dashboard | Squash merge |
 | YAML mapping configs (PR #62, merged) | eeoc-data-analytics-and-dashboard | Squash merge |
@@ -182,7 +182,7 @@ Prompts targeting multiple repos (27, 40, 41, 47) should be run once per repo.
 ## Database Sizing
 
 - PrEPA source: ~800 GB, ~350 tables, ~8,500 columns
-- UDIP target: ~1.7 TB total (replica 800GB + analytics 400GB + vectors 100GB + indexes 200GB + headroom 200GB)
+- UDAP target: ~1.7 TB total (replica 800GB + analytics 400GB + vectors 100GB + indexes 200GB + headroom 200GB)
 - Instance: Memory Optimized, 16 vCores, 128 GB RAM, 2 TB storage
 - PgBouncer: 3000 client connections → 200 PostgreSQL connections
 - Read replica for query offloading (AI, Superset, JupyterHub → replica; CDC writes → primary)
@@ -245,7 +245,7 @@ Saved to `/home/derek/.claude/projects/-home-derek-ai-platform-workspace/memory/
 - **Do NOT enable AI Foundry in production** — azure-ai-inference is beta, use Azure OpenAI GA
 - **Do NOT remove the YAML middleware** — it's the translation layer between ARC's internal labels and human-readable data
 - **Do NOT set conversation retention below 7 years** for case-linked conversations (FOIA requirement)
-- **Do NOT connect spokes out of sequence** — ARC Integration API first, then ADR, Triage, UDIP, OGC
+- **Do NOT connect spokes out of sequence** — ARC Integration API first, then ADR, Triage, UDAP, OGC
 - **Do NOT deploy without PgBouncer** — direct PostgreSQL connections will exhaust at scale
 - **Do NOT use Ollama in production** — replace with Azure OpenAI via FoundryModelProvider (Prompt 48)
 - **Do NOT assume Table Storage partition keys are correct** — ADR was fixed, Triage still needs Prompt 31

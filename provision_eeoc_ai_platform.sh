@@ -14,10 +14,10 @@
 #
 # ARCHITECTURE OVERVIEW:
 #   PrEPA (ARC PostgreSQL) streams WAL/CDC changes through Debezium into
-#   Azure Event Hub, consumed by the UDIP Data Middleware which transforms
-#   raw ARC data into clean analytics tables in UDIP PostgreSQL. The MCP Hub
+#   Azure Event Hub, consumed by the UDAP Data Middleware which transforms
+#   raw ARC data into clean analytics tables in UDAP PostgreSQL. The MCP Hub
 #   (APIM + aggregator function) routes tool calls to 5 spoke apps: ADR,
-#   Triage, UDIP, OGC, and ARC Integration API. ADR is the only public-
+#   Triage, UDAP, OGC, and ARC Integration API. ADR is the only public-
 #   facing app (via Front Door + WAF). All others are internal only.
 #
 # SECURITY COMPLIANCE:
@@ -128,7 +128,7 @@ EEOC_RG="rg-eeoc-ai-platform-${EEOC_ENV}"
 EEOC_VNET="vnet-eeoc-ai-${EEOC_ENV}"
 EEOC_KV="kv-eeoc-ai-${EEOC_ENV}"
 EEOC_STORAGE="steeocaiaudit"
-EEOC_PG_SERVER="pg-eeoc-udip-${EEOC_ENV}"
+EEOC_PG_SERVER="pg-eeoc-udap-${EEOC_ENV}"
 EEOC_PG_REPLICA="${EEOC_PG_SERVER}-replica"
 EEOC_REDIS="redis-eeoc-ai-${EEOC_ENV}"
 EEOC_EVENTHUB_NS="evhns-eeoc-cdc-${EEOC_ENV}"
@@ -159,7 +159,7 @@ SNET_FRONTDOOR="10.100.7.0/24"
 PG_SKU="Standard_E16ds_v5"
 PG_STORAGE_GB=2048
 PG_VERSION="16"
-PG_ADMIN_USER="udip_admin"
+PG_ADMIN_USER="udap_admin"
 
 # --- Container App scaling defaults ---
 # format: image cpu memory min_replicas max_replicas cpu_threshold
@@ -600,7 +600,7 @@ az postgres flexible-server parameter set \
     -o none 2>/dev/null || log_skip "Extensions parameter may not be settable"
 log_ok "Extensions enabled: pgvector, pg_stat_statements, pgcrypto, pg_trgm"
 
-# Create the udip database (Flexible Server only creates "postgres" by default).
+# Create the udap database (Flexible Server only creates "postgres" by default).
 # Use .pgpass file instead of PGPASSWORD env var — avoids leaking creds in
 # /proc/<pid>/environ on shared hosts.
 PG_HOST="${EEOC_PG_SERVER}.postgres.database.usgovcloudapi.net"
@@ -609,17 +609,17 @@ chmod 600 "$PGPASS_FILE"
 echo "${PG_HOST}:5432:*:${PG_ADMIN_USER}:${PG_ADMIN_PASS}" > "$PGPASS_FILE"
 export PGPASSFILE="$PGPASS_FILE"
 
-echo "   Creating udip database..."
+echo "   Creating udap database..."
 psql -h "$PG_HOST" -U "$PG_ADMIN_USER" -d "postgres" \
-    -c "SELECT 'exists' FROM pg_database WHERE datname = 'udip'" \
+    -c "SELECT 'exists' FROM pg_database WHERE datname = 'udap'" \
     --tuples-only 2>/dev/null | grep -q "exists" || \
     psql -h "$PG_HOST" -U "$PG_ADMIN_USER" -d "postgres" \
-        -c "CREATE DATABASE udip;" 2>/dev/null || true
-log_ok "Database: udip"
+        -c "CREATE DATABASE udap;" 2>/dev/null || true
+log_ok "Database: udap"
 
 # Create application roles used by spoke services (idempotent)
 log_info "Creating application roles..."
-psql -h "$PG_HOST" -U "$PG_ADMIN_USER" -d udip -c "
+psql -h "$PG_HOST" -U "$PG_ADMIN_USER" -d udap -c "
   DO \$\$ BEGIN
     IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'adr_app') THEN
       CREATE ROLE adr_app NOLOGIN;
@@ -666,7 +666,7 @@ if [[ -d "$SCHEMA_DIR" ]]; then
             psql \
                 -h "$PG_HOST" \
                 -U "$PG_ADMIN_USER" \
-                -d "udip" \
+                -d "udap" \
                 -f "$full_path" \
                 --set ON_ERROR_STOP=1 \
                 2>/dev/null && log_ok "Schema: ${sql_file}" || log_fail "Schema: ${sql_file}"
@@ -700,7 +700,7 @@ step_header 7 "$TOTAL_STEPS" "PgBouncer Connection Pooler" "~2 minutes"
 
 # PgBouncer is deployed as a Container App rather than the built-in
 # Flexible Server pgbouncer, because we need transaction-mode pooling
-# with custom pool sizes for the UDIP workload.
+# with custom pool sizes for the UDAP workload.
 
 # PG_HOST already set in Section 8
 
@@ -793,7 +793,7 @@ if [[ -n "$EVENTHUB_ID" ]]; then
         -o none 2>/dev/null || log_skip "Event Hub private endpoint may already exist"
     log_ok "Event Hub private endpoint created"
 
-    # Consumer group for UDIP middleware
+    # Consumer group for UDAP middleware
     # Topics are auto-created by Debezium; create consumer group on the
     # first topic that will appear (prepa.public.charge_inquiry).
     # If the topic doesn't exist yet, we'll create it as a placeholder.
@@ -806,12 +806,12 @@ if [[ -n "$EVENTHUB_ID" ]]; then
         -o none 2>/dev/null || true
 
     az eventhubs eventhub consumer-group create \
-        --name "udip-middleware" \
+        --name "udap-middleware" \
         --eventhub-name "prepa.public.charge_inquiry" \
         --namespace-name "$EEOC_EVENTHUB_NS" \
         --resource-group "$EEOC_RG" \
         -o none 2>/dev/null || true
-    log_ok "Consumer group: udip-middleware"
+    log_ok "Consumer group: udap-middleware"
 
     # Store connection string
     EH_CONN=$(az eventhubs namespace authorization-rule keys list \
@@ -983,8 +983,8 @@ EEOC_TENANT_ID=$(az account show --query tenantId -o tsv)
 # Images reference ACR; push images before first deploy.
 # Using placeholder images here — replaced by CI/CD on first push.
 declare -a APPS=(
-    "ca-udip-ai|eeoc-udip-ai-assistant:latest|2|4Gi|2|6|70"
-    "ca-udip-cdc|eeoc-udip-data-middleware:latest|2|4Gi|1|2|80"
+    "ca-udap-ai|eeoc-udap-ai-assistant:latest|2|4Gi|2|6|70"
+    "ca-udap-cdc|eeoc-udap-data-middleware:latest|2|4Gi|1|2|80"
     "ca-adr-webapp|eeoc-adr-webapp:latest|2|4Gi|3|12|65"
     "ca-triage-webapp|eeoc-triage-webapp:latest|1|2Gi|2|6|70"
     "ca-arc-integration|eeoc-arc-integration:latest|1|2Gi|2|4|70"
@@ -1025,11 +1025,11 @@ done
 # reference it via secretref once managed identity is wired up.
 # For initial provisioning, use placeholder; replace post-deploy.
 # actual credential — Container Apps secret refs replace this once managed identity is wired
-PG_BOUNCER_DB_URL="postgres://${PG_ADMIN_USER}@${EEOC_PG_SERVER}:${PG_ADMIN_PASS}@${PG_HOST}:5432/udip"
+PG_BOUNCER_DB_URL="postgres://${PG_ADMIN_USER}@${EEOC_PG_SERVER}:${PG_ADMIN_PASS}@${PG_HOST}:5432/udap"
 az keyvault secret set \
     --vault-name "$EEOC_KV" \
     --name "PGBOUNCER-DATABASE-URL" \
-    --value "postgres://${PG_ADMIN_USER}@${EEOC_PG_SERVER}:${PG_ADMIN_PASS}@${PG_HOST}:5432/udip" \
+    --value "postgres://${PG_ADMIN_USER}@${EEOC_PG_SERVER}:${PG_ADMIN_PASS}@${PG_HOST}:5432/udap" \
     -o none 2>/dev/null || true
 
 az containerapp create \
@@ -1574,8 +1574,8 @@ KEY VAULT SECRETS (names only):
   PGBOUNCER-DATABASE-URL
 
 CONTAINER APPS DEPLOYED:
-  ca-udip-ai            (2 CPU, 4Gi, 2-6 replicas)
-  ca-udip-cdc           (2 CPU, 4Gi, 1-2 replicas)
+  ca-udap-ai            (2 CPU, 4Gi, 2-6 replicas)
+  ca-udap-cdc           (2 CPU, 4Gi, 1-2 replicas)
   ca-adr-webapp         (2 CPU, 4Gi, 3-12 replicas)
   ca-triage-webapp      (1 CPU, 2Gi, 2-6 replicas)
   ca-arc-integration    (1 CPU, 2Gi, 2-4 replicas)
@@ -1614,8 +1614,8 @@ COMPLIANCE:
 
   2. Request WAL/CDC access from ARC DBA:
      Two SQL commands on PrEPA PostgreSQL:
-       SELECT pg_create_logical_replication_slot('udip_cdc', 'pgoutput');
-       CREATE PUBLICATION udip_publication FOR ALL TABLES;
+       SELECT pg_create_logical_replication_slot('udap_cdc', 'pgoutput');
+       CREATE PUBLICATION udap_publication FOR ALL TABLES;
      Plus: read-only credentials, hostname, port confirmation,
            max_slot_wal_keep_size set to at least 50GB
 
@@ -1639,9 +1639,9 @@ COMPLIANCE:
      See deployment guide for per-app configuration
 
   8. Enable feature flags per application:
-     - ADR: ENABLE_UDIP_INTEGRATION, ENABLE_HUB_INTEGRATION
+     - ADR: ENABLE_UDAP_INTEGRATION, ENABLE_HUB_INTEGRATION
      - Triage: ENABLE_ARC_WRITEBACK
-     - UDIP: ENABLE_CDC_CONSUMER
+     - UDAP: ENABLE_CDC_CONSUMER
 
   9. Run spoke connection sequence (Phase 3.1-3.6):
      See: Azure_Deployment_Sequence.md

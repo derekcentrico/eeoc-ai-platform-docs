@@ -2,13 +2,13 @@
 
 **Author:** Derek Gordon
 
-## EEOC Unified Data Intelligence Portal (UDIP)
+## EEOC Unified Data Analytics Platform (UDAP)
 
 ---
 
 ## 1. Overview
 
-This document defines the functional architecture for the UDIP Leadership AI Assistant:
+This document defines the functional architecture for the UDAP Leadership AI Assistant:
 a conversational interface that allows authorized staff to ask complex questions across
 all integrated data domains (case production, HR, financial, organizational), receive
 answers as prose, charts, or data tables, and build persistent personal dashboards
@@ -110,7 +110,7 @@ description: >
   Staff roster, performance ratings, organizational structure, and
   position history.
 schema_prefix: "hr"
-access_group: "UDIP-Domain-HR"
+access_group: "UDAP-Domain-HR"
 
 scope_columns:
   - column: "office_code"
@@ -231,7 +231,7 @@ domain access and scope independently. The query engine enforces the intersectio
 
 ### 4.4 Access Assignment (Application-Managed)
 
-Access is managed through UDIP's admin interface, **not** through direct Entra group
+Access is managed through UDAP's admin interface, **not** through direct Entra group
 manipulation. The admin UX writes access grants to a persistent store (Azure Table
 Storage), and the auth layer reads them at session creation time.
 
@@ -243,7 +243,7 @@ Storage), and the auth layer reads them at session creation time.
 | Application-managed grants backed by Entra auth | Self-service admin UX; full audit trail; fine-grained scope; instant changes | Requires admin interface build; must sync with Entra for base auth |
 
 **Hybrid model:** Entra ID handles *authentication* (who is this person?) and *base role*
-(Admin/Director/Analyst/Viewer/LegalCounsel via 5 Entra groups). The UDIP admin UX
+(Admin/Director/Analyst/Viewer/LegalCounsel via 5 Entra groups). The UDAP admin UX
 handles *data access grants* (which domains, which scope).
 
 ```
@@ -251,13 +251,13 @@ handles *data access grants* (which domains, which scope).
 │  Entra ID (IT-managed, stable)                                   │
 │  ─────────────────────────────                                   │
 │  • Authentication (OIDC)                                         │
-│  • Base role: UDIP-Admins, UDIP-Directors, UDIP-Analysts, etc.  │
+│  • Base role: UDAP-Admins, UDAP-Directors, UDAP-Analysts, etc.  │
 │  • Office membership: user's home office (from HR feed)          │
 └──────────────────────────────────┬───────────────────────────────┘
                                    │ login
                                    ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│  UDIP Access Store (app-managed, admin UX)                       │
+│  UDAP Access Store (app-managed, admin UX)                       │
 │  ─────────────────────────────────────────                       │
 │  • Domain grants: which data domains this user can query         │
 │  • Scope grants: which regions/offices/programs are visible      │
@@ -271,7 +271,7 @@ handles *data access grants* (which domains, which scope).
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  Azure Table Storage: udip_access_grants                            │
+│  Azure Table Storage: udap_access_grants                            │
 │─────────────────────────────────────────────────────────────────────│
 │  PartitionKey: SHA-256(user_id)                                     │
 │  RowKey: grant_id (UUID)                                            │
@@ -383,7 +383,7 @@ Entra base role + application grants:
 ```python
 def compute_effective_permissions(user: EntraUser) -> EffectiveAccess:
     base_role = resolve_role_from_entra_groups(user.groups)
-    grants = load_grants(user.user_id)  # from udip_access_grants table
+    grants = load_grants(user.user_id)  # from udap_access_grants table
 
     return EffectiveAccess(
         role=base_role,
@@ -576,11 +576,11 @@ Step 3: Target Schema
 Step 4: Domain Registry
     ├── Write domain_registry/<domain>.yaml
     ├── Declare tables, join keys, RLS columns
-    ├── Declare domain access group (UDIP-Domain-<Name>)
+    ├── Declare domain access group (UDAP-Domain-<Name>)
     └── Update dbt schema.yml with descriptions
 
 Step 5: RBAC Configuration
-    ├── Create Entra group: UDIP-Domain-<Name>
+    ├── Create Entra group: UDAP-Domain-<Name>
     ├── Define which roles get auto-membership
     ├── Configure RLS predicates in domain registry
     └── Test: user without group cannot query domain
@@ -633,7 +633,7 @@ columns:
 domain: "<domain_name>"
 schema: "<postgresql_schema>"
 description: "<one-line description>"
-access_group: "UDIP-Domain-<Name>"
+access_group: "UDAP-Domain-<Name>"
 data_steward: "<name, office>"
 refresh_frequency: "<cdc-realtime | batch-daily | batch-hourly>"
 
@@ -681,7 +681,7 @@ tables:
 2. **Domain classification** — GPT-4o classifies which domains are referenced.
    Model receives the domain registry catalog (names + descriptions only, not
    full schemas) to make this determination.
-3. **Access check** — Verify user has the required `UDIP-Domain-*` group for
+3. **Access check** — Verify user has the required `UDAP-Domain-*` group for
    each referenced domain. Reject with explanation if not.
 4. **Schema loading** — Load full schema context (tables, columns, types,
    descriptions, join keys) for the classified domains only. This bounds the
@@ -728,7 +728,7 @@ tables:
 | **PII classification** | Names (tier 2), SSN (tier 3), ratings (tier 2), salary (tier 3) |
 | **Refresh** | Batch daily (NFC extracts are overnight) |
 | **Data steward** | OCHCO designee |
-| **Access group** | `UDIP-Domain-HR` |
+| **Access group** | `UDAP-Domain-HR` |
 
 **Enables queries like:**
 - "24-month production trend for staff rated 3 or below in southwest OFP"
@@ -746,7 +746,7 @@ tables:
 | **PII classification** | Aggregate budget (tier 1), contract details (tier 2), vendor PII (tier 3) |
 | **Refresh** | Batch daily |
 | **Data steward** | CFO designee |
-| **Access group** | `UDIP-Domain-Financial` |
+| **Access group** | `UDAP-Domain-Financial` |
 
 **Enables queries like:**
 - "Compare travel spend vs. case closures by district this fiscal year"
@@ -769,7 +769,7 @@ tables:
 ### Phase 1 — Access Management + Dashboard Enhancement
 
 **1A. Admin Access UX**
-- Access grant store (`udip_access_grants` Azure Table Storage table)
+- Access grant store (`udap_access_grants` Azure Table Storage table)
 - Admin blueprint with user search, grant/revoke, domain/scope assignment
 - Delegation model (office directors can manage within their scope)
 - Audit logging for all access changes (HMAC-signed)
@@ -860,7 +860,7 @@ existing Redis sessions. Adds one new blueprint (`admin_bp`) and one new table.
         ▼
 ┌────────────────┐
 │ PostgreSQL     │  ← analytics.*, hr.*, financial.* schemas
-│ (UDIP Store)   │
+│ (UDAP Store)   │
 └───────┬────────┘
         │  dbt build (staging → marts → metrics)
         ▼

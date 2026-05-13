@@ -15,19 +15,19 @@ Instead of a custom Python service, the MCP Hub is assembled from five Azure man
 | Function | Azure Service | What It Does |
 |----------|--------------|--------------|
 | MCP routing & tool aggregation | Azure API Management (APIM) | Routes tool calls to spokes, aggregates tool catalogs, manages auth |
-| Spoke hosting | Azure Container Apps | Hosts ADR, Triage, UDIP, ARC Integration API, OGC Trial Tool |
+| Spoke hosting | Azure Container Apps | Hosts ADR, Triage, UDAP, ARC Integration API, OGC Trial Tool |
 | Event routing | Azure Event Grid | Routes case lifecycle events between spokes |
 | Audit logging | Azure Table Storage + Blob (WORM) | Immutable 7-year audit trail |
 | Secret management | Azure Key Vault | HMAC secrets, hash salts, spoke credentials |
 
-The spokes (ADR, Triage, UDIP, etc.) each expose a `POST /mcp` endpoint. Azure API Management sits in front, providing a single unified MCP endpoint that routes to the correct spoke based on tool name.
+The spokes (ADR, Triage, UDAP, etc.) each expose a `POST /mcp` endpoint. Azure API Management sits in front, providing a single unified MCP endpoint that routes to the correct spoke based on tool name.
 
 ```
 AI Consumer → Azure API Management (single /mcp endpoint)
                     ↓ routes by tool name prefix
               ┌─────┼─────┬──────┬───────┐
               ↓     ↓     ↓      ↓       ↓
-            ADR  Triage  UDIP  OGC TT  ARC API
+            ADR  Triage  UDAP  OGC TT  ARC API
           (10)   (9)   (3+N)   (3)     (11)
 ```
 
@@ -166,7 +166,7 @@ Repeat the above for each spoke, creating app roles specific to each:
 |-------|----------|-----------|
 | ADR | `EEOC-ADR-Mediation` | `MCP.Read`, `MCP.Write` |
 | Triage | `EEOC-OFS-Triage` | `MCP.Read`, `MCP.Write` |
-| UDIP | `EEOC-UDIP-Analytics` | `Analytics.Read`, `Analytics.Write` |
+| UDAP | `EEOC-UDAP-Analytics` | `Analytics.Read`, `Analytics.Write` |
 | OGC Trial Tool | `EEOC-OGC-TrialTool` | `MCP.Read`, `MCP.Write` |
 | ARC Integration API | `EEOC-ARC-Integration` | `ARC.Read`, `ARC.Write` |
 
@@ -179,7 +179,7 @@ For each spoke app registration:
 4. Click **Add permissions**
 5. Click **Grant admin consent** (requires admin role)
 
-For UDIP specifically: grant `Analytics.Read` (not `MCP.Read`).
+For UDAP specifically: grant `Analytics.Read` (not `MCP.Read`).
 
 ---
 
@@ -210,12 +210,12 @@ Note: APIM provisioning takes 30-45 minutes.
 For each spoke:
 
 1. Open `apim-mcp-hub` → **Backends** → **+ Add**
-2. Name: (e.g., `adr-spoke`, `triage-spoke`, `udip-spoke`)
+2. Name: (e.g., `adr-spoke`, `triage-spoke`, `udap-spoke`)
 3. Type: `Custom URL`
 4. Runtime URL: (spoke's internal URL, e.g., `https://adr-app.internal.azurecontainerapps.io`)
 5. **Authorization** → **Authorization credentials**:
    - Scheme: `Bearer`
-   - For UDIP: configure OBO flow (see Step 8)
+   - For UDAP: configure OBO flow (see Step 8)
    - For others: configure managed identity token acquisition
 6. Click **Create**
 
@@ -293,9 +293,9 @@ For each spoke:
                 <set-backend-service backend-id="triage-spoke" />
             </when>
 
-            <!-- UDIP tools (udip.*) -->
-            <when condition="@(context.Variables.GetValueOrDefault<string>("tool-name").StartsWith("udip."))">
-                <set-backend-service backend-id="udip-spoke" />
+            <!-- UDAP tools (udap.*) -->
+            <when condition="@(context.Variables.GetValueOrDefault<string>("tool-name").StartsWith("udap."))">
+                <set-backend-service backend-id="udap-spoke" />
             </when>
 
             <!-- ARC tools (arc.*) -->
@@ -344,30 +344,30 @@ For each spoke:
    - `hub-client-id`: hub app registration client ID
    - `adr-scope`: `api://adr-client-id/.default`
    - `triage-scope`: `api://triage-client-id/.default`
-   - `udip-scope`: `api://udip-client-id/.default`
+   - `udap-scope`: `api://udap-client-id/.default`
 
 ---
 
-## Step 8: Configure OBO for UDIP
+## Step 8: Configure OBO for UDAP
 
-UDIP enforces row-level security using the caller's regional identity from their Entra token. The hub must pass the original caller's identity through to UDIP, not its own managed identity.
+UDAP enforces row-level security using the caller's regional identity from their Entra token. The hub must pass the original caller's identity through to UDAP, not its own managed identity.
 
 1. Open hub app registration (`EEOC-MCP-Hub`) → **API permissions**
-2. Add permission for UDIP: `Analytics.Read` (delegated, not application)
-3. In APIM, create a policy fragment for UDIP routing that:
+2. Add permission for UDAP: `Analytics.Read` (delegated, not application)
+3. In APIM, create a policy fragment for UDAP routing that:
    - Extracts the original caller's bearer token from the inbound request
-   - Uses MSAL On-Behalf-Of flow to exchange it for a UDIP-scoped token
-   - Forwards the OBO token to the UDIP backend
+   - Uses MSAL On-Behalf-Of flow to exchange it for a UDAP-scoped token
+   - Forwards the OBO token to the UDAP backend
 
-APIM OBO policy for UDIP backend:
+APIM OBO policy for UDAP backend:
 
 ```xml
-<when condition="@(context.Variables.GetValueOrDefault<string>("tool-name").StartsWith("udip."))">
+<when condition="@(context.Variables.GetValueOrDefault<string>("tool-name").StartsWith("udap."))">
     <!-- Extract original caller's token -->
     <set-variable name="original-token" value="@{
         return context.Request.Headers.GetValueOrDefault("Authorization", "").Replace("Bearer ", "");
     }" />
-    <!-- Exchange via OBO for UDIP-scoped token -->
+    <!-- Exchange via OBO for UDAP-scoped token -->
     <send-request mode="new" response-variable-name="obo-response">
         <set-url>https://login.microsoftonline.us/{{tenant-id}}/oauth2/v2.0/token</set-url>
         <set-method>POST</set-method>
@@ -375,7 +375,7 @@ APIM OBO policy for UDIP backend:
             <value>application/x-www-form-urlencoded</value>
         </set-header>
         <set-body>@{
-            return $"grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&client_id={{hub-client-id}}&client_secret={{hub-client-secret}}&assertion={context.Variables["original-token"]}&scope={{udip-scope}}&requested_token_use=on_behalf_of";
+            return $"grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&client_id={{hub-client-id}}&client_secret={{hub-client-secret}}&assertion={context.Variables["original-token"]}&scope={{udap-scope}}&requested_token_use=on_behalf_of";
         }</set-body>
     </send-request>
     <set-header name="Authorization" exists-action="override">
@@ -384,7 +384,7 @@ APIM OBO policy for UDIP backend:
             return "Bearer " + oboResult["access_token"].ToString();
         }</value>
     </set-header>
-    <set-backend-service backend-id="udip-spoke" />
+    <set-backend-service backend-id="udap-spoke" />
 </when>
 ```
 
@@ -483,9 +483,9 @@ Follow this exact order. Do not skip gates.
 - [ ] Async submit_case pattern documented in APIM developer portal
 - [ ] Charge metadata auto-population through ARC spoke working
 
-### Phase 5: UDIP (after OBO configured)
+### Phase 5: UDAP (after OBO configured)
 - [ ] OBO policy working (verify with a user who has region groups)
-- [ ] UDIP queries return regionally scoped data (NOT empty results)
+- [ ] UDAP queries return regionally scoped data (NOT empty results)
 - [ ] Dynamic tool catalog appears correctly (run dbt, verify new tools show up)
 
 ### Phase 6: OGC Trial Tool
@@ -508,7 +508,7 @@ APIM does not natively aggregate `tools/list` responses from multiple spokes. Tw
 1. Create an APIM **Policy fragment** that returns a static merged tool catalog
 2. Update the catalog when spokes add/remove tools
 3. Pros: Simple, no additional services
-4. Cons: Manual maintenance, doesn't handle UDIP's dynamic catalog
+4. Cons: Manual maintenance, doesn't handle UDAP's dynamic catalog
 
 ### Option B: Lightweight aggregator function (recommended)
 
@@ -519,7 +519,7 @@ APIM does not natively aggregate `tools/list` responses from multiple spokes. Tw
    - Returns merged catalog on request
 2. Configure as APIM backend `hub-aggregator`
 3. Route `tools/list` requests to this function
-4. Handles UDIP's dynamic catalog automatically
+4. Handles UDAP's dynamic catalog automatically
 
 The aggregator function is the only custom code needed. It's ~200 lines of Python, not a full service.
 
@@ -536,7 +536,7 @@ The aggregator function is the only custom code needed. It's ~200 lines of Pytho
 | Storage Connection | Storage Account → Access keys | (connection string, store in Key Vault) |
 | ADR Spoke URL | Container Apps → ADR → Overview | Internal FQDN |
 | Triage Spoke URL | Container Apps → Triage → Overview | Internal FQDN |
-| UDIP Spoke URL | Container Apps → UDIP → Overview | Internal FQDN |
+| UDAP Spoke URL | Container Apps → UDAP → Overview | Internal FQDN |
 | ARC Integration URL | Container Apps → ARC API → Overview | Internal FQDN |
 | OGC Trial Tool URL | Container Apps → OGC → Overview | Internal FQDN |
 
@@ -547,8 +547,8 @@ The aggregator function is the only custom code needed. It's ~200 lines of Pytho
 | Problem | Likely Cause | Fix |
 |---------|-------------|-----|
 | 401 on all requests | Token validation misconfigured | Check APIM validate-azure-ad-token policy matches app registration |
-| UDIP returns empty results | OBO not working, hub's identity has no region claim | Verify OBO policy, check token has region groups |
+| UDAP returns empty results | OBO not working, hub's identity has no region claim | Verify OBO policy, check token has region groups |
 | Tool not found | Tool name doesn't match routing prefix | Check APIM choose/when conditions match spoke prefix |
-| High latency on UDIP queries | Connection pool exhaustion | Check UDIP's PgBouncer (Prompt 23) |
+| High latency on UDAP queries | Connection pool exhaustion | Check UDAP's PgBouncer (Prompt 23) |
 | Events not routing | Event Grid subscription misconfigured | Check Event Grid subscription filters and endpoint URLs |
 | Audit blobs can't be deleted | WORM policy working correctly | This is expected — data is immutable for 7 years |

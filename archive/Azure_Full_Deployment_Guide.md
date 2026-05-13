@@ -122,7 +122,7 @@ openssl rand -base64 40
 
 1. **Create** → search **Azure Database for PostgreSQL Flexible Server**
 2. Resource group: `rg-eeoc-ai-platform-prod`
-3. Server name: `pg-eeoc-udip-prod`
+3. Server name: `pg-eeoc-udap-prod`
 4. Region: `USGov Virginia`
 5. PostgreSQL version: `16`
 6. Workload type: `Production`
@@ -175,7 +175,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 **Run schema scripts:**
 
-Execute in order from the UDIP repo `analytics-db/postgres/` directory:
+Execute in order from the UDAP repo `analytics-db/postgres/` directory:
 ```
 001-extensions.sql
 002-schemas.sql
@@ -194,9 +194,9 @@ Execute in order from the UDIP repo `analytics-db/postgres/` directory:
 
 ### 2.2 Read Replica
 
-1. Open `pg-eeoc-udip-prod` → **Replication**
+1. Open `pg-eeoc-udap-prod` → **Replication**
 2. Click **+ Add replica**
-3. Name: `pg-eeoc-udip-prod-replica`
+3. Name: `pg-eeoc-udap-prod-replica`
 4. Region: same (`USGov Virginia`)
 5. Same compute tier (Memory Optimized E16ds_v5)
 6. **Review + create** → **Create**
@@ -246,7 +246,7 @@ Event Hub topics are auto-created by Debezium when it connects. You don't need t
 
 **Create consumer group:**
 1. Open any Event Hub topic → **Consumer groups** → **+ Consumer group**
-2. Name: `udip-middleware`
+2. Name: `udap-middleware`
 
 Copy the **Shared access policies** → **RootManageSharedAccessKey** connection string → store in Key Vault as `EVENTHUB-CONNECTION-STRING`.
 
@@ -256,8 +256,8 @@ Provide the ARC DBA team with:
 
 1. **Two SQL commands to run on PrEPA's PostgreSQL:**
 ```sql
-SELECT pg_create_logical_replication_slot('udip_cdc', 'pgoutput');
-CREATE PUBLICATION udip_publication FOR ALL TABLES;
+SELECT pg_create_logical_replication_slot('udap_cdc', 'pgoutput');
+CREATE PUBLICATION udap_publication FOR ALL TABLES;
 ```
 
 2. **What we need from them:**
@@ -306,8 +306,8 @@ For each application, the process is:
 
 | App | Container Name | Image | CPU | Memory | Min | Max | CPU Threshold |
 |-----|---------------|-------|-----|--------|-----|-----|--------------|
-| **UDIP AI Assistant** | `ca-udip-ai` | `eeoc-udip-ai-assistant:latest` | 2 | 4Gi | 2 | 6 | 70% |
-| **UDIP CDC Consumer** | `ca-udip-cdc` | `eeoc-udip-data-middleware:latest` | 2 | 4Gi | 1 | 2 | 80% |
+| **UDAP AI Assistant** | `ca-udap-ai` | `eeoc-udap-ai-assistant:latest` | 2 | 4Gi | 2 | 6 | 70% |
+| **UDAP CDC Consumer** | `ca-udap-cdc` | `eeoc-udap-data-middleware:latest` | 2 | 4Gi | 1 | 2 | 80% |
 | **ADR Web App** | `ca-adr-webapp` | `eeoc-adr-webapp:latest` | 2 | 4Gi | 3 | 12 | 65% |
 | **Triage Web App** | `ca-triage-webapp` | `eeoc-triage-webapp:latest` | 1 | 2Gi | 2 | 6 | 70% |
 | **ARC Integration API** | `ca-arc-integration` | `eeoc-arc-integration:latest` | 1 | 2Gi | 2 | 4 | 70% |
@@ -430,7 +430,7 @@ ADR is the only public-facing application. Azure Front Door provides edge securi
 
 1. Open Azure OpenAI resource → **Access control (IAM)** → **+ Add role assignment**
 2. Role: `Cognitive Services OpenAI User`
-3. Assign to: each Container App's managed identity (UDIP AI Assistant, Triage CaseFileProcessor)
+3. Assign to: each Container App's managed identity (UDAP AI Assistant, Triage CaseFileProcessor)
 4. **Save**
 
 This allows the apps to use `DefaultAzureCredential` instead of an API key.
@@ -463,7 +463,7 @@ Create one app registration per service. For each:
 | `EEOC-MCP-Hub` | `Hub.Read`, `Hub.Write` |
 | `EEOC-ADR-Mediation` | `MCP.Read`, `MCP.Write` |
 | `EEOC-OFS-Triage` | `MCP.Read`, `MCP.Write` |
-| `EEOC-UDIP-Analytics` | `Analytics.Read`, `Analytics.Write` |
+| `EEOC-UDAP-Analytics` | `Analytics.Read`, `Analytics.Write` |
 | `EEOC-OGC-TrialTool` | `MCP.Read`, `MCP.Write` |
 | `EEOC-ARC-Integration` | `ARC.Read`, `ARC.Write` |
 
@@ -539,7 +539,7 @@ After deployment, verify each component:
 - [ ] ADR: Login.gov OIDC flow works for external parties
 - [ ] ADR: Entra ID login works for staff
 - [ ] Triage: Entra ID login, file upload, AI classification
-- [ ] UDIP: AI Assistant responds to queries, charts render
+- [ ] UDAP: AI Assistant responds to queries, charts render
 - [ ] OGC: Entra ID login (no demo), case analysis works
 - [ ] ARC Integration API: health check, ARC OAuth2 token acquisition
 
@@ -565,8 +565,8 @@ After deployment, verify each component:
 | VNet | `vnet-eeoc-ai-platform` | Virtual Network |
 | Key Vault | `kv-eeoc-ai-prod` | Key Vault |
 | Storage | `steeocaiaudit` | Storage Account |
-| PostgreSQL Primary | `pg-eeoc-udip-prod` | Flexible Server |
-| PostgreSQL Replica | `pg-eeoc-udip-prod-replica` | Read Replica |
+| PostgreSQL Primary | `pg-eeoc-udap-prod` | Flexible Server |
+| PostgreSQL Replica | `pg-eeoc-udap-prod-replica` | Read Replica |
 | Redis | `redis-eeoc-ai-prod` | Cache for Redis |
 | Event Hub | `evhns-eeoc-cdc-prod` | Event Hubs Namespace |
 | Container Apps Env | `cae-eeoc-ai-prod` | Container Apps Environment |

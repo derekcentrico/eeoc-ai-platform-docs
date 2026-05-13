@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The OFP Investigative Toolkit request describes a cloud-based application hosting discrete, task-specific AI tools with structured inputs, hidden prompts, and multi-format outputs (text, DOCX, EML, XLSX). **This architecture already exists.** The OGC Trial Tool, built on the same Azure OpenAI / AI Foundry stack as ADR Portal and UDIP, provides exactly this pattern today — a web-based directory of AI tools with file upload, structured inputs, static prompts, and multi-format output. The requested toolkit can be delivered as a new module within the existing platform rather than built from scratch.
+The OFP Investigative Toolkit request describes a cloud-based application hosting discrete, task-specific AI tools with structured inputs, hidden prompts, and multi-format outputs (text, DOCX, EML, XLSX). **This architecture already exists.** The OGC Trial Tool, built on the same Azure OpenAI / AI Foundry stack as ADR Portal and UDAP, provides exactly this pattern today — a web-based directory of AI tools with file upload, structured inputs, static prompts, and multi-format output. The requested toolkit can be delivered as a new module within the existing platform rather than built from scratch.
 
 ---
 
@@ -24,7 +24,7 @@ The OFP Investigative Toolkit request describes a cloud-based application hostin
 | Output displayed as text and/or file download | Markdown text display, plus DOCX, EML, and XLSX export already implemented |
 | Adding tools on an ongoing basis | Feature-flagged tool architecture (`FEATURE_QA=1`, `FEATURE_TIMELINE=1`, etc.) — new tools are additive, not disruptive |
 
-**Key point:** The Trial Tool uses the same Azure OpenAI deployment and AI Foundry model provider abstraction as ADR Portal and UDIP. All three share `foundry_model_provider.py`, the same NARA-compliant audit logger, and the same managed identity authentication to Azure OpenAI. This is not a coincidence — it was designed as a shared platform layer.
+**Key point:** The Trial Tool uses the same Azure OpenAI deployment and AI Foundry model provider abstraction as ADR Portal and UDAP. All three share `foundry_model_provider.py`, the same NARA-compliant audit logger, and the same managed identity authentication to Azure OpenAI. This is not a coincidence — it was designed as a shared platform layer.
 
 ---
 

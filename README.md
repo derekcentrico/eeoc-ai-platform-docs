@@ -16,7 +16,7 @@ eeoc-ai-platform-docs/
 ├── README.md                          # This file
 ├── platform-docs/                     # Cross-cutting architecture and auth
 │   ├── Leadership_AI_Assistant_Architecture.md
-│   ├── UDIP_Authentication_and_Authorization.md
+│   ├── UDAP_Authentication_and_Authorization.md
 │   └── ARC_Gap_Analysis.md
 ├── eeoc-workspace/                    # Workspace config (CLAUDE.md, skills, agents)
 │   ├── CLAUDE.md
@@ -44,7 +44,7 @@ eeoc-ai-platform-docs/
 
 | Application | Repo | Status | Docs Location |
 |---|---|---|---|
-| UDIP (Analytics + AI Assistant) | `eeoc-data-analytics-and-dashboard` | Production | `docs/` (55 files) |
+| UDAP (Analytics + AI Assistant) | `eeoc-data-analytics-and-dashboard` | Production | `docs/` (55 files) |
 | ADR Portal (Mediation) | `eeoc-ofs-adr` | Production | `docs/` (37 files) |
 | Triage (Charge Intake) | `eeoc-ofs-triage` | Development | `docs/` (30 files) |
 | Trial Tool (OGC) | `eeoc-ogc-trialtool` | Development | `docs/` (13 files) |
@@ -62,7 +62,7 @@ eeoc-ai-platform-docs/
 - [ARC Gap Analysis](platform-docs/ARC_Gap_Analysis.md) — Integration gaps with legacy ARC systems
 
 ### Authentication and Access Control
-- [UDIP Authentication and Authorization](platform-docs/UDIP_Authentication_and_Authorization.md) — Gateway auth, RBAC, RLS, unified access control
+- [UDAP Authentication and Authorization](platform-docs/UDAP_Authentication_and_Authorization.md) — Gateway auth, RBAC, RLS, unified access control
 - Unified access control is integrated across all user-facing apps (ADR, Triage, Trial Tool, Benefits) via feature flag `UNIFIED_ACCESS_ENABLED`
 
 ### Deployment and Infrastructure

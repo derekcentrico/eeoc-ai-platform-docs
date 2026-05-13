@@ -1,22 +1,22 @@
-# UDIP Database Selection: Azure PostgreSQL vs Azure SQL
+# UDAP Database Selection: Azure PostgreSQL vs Azure SQL
 
 **Date:** 2026-04-01
-**Purpose:** Justify database engine selection for UDIP Analytics Platform before operational launch
+**Purpose:** Justify database engine selection for UDAP Analytics Platform before operational launch
 **Audience:** OCIO Leadership
 
 ---
 
 ## Context
 
-UDIP is the agency's centralized analytics and AI platform. It serves as the governed data layer for all downstream applications, AI consumers, dashboards, and data mining. Before UDIP begins operations, the database engine selection must be confirmed.
+UDAP is the agency's centralized analytics and AI platform. It serves as the governed data layer for all downstream applications, AI consumers, dashboards, and data mining. Before UDAP begins operations, the database engine selection must be confirmed.
 
 Both options under consideration are fully managed Azure services. This is not an open-source-vs-Microsoft decision — it is choosing the right Azure database service for the workload.
 
 ---
 
-## UDIP's Database Requirements
+## UDAP's Database Requirements
 
-UDIP is not a transactional system. It is a read-optimized analytical data store with AI capabilities. The database must support:
+UDAP is not a transactional system. It is a read-optimized analytical data store with AI capabilities. The database must support:
 
 1. **Real-time change data capture ingestion** from ARC's PostgreSQL system of record (PrEPA)
 2. **Row-level security** enforcing regional data boundaries based on caller identity
@@ -58,7 +58,7 @@ UDIP is not a transactional system. It is a read-optimized analytical data store
 | **16 vCores, 128 GB RAM, 2 TB storage** | **~$1,400/month** | **~$3,200/month (Memory Optimized)** |
 | + Read replica (same tier) | ~$1,400/month additional | ~$3,200/month additional |
 
-**Production sizing note:** PrEPA source is ~800 GB across ~350 tables. UDIP needs ~1.7 TB total (replica + analytics + vectors + indexes). Memory Optimized tier recommended for RLS predicate evaluation, pgvector HNSW searches, and GIN index scans under concurrent load.
+**Production sizing note:** PrEPA source is ~800 GB across ~350 tables. UDAP needs ~1.7 TB total (replica + analytics + vectors + indexes). Memory Optimized tier recommended for RLS predicate evaluation, pgvector HNSW searches, and GIN index scans under concurrent load.
 | Licensing model | Open source. No per-core licensing. | Per-core or DTU licensing. Enterprise features (columnstore, in-memory) require Premium tier. |
 | Vector search | Included (pgvector extension, no additional cost) | Requires separate Azure AI Search ($250+/month for basic tier) |
 
@@ -68,11 +68,11 @@ Costs are approximate and vary by region. The gap widens at higher tiers because
 
 ## CDC Compatibility
 
-ARC's system of record (PrEPA) runs PostgreSQL. The proposed data pipeline uses PostgreSQL logical replication to stream changes to UDIP in real-time.
+ARC's system of record (PrEPA) runs PostgreSQL. The proposed data pipeline uses PostgreSQL logical replication to stream changes to UDAP in real-time.
 
 | Path | Azure PostgreSQL | Azure SQL |
 |---|---|---|
-| **PrEPA → UDIP** | PostgreSQL → PostgreSQL. Native logical replication. Same data types, no conversion. Debezium optional (can use native pgoutput subscriber). | PostgreSQL → SQL Server. Requires Debezium to read PostgreSQL WAL, convert row images to SQL Server-compatible inserts, handle data type mismatches (e.g., PostgreSQL UUID → SQL Server UNIQUEIDENTIFIER, PostgreSQL TIMESTAMPTZ → SQL Server DATETIMEOFFSET). |
+| **PrEPA → UDAP** | PostgreSQL → PostgreSQL. Native logical replication. Same data types, no conversion. Debezium optional (can use native pgoutput subscriber). | PostgreSQL → SQL Server. Requires Debezium to read PostgreSQL WAL, convert row images to SQL Server-compatible inserts, handle data type mismatches (e.g., PostgreSQL UUID → SQL Server UNIQUEIDENTIFIER, PostgreSQL TIMESTAMPTZ → SQL Server DATETIMEOFFSET). |
 | **Failure mode** | If types match natively, fewer silent data corruption risks. | Type conversion mismatches can cause silent truncation or precision loss. |
 | **Operational complexity** | One database engine to understand. | Two database engines (PostgreSQL source + SQL Server target) with different behaviors, locking semantics, and diagnostic tools. |
 
@@ -80,7 +80,7 @@ ARC's system of record (PrEPA) runs PostgreSQL. The proposed data pipeline uses 
 
 ## Migration Cost if Azure SQL Were Chosen
 
-UDIP is built but not yet operational. Switching to Azure SQL before launch would require:
+UDAP is built but not yet operational. Switching to Azure SQL before launch would require:
 
 | Component | Effort |
 |---|---|
@@ -95,7 +95,7 @@ UDIP is built but not yet operational. Switching to Azure SQL before launch woul
 | Analytics table definitions | Rewrite CREATE TABLE statements, indexes, constraints |
 | Connection management | Replace psycopg2 connection pooling with pyodbc + ODBC driver installation in all containers |
 
-Estimated effort: 4-6 weeks of rework before UDIP can begin operations, with ongoing risk from dbt adapter limitations and the added CDC translation layer.
+Estimated effort: 4-6 weeks of rework before UDAP can begin operations, with ongoing risk from dbt adapter limitations and the added CDC translation layer.
 
 ---
 
@@ -120,7 +120,7 @@ There is no compliance gap between the two options.
 
 ## Recommendation
 
-**Azure Database for PostgreSQL Flexible Server** is the recommended engine for UDIP.
+**Azure Database for PostgreSQL Flexible Server** is the recommended engine for UDAP.
 
 The decision comes down to three factors:
 

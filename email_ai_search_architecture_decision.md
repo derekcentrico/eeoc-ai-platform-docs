@@ -1,8 +1,8 @@
-Subject: AI Search Architecture - Options Analysis for UDIP Analytics Platform
+Subject: AI Search Architecture - Options Analysis for UDAP Analytics Platform
 
 Siva,
 
-Following up on the discussion about search and vectorization for the analytics platform. I looked at all four options and want to lay out the tradeoffs so we can make an informed decision on direction. This is the data layer that powers AI-assisted case analysis, the conversational AI assistant, and the RAG pipeline for legal document retrieval across ADR, Triage, OGC, and UDIP.
+Following up on the discussion about search and vectorization for the analytics platform. I looked at all four options and want to lay out the tradeoffs so we can make an informed decision on direction. This is the data layer that powers AI-assisted case analysis, the conversational AI assistant, and the RAG pipeline for legal document retrieval across ADR, Triage, OGC, and UDAP.
 
 ---
 

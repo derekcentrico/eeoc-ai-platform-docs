@@ -73,7 +73,7 @@
           │  └────┬─────────────┬───────────────┬────────┘   │
           │       │             │               │            │
           │  ┌────▼─────┐ ┌────▼──────┐  ┌─────▼───────┐   │
-          │  │ ARC      │ │ UDIP      │  │ Hub         │   │
+          │  │ ARC      │ │ UDAP      │  │ Hub         │   │
           │  │ Integr.  │ │ Analytics │  │ Aggregator  │   │
           │  │ API      │ │ + AI Asst │  │ Function    │   │
           │  │ :8000    │ │ :5000     │  │             │   │
@@ -110,18 +110,18 @@
 
 | Component | What It Does |
 |-----------|-------------|
-| **UDIP Analytics** | Central data store. Holds copied ARC data, analytics tables, and the AI Assistant that answers plain-language questions about EEOC case data and renders charts. |
+| **UDAP Analytics** | Central data store. Holds copied ARC data, analytics tables, and the AI Assistant that answers plain-language questions about EEOC case data and renders charts. |
 | **ADR Mediation** | Public-facing mediation case management. Staff and external parties (via Login.gov) schedule mediations, track cases, record outcomes. Writes results back to ARC. |
 | **OFS Triage** | Charge classification using GPT-4o. Staff upload charge documents, the model classifies them, results go back to ARC. Internal-only. |
 | **OGC Trial Tool** | Litigation support for the Office of General Counsel. Case analysis, document indexing, trial preparation. Internal-only. |
 | **ARC Integration API** | Bridge to ARC. Pushes case data to ADR/Triage, accepts write-backs (mediation outcomes, classifications), forwards Service Bus events. |
 | **MCP Hub** | Azure API Management routes AI tool calls to the right spoke. A thin aggregator function merges tool catalogs from all 5 spokes. |
-| **WAL/CDC Pipeline** | Streams every database change from PrEPA's PostgreSQL (ARC's system of record) into UDIP via Debezium and Event Hub. No impact on ARC — reads the existing transaction log. |
+| **WAL/CDC Pipeline** | Streams every database change from PrEPA's PostgreSQL (ARC's system of record) into UDAP via Debezium and Event Hub. No impact on ARC — reads the existing transaction log. |
 | **Data Middleware** | YAML-driven translation layer. Renames ARC's internal column labels to clear names, redacts PII per tier, validates data types. |
 
 ### Expected Outcome
 
-When deployment is complete, an EEOC analyst can open UDIP, type "Show me the top 10 offices by mediation settlement rate this quarter" and get a chart back. ADR mediators can schedule sessions and record outcomes that flow back into ARC. Triage staff can upload charge documents and get AI-driven classifications. All of this runs on Azure Government under FedRAMP High controls, with 7-year NARA-compliant audit trails.
+When deployment is complete, an EEOC analyst can open UDAP, type "Show me the top 10 offices by mediation settlement rate this quarter" and get a chart back. ADR mediators can schedule sessions and record outcomes that flow back into ARC. Triage staff can upload charge documents and get AI-driven classifications. All of this runs on Azure Government under FedRAMP High controls, with 7-year NARA-compliant audit trails.
 
 ---
 
@@ -181,7 +181,7 @@ Collect these values now. You will enter them repeatedly during deployment.
 | TLS certificate path (.pfx) | PKI team or CA | __________________ |
 | Mediator AD Group ID | Entra ID group for ADR mediators | __________________ |
 | Admin AD Group ID | Entra ID group for platform admins | __________________ |
-| Analyst AD Group ID | Entra ID group for UDIP analysts | __________________ |
+| Analyst AD Group ID | Entra ID group for UDAP analysts | __________________ |
 | Data Steward AD Group ID | Entra ID group for data stewards | __________________ |
 | Legal Counsel AD Group ID | Entra ID group for OGC legal counsel | __________________ |
 
@@ -361,7 +361,7 @@ openssl rand -base64 32   # → MCP-WEBHOOK-SECRET-ADR
 openssl rand -base64 32   # → MCP-WEBHOOK-SECRET-TRIAGE
 openssl rand -base64 32   # → MCP-WEBHOOK-SECRET-ARC-INTEGRATION
 openssl rand -base64 32   # → MCP-WEBHOOK-SECRET-OGC
-openssl rand -base64 32   # → MCP-WEBHOOK-SECRET-UDIP
+openssl rand -base64 32   # → MCP-WEBHOOK-SECRET-UDAP
 
 # database admin password
 openssl rand -base64 24   # → PG-ADMIN-PASSWORD
@@ -505,20 +505,20 @@ From your build machine with Docker access:
 az acr login --name acreeocaiprod
 
 # tag and push each image (repeat for all 10 images)
-docker tag eeoc-udip-superset:latest acreeocaiprod.azurecr.us/udip/superset:v1.0.0
-docker push acreeocaiprod.azurecr.us/udip/superset:v1.0.0
+docker tag eeoc-udap-superset:latest acreeocaiprod.azurecr.us/udap/superset:v1.0.0
+docker push acreeocaiprod.azurecr.us/udap/superset:v1.0.0
 
-docker tag eeoc-udip-ai-assistant:latest acreeocaiprod.azurecr.us/udip/ai-assistant:v1.0.0
-docker push acreeocaiprod.azurecr.us/udip/ai-assistant:v1.0.0
+docker tag eeoc-udap-ai-assistant:latest acreeocaiprod.azurecr.us/udap/ai-assistant:v1.0.0
+docker push acreeocaiprod.azurecr.us/udap/ai-assistant:v1.0.0
 
-docker tag eeoc-udip-data-middleware:latest acreeocaiprod.azurecr.us/udip/data-middleware:v1.0.0
-docker push acreeocaiprod.azurecr.us/udip/data-middleware:v1.0.0
+docker tag eeoc-udap-data-middleware:latest acreeocaiprod.azurecr.us/udap/data-middleware:v1.0.0
+docker push acreeocaiprod.azurecr.us/udap/data-middleware:v1.0.0
 
-docker tag eeoc-debezium-connect:latest acreeocaiprod.azurecr.us/udip/debezium-connect:v1.0.0
-docker push acreeocaiprod.azurecr.us/udip/debezium-connect:v1.0.0
+docker tag eeoc-debezium-connect:latest acreeocaiprod.azurecr.us/udap/debezium-connect:v1.0.0
+docker push acreeocaiprod.azurecr.us/udap/debezium-connect:v1.0.0
 
-docker tag eeoc-udip-portal-nginx:latest acreeocaiprod.azurecr.us/udip/portal-nginx:v1.0.0
-docker push acreeocaiprod.azurecr.us/udip/portal-nginx:v1.0.0
+docker tag eeoc-udap-portal-nginx:latest acreeocaiprod.azurecr.us/udap/portal-nginx:v1.0.0
+docker push acreeocaiprod.azurecr.us/udap/portal-nginx:v1.0.0
 
 docker tag eeoc-adr-webapp:latest acreeocaiprod.azurecr.us/adr/webapp:v1.0.0
 docker push acreeocaiprod.azurecr.us/adr/webapp:v1.0.0
@@ -550,12 +550,12 @@ docker push acreeocaiprod.azurecr.us/arc/integration-api:v1.0.0
 |---------|-------|
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
-| Server name | `pg-eeoc-udip-prod` |
+| Server name | `pg-eeoc-udap-prod` |
 | Region | `US Gov Virginia` |
 | PostgreSQL version | `16` |
 | Workload type | `Production (Small/Medium-size)` |
 | Compute + storage | See below |
-| Admin username | `udip_admin` |
+| Admin username | `udap_admin` |
 | Password | Use value from Key Vault secret `PG-ADMIN-PASSWORD` |
 
 **Compute + storage — Configure server:**
@@ -624,9 +624,9 @@ CREATE EXTENSION IF NOT EXISTS unaccent;       -- accent-insensitive search
 From the `eeoc-data-analytics-and-dashboard/analytics-db/postgres/` directory, run scripts in this exact order:
 
 ```bash
-export PGHOST=pg-eeoc-udip-prod.postgres.database.usgovcloudapi.net
-export PGUSER=udip_admin
-export PGDATABASE=udip
+export PGHOST=pg-eeoc-udap-prod.postgres.database.usgovcloudapi.net
+export PGUSER=udap_admin
+export PGDATABASE=udap
 export PGSSLMODE=require
 
 psql -f 001-extensions.sql
@@ -661,11 +661,11 @@ SELECT extname FROM pg_extension WHERE extname IN ('vector', 'pgcrypto', 'pg_trg
 
 #### Create Read Replica
 
-**Portal Navigation:** Home > pg-eeoc-udip-prod > Settings > Replication > + Create replica
+**Portal Navigation:** Home > pg-eeoc-udap-prod > Settings > Replication > + Create replica
 
 | Setting | Value |
 |---------|-------|
-| Server name | `pg-eeoc-udip-prod-replica` |
+| Server name | `pg-eeoc-udap-prod-replica` |
 | Region | `US Gov Virginia` (same-region replica) |
 | Compute | Same as primary (`Standard_E16ds_v5`) |
 
@@ -704,7 +704,7 @@ PgBouncer pools connections from all applications into a small number of Postgre
 
 | Name | Value |
 |------|-------|
-| `PGBOUNCER_DATABASE` | `udip` |
+| `PGBOUNCER_DATABASE` | `udap` |
 | `PGBOUNCER_PORT` | `6432` |
 | `PGBOUNCER_POOL_MODE` | `transaction` |
 | `PGBOUNCER_MAX_CLIENT_CONN` | `3000` |
@@ -712,9 +712,9 @@ PgBouncer pools connections from all applications into a small number of Postgre
 | `PGBOUNCER_MAX_DB_CONNECTIONS` | `200` |
 | `PGBOUNCER_QUERY_TIMEOUT` | `60` |
 | `PGBOUNCER_SERVER_TLS_SSLMODE` | `require` |
-| `POSTGRESQL_HOST` | `pg-eeoc-udip-prod.postgres.database.usgovcloudapi.net` |
+| `POSTGRESQL_HOST` | `pg-eeoc-udap-prod.postgres.database.usgovcloudapi.net` |
 | `POSTGRESQL_PORT` | `5432` |
-| `POSTGRESQL_USERNAME` | `udip_admin` |
+| `POSTGRESQL_USERNAME` | `udap_admin` |
 | `POSTGRESQL_PASSWORD` | (Key Vault reference: `PG-ADMIN-PASSWORD`) |
 
 **Ingress Tab:**
@@ -736,7 +736,7 @@ PgBouncer pools connections from all applications into a small number of Postgre
 **Verify:** From within the VNet, test connectivity:
 
 ```bash
-psql "host=ca-pgbouncer-prod.internal.{env-suffix}.usgovcloudapi.net port=6432 dbname=udip user=udip_admin sslmode=require"
+psql "host=ca-pgbouncer-prod.internal.{env-suffix}.usgovcloudapi.net port=6432 dbname=udap user=udap_admin sslmode=require"
 ```
 
 ---
@@ -846,7 +846,7 @@ Navigate to the event hub `prepa-cdc-events` > Consumer groups > + Consumer grou
 
 | Setting | Value |
 |---------|-------|
-| Name | `udip-middleware` |
+| Name | `udap-middleware` |
 
 After creation, go to Shared access policies > + Add:
 
@@ -855,12 +855,12 @@ After creation, go to Shared access policies > + Add:
 | Policy name | `debezium-writer` |
 | Claims | `Send` |
 
-| Policy name | `udip-reader` |
+| Policy name | `udap-reader` |
 | Claims | `Listen` |
 
 Copy both connection strings and store in Key Vault:
 - `debezium-writer` connection string → `CDC-EVENTHUB-SEND-CONNECTION`
-- `udip-reader` connection string → `CDC-EVENTHUB-LISTEN-CONNECTION`
+- `udap-reader` connection string → `CDC-EVENTHUB-LISTEN-CONNECTION`
 
 **Verify:** Navigate to Event Hub namespace. Status shows "Active". The event hub `prepa-cdc-events` appears with 8 partitions.
 
@@ -916,7 +916,7 @@ Navigate to oai-eeoc-ai-prod > Access control (IAM) > + Add role assignment:
 | Assign access to | `Managed identity` |
 | Members | Select each Container App / Function App managed identity |
 
-Repeat for: UDIP AI Assistant, ADR webapp, ADR functionapp, Triage webapp, Triage functionapp, OGC webapp.
+Repeat for: UDAP AI Assistant, ADR webapp, ADR functionapp, Triage webapp, Triage functionapp, OGC webapp.
 
 **Verify:** Navigate to Deployments in OpenAI Studio. Both models show "Succeeded" status.
 
@@ -1006,20 +1006,20 @@ After creation:
 3. **Certificates & secrets** > New client secret > `triage-m2m` > 24 months
 4. Store secret in Key Vault as `TRIAGE-CLIENT-SECRET`
 
-#### Registration 4: EEOC-UDIP-Analytics
+#### Registration 4: EEOC-UDAP-Analytics
 
 | Setting | Value |
 |---------|-------|
-| Name | `EEOC-UDIP-Analytics` |
+| Name | `EEOC-UDAP-Analytics` |
 | Supported account types | `Accounts in this organizational directory only` |
-| Redirect URI | Web: `https://udip.eeoc.gov/auth/callback` |
+| Redirect URI | Web: `https://udap.eeoc.gov/auth/callback` |
 
 After creation:
 1. **App roles**: `Analytics.Read`, `Analytics.Write` (Applications + Users)
 2. **API permissions** > EEOC-MCP-Hub > `Hub.Read`, `Hub.Write` > Grant admin consent
 3. **Expose an API** > Add scope: `user_impersonation` (for OBO flow)
-4. **Certificates & secrets** > New client secret > `udip-m2m` > 24 months
-5. Store secret in Key Vault as `UDIP-CLIENT-SECRET`
+4. **Certificates & secrets** > New client secret > `udap-m2m` > 24 months
+5. Store secret in Key Vault as `UDAP-CLIENT-SECRET`
 
 #### Registration 5: EEOC-OGC-TrialTool
 
@@ -1099,7 +1099,7 @@ Deploy each application as a Container App within the `cae-eeoc-ai-prod` environ
 
 > Deploy PgBouncer first (Section 2.7), then these applications.
 
-#### 2.14.1 UDIP AI Assistant
+#### 2.14.1 UDAP AI Assistant
 
 **Portal Navigation:** Container Apps > + Create
 
@@ -1107,7 +1107,7 @@ Deploy each application as a Container App within the `cae-eeoc-ai-prod` environ
 
 | Setting | Value |
 |---------|-------|
-| Container app name | `ca-udip-ai-assistant-prod` |
+| Container app name | `ca-udap-ai-assistant-prod` |
 | Container Apps Environment | `cae-eeoc-ai-prod` |
 
 **Container Tab:**
@@ -1116,7 +1116,7 @@ Deploy each application as a Container App within the `cae-eeoc-ai-prod` environ
 |---------|-------|
 | Image source | `Azure Container Registry` |
 | Registry | `acreeocaiprod` |
-| Image | `udip/ai-assistant` |
+| Image | `udap/ai-assistant` |
 | Tag | `v1.0.0` |
 | CPU | `2` |
 | Memory | `2 Gi` |
@@ -1133,11 +1133,11 @@ Environment variables — see [Appendix B](#appendix-b-all-environment-variables
 | `AI_MODEL_PROVIDER` | Manual | `azure_openai` |
 | `PG_AI_HOST` | Manual | `ca-pgbouncer-prod` (PgBouncer internal FQDN) |
 | `PG_AI_PORT` | Manual | `6432` |
-| `PG_AI_DATABASE` | Manual | `udip` |
+| `PG_AI_DATABASE` | Manual | `udap` |
 | `PG_AI_SSLMODE` | Manual | `require` |
 | `REDIS_URL` | Secret ref | Key Vault: `REDIS-CONNECTION-STRING` |
 | `OPENAI_API_KEY` | Secret ref | Key Vault: `OPENAI-API-KEY` |
-| `FLASK_SECRET_KEY` | Secret ref | Key Vault: `UDIP-FLASK-SECRET` |
+| `FLASK_SECRET_KEY` | Secret ref | Key Vault: `UDAP-FLASK-SECRET` |
 
 **Ingress Tab:**
 
@@ -1163,12 +1163,12 @@ Environment variables — see [Appendix B](#appendix-b-all-environment-variables
 | Readiness | `/healthz` | `5000` | 10s |
 | Startup | `/healthz` | `5000` | 5s (failure threshold: 30) |
 
-#### 2.14.2 UDIP Superset
+#### 2.14.2 UDAP Superset
 
 | Setting | Value |
 |---------|-------|
-| Container app name | `ca-udip-superset-prod` |
-| Image | `udip/superset:v1.0.0` |
+| Container app name | `ca-udap-superset-prod` |
+| Image | `udap/superset:v1.0.0` |
 | CPU | `2` |
 | Memory | `4 Gi` |
 | Target port | `8088` |
@@ -1181,7 +1181,7 @@ Environment variables — see [Appendix B](#appendix-b-all-environment-variables
 | Setting | Value |
 |---------|-------|
 | Container app name | `ca-debezium-connect-prod` |
-| Image | `udip/debezium-connect:v1.0.0` |
+| Image | `udap/debezium-connect:v1.0.0` |
 | CPU | `2` |
 | Memory | `4 Gi` |
 | Target port | `8083` |
@@ -1325,18 +1325,18 @@ Environment variables:
 | `MAX_TOOLS_PER_CONTEXT` | `15` |
 | `SPOKE_REQUEST_TIMEOUT_SECONDS` | `30` |
 
-#### 2.14.10 Portal Nginx (UDIP)
+#### 2.14.10 Portal Nginx (UDAP)
 
 | Setting | Value |
 |---------|-------|
-| Container app name | `ca-udip-portal-prod` |
-| Image | `udip/portal-nginx:v1.0.0` |
+| Container app name | `ca-udap-portal-prod` |
+| Image | `udap/portal-nginx:v1.0.0` |
 | CPU | `0.25` |
 | Memory | `512 Mi` |
 | Target port | `8080` |
 | Min/Max replicas | `2` / `4` |
 
-This is a reverse proxy for UDIP services (Superset, AI Assistant, JupyterHub).
+This is a reverse proxy for UDAP services (Superset, AI Assistant, JupyterHub).
 
 **Verify for all Container Apps:** Navigate to each app > Overview. Status shows "Running". Revision shows active. Check Logs for any startup errors.
 
@@ -1405,7 +1405,7 @@ After creation (takes 30-45 minutes):
 |-----------|-----|-------------|
 | `adr-spoke` | `https://ca-adr-webapp-prod.internal.{env}/api/mcp` | ADR MCP endpoint |
 | `triage-spoke` | `https://ca-triage-webapp-prod.internal.{env}/api/mcp` | Triage MCP endpoint |
-| `udip-spoke` | `https://ca-udip-ai-assistant-prod.internal.{env}/api/mcp` | UDIP MCP endpoint |
+| `udap-spoke` | `https://ca-udap-ai-assistant-prod.internal.{env}/api/mcp` | UDAP MCP endpoint |
 | `arc-spoke` | `https://ca-arc-integration-prod.internal.{env}/api/mcp` | ARC Integration MCP endpoint |
 | `ogc-spoke` | `https://app-ogctrialtool-web.azurewebsites.us/api/mcp` | OGC MCP endpoint |
 | `hub-aggregator` | `https://ca-mcp-hub-func-prod.internal.{env}/api` | Hub aggregator function |
@@ -1421,7 +1421,7 @@ Tool routing prefixes:
 |--------|---------|
 | `adr.*` | `adr-spoke` |
 | `ofs-triage.*` | `triage-spoke` |
-| `udip.*` | `udip-spoke` |
+| `udap.*` | `udap-spoke` |
 | `arc.*` | `arc-spoke` |
 | `trial.*` | `ogc-spoke` |
 
@@ -1707,18 +1707,18 @@ Send this to the ARC DBA contact:
 >
 > Hi {DBA name},
 >
-> We need two SQL commands run on the PrEPA production PostgreSQL server to enable Change Data Capture (CDC) for the EEOC AI Integration Platform. This lets us replicate data to UDIP with no load on PrEPA — it reads the existing write-ahead log.
+> We need two SQL commands run on the PrEPA production PostgreSQL server to enable Change Data Capture (CDC) for the EEOC AI Integration Platform. This lets us replicate data to UDAP with no load on PrEPA — it reads the existing write-ahead log.
 >
 > **What we need:**
 >
 > ```sql
 > -- 1. Create a logical replication slot for Debezium
-> SELECT pg_create_logical_replication_slot('udip_cdc', 'pgoutput');
+> SELECT pg_create_logical_replication_slot('udap_cdc', 'pgoutput');
 >
-> -- 2. Publish all tables for replication (UDIP filters tables on ingest via Debezium config)
+> -- 2. Publish all tables for replication (UDAP filters tables on ingest via Debezium config)
 > -- FOR ALL TABLES is used here because PrEPA's schema evolves and we need new tables
-> -- as they appear. Row-level filtering happens in Debezium and the UDIP middleware.
-> CREATE PUBLICATION udip_publication FOR ALL TABLES;
+> -- as they appear. Row-level filtering happens in Debezium and the UDAP middleware.
+> CREATE PUBLICATION udap_publication FOR ALL TABLES;
 > ```
 >
 > **What we also need from you:**
@@ -1747,14 +1747,14 @@ Send this to the ARC DBA contact:
 ```bash
 # from a machine that can reach the PrEPA server (or via VPN)
 psql "host={prepa-host} user={repl-user} dbname={prepa-db} sslmode=require" \
-  -c "SELECT slot_name, plugin, active FROM pg_replication_slots WHERE slot_name = 'udip_cdc';"
+  -c "SELECT slot_name, plugin, active FROM pg_replication_slots WHERE slot_name = 'udap_cdc';"
 ```
 
 Expected output:
 ```
  slot_name | plugin   | active
 -----------+----------+--------
- udip_cdc  | pgoutput | t
+ udap_cdc  | pgoutput | t
 ```
 
 3. Configure the Debezium connector:
@@ -1772,8 +1772,8 @@ curl -X POST http://ca-debezium-connect-prod:8083/connectors \
       "database.password": "{repl-password}",
       "database.dbname": "{prepa-db}",
       "database.server.name": "prepa",
-      "slot.name": "udip_cdc",
-      "publication.name": "udip_publication",
+      "slot.name": "udap_cdc",
+      "publication.name": "udap_publication",
       "plugin.name": "pgoutput",
       "topic.prefix": "prepa",
       "table.include.list": "public.*",
@@ -1809,7 +1809,7 @@ Each application has feature flags that control integration points. Set these in
 | `MCP_ENABLED` | `true` | Registers ADR tools with MCP Hub |
 | `MCP_PROTOCOL_ENABLED` | `true` | Exposes MCP protocol endpoint |
 | `ARC_SYNC_ENABLED` | `true` | Enables 15-minute case sync from ARC |
-| `UDIP_PUSH_ENABLED` | `true` | Pushes operational analytics to UDIP |
+| `UDAP_PUSH_ENABLED` | `true` | Pushes operational analytics to UDAP |
 
 **Triage:**
 
@@ -1817,9 +1817,9 @@ Each application has feature flags that control integration points. Set these in
 |---------|-------|-------------|
 | `MCP_ENABLED` | `false` | Triage MCP is disabled by default |
 | `ARC_LOOKUP_ENABLED` | `true` | Enables charge metadata auto-population from ARC |
-| `UDIP_PUSH_ENABLED` | `true` | Pushes classification results to UDIP |
+| `UDAP_PUSH_ENABLED` | `true` | Pushes classification results to UDAP |
 
-**UDIP AI Assistant:**
+**UDAP AI Assistant:**
 
 | Env Var | Value | What It Does |
 |---------|-------|-------------|
@@ -1867,17 +1867,17 @@ curl -X POST "$HUB_URL/api/spokes" \
     "health_endpoint": "https://ca-triage-webapp-prod.internal.{env}/healthz"
   }'
 
-# register UDIP
+# register UDAP
 curl -X POST "$HUB_URL/api/spokes" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "udip",
-    "display_name": "UDIP Analytics",
-    "endpoint": "https://ca-udip-ai-assistant-prod.internal.{env}/api/mcp",
+    "name": "udap",
+    "display_name": "UDAP Analytics",
+    "endpoint": "https://ca-udap-ai-assistant-prod.internal.{env}/api/mcp",
     "auth_type": "entra_id_obo",
-    "client_id": "{UDIP_CLIENT_ID}",
-    "tool_prefix": "udip",
-    "health_endpoint": "https://ca-udip-ai-assistant-prod.internal.{env}/healthz"
+    "client_id": "{UDAP_CLIENT_ID}",
+    "tool_prefix": "udap",
+    "health_endpoint": "https://ca-udap-ai-assistant-prod.internal.{env}/healthz"
   }'
 
 # register ARC Integration
@@ -1933,7 +1933,7 @@ Connect spokes in this order. Each phase has a gate — do not proceed until the
 - Gate: Read tools return data, classification pipeline processes a test document
 - Test: Upload a test charge document, verify classification completes
 
-**Phase 5: UDIP + OBO**
+**Phase 5: UDAP + OBO**
 - Gate: AI queries return regionally scoped data, dynamic tool catalog reconciled
 - Test: Ask the AI "How many open cases are there?" — should return a number
 
@@ -1963,12 +1963,12 @@ curl http://ca-debezium-connect-prod:8083/connectors/prepa-postgresql-connector/
 # Portal: Event Hub namespace > prepa-cdc-events > Metrics > Incoming Messages
 # Should see a steady stream of messages
 
-# 3. Check UDIP middleware is processing
-# Portal: Container Apps > ca-udip-data-middleware > Logs
-# Query: ContainerAppConsoleLogs | where ContainerAppName_s == "ca-udip-data-middleware" | take 20
+# 3. Check UDAP middleware is processing
+# Portal: Container Apps > ca-udap-data-middleware > Logs
+# Query: ContainerAppConsoleLogs | where ContainerAppName_s == "ca-udap-data-middleware" | take 20
 
 # 4. Check analytics tables have data
-psql "host=ca-pgbouncer-prod port=6432 dbname=udip user=udip_admin sslmode=require" \
+psql "host=ca-pgbouncer-prod port=6432 dbname=udap user=udap_admin sslmode=require" \
   -c "SELECT schemaname, tablename, n_live_tup FROM pg_stat_user_tables WHERE schemaname = 'analytics' ORDER BY n_live_tup DESC LIMIT 10;"
 ```
 
@@ -2009,7 +2009,7 @@ SELECT count(*) FROM analytics.charges;
 
 ```bash
 # send a test query to the AI Assistant
-curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
+curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {token}" \
   -d '{"message": "How many cases were filed last month?"}'
@@ -2021,12 +2021,12 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 
 ```bash
 # ask for a visualization
-curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
+curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {token}" \
   -d '{"message": "Show me a bar chart of cases by statute for the last quarter"}'
 
-# Expected: response includes chart data that renders in the UDIP portal
+# Expected: response includes chart data that renders in the UDAP portal
 ```
 
 ---
@@ -2057,14 +2057,14 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 
 ## Part 7: Troubleshooting
 
-### UDIP returns empty results
+### UDAP returns empty results
 
 **Symptoms:** AI Assistant says "no data found" or returns empty tables.
 
 **Check:**
 1. Is the OBO token configured? The AI Assistant uses On-Behalf-Of flow to preserve the caller's regional identity for RLS. If OBO fails, the query runs with no region context and RLS blocks everything.
-   - Verify `UDIP_CLIENT_SECRET` is set and the Entra app has `user_impersonation` scope exposed.
-2. Is the user in a region group? Check Entra ID — the user must be in a group matching `UDIP-Data-Region-{region}`.
+   - Verify `UDAP_CLIENT_SECRET` is set and the Entra app has `user_impersonation` scope exposed.
+2. Is the user in a region group? Check Entra ID — the user must be in a group matching `UDAP-Data-Region-{region}`.
 3. Does the analytics schema have data? Run `SELECT count(*) FROM analytics.charges;` — if 0, the CDC pipeline is not populating data.
 
 ### ADR login fails
@@ -2083,8 +2083,8 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 **Check:**
 1. Is the Debezium connector running? `curl /connectors/prepa-postgresql-connector/status` — look for `"state": "RUNNING"`.
 2. Is the Event Hub connection string correct? Check `CDC-EVENTHUB-LISTEN-CONNECTION` in Key Vault.
-3. Is the consumer group correct? Must be `udip-middleware`.
-4. Is the replication slot active? On PrEPA: `SELECT * FROM pg_replication_slots WHERE slot_name = 'udip_cdc';` — `active` should be `t`.
+3. Is the consumer group correct? Must be `udap-middleware`.
+4. Is the replication slot active? On PrEPA: `SELECT * FROM pg_replication_slots WHERE slot_name = 'udap_cdc';` — `active` should be `t`.
 
 ### Tool not found in hub
 
@@ -2147,8 +2147,8 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 | Key Vault | `kv-eeoc-ai-prod` | Standard |
 | Storage Account | `steeocaiprod` | Standard GRS |
 | Container Registry | `acreeocaiprod` | Premium |
-| PostgreSQL Server | `pg-eeoc-udip-prod` | Memory Optimized E16ds_v5 |
-| PostgreSQL Replica | `pg-eeoc-udip-prod-replica` | Memory Optimized E16ds_v5 |
+| PostgreSQL Server | `pg-eeoc-udap-prod` | Memory Optimized E16ds_v5 |
+| PostgreSQL Replica | `pg-eeoc-udap-prod-replica` | Memory Optimized E16ds_v5 |
 | Redis Cache | `redis-eeoc-ai-prod` | Premium P1 |
 | Event Hub Namespace | `evhns-eeoc-cdc-prod` | Standard |
 | Event Hub | `prepa-cdc-events` | 8 partitions |
@@ -2167,10 +2167,10 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 
 | App Name | Image | CPU | Memory | Min/Max Replicas |
 |----------|-------|-----|--------|-----------------|
-| `ca-udip-ai-assistant-prod` | `udip/ai-assistant:v1.0.0` | 2 | 2 Gi | 2/6 |
-| `ca-udip-superset-prod` | `udip/superset:v1.0.0` | 2 | 4 Gi | 2/4 |
-| `ca-udip-portal-prod` | `udip/portal-nginx:v1.0.0` | 0.25 | 512 Mi | 2/4 |
-| `ca-debezium-connect-prod` | `udip/debezium-connect:v1.0.0` | 2 | 4 Gi | 1/2 |
+| `ca-udap-ai-assistant-prod` | `udap/ai-assistant:v1.0.0` | 2 | 2 Gi | 2/6 |
+| `ca-udap-superset-prod` | `udap/superset:v1.0.0` | 2 | 4 Gi | 2/4 |
+| `ca-udap-portal-prod` | `udap/portal-nginx:v1.0.0` | 0.25 | 512 Mi | 2/4 |
+| `ca-debezium-connect-prod` | `udap/debezium-connect:v1.0.0` | 2 | 4 Gi | 1/2 |
 | `ca-pgbouncer-prod` | `bitnami/pgbouncer:latest` | 0.5 | 1 Gi | 2/4 |
 | `ca-adr-webapp-prod` | `adr/webapp:v1.0.0` | 2 | 4 Gi | 3/12 |
 | `ca-adr-functionapp-prod` | `adr/functionapp:v1.0.0` | 1 | 2 Gi | 2/6 |
@@ -2182,7 +2182,7 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 
 ## Appendix B: All Environment Variables by Application
 
-### UDIP AI Assistant
+### UDAP AI Assistant
 
 | Variable | Value | Source |
 |----------|-------|--------|
@@ -2196,7 +2196,7 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 | `EMBEDDING_DIMENSIONS` | `1536` | Manual |
 | `PG_AI_HOST` | PgBouncer internal FQDN | Manual |
 | `PG_AI_PORT` | `6432` | Manual |
-| `PG_AI_DATABASE` | `udip` | Manual |
+| `PG_AI_DATABASE` | `udap` | Manual |
 | `PG_AI_SSLMODE` | `require` | Manual |
 | `MAX_TOKENS` | `2048` | Manual |
 | `SQL_MAX_ROWS` | `500` | Manual |
@@ -2206,7 +2206,7 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 | `AI_FAILOVER_ENABLED` | `true` | Manual |
 | `REDIS_URL` | Key Vault: `REDIS-CONNECTION-STRING` | Secret |
 | `OPENAI_API_KEY` | Key Vault: `OPENAI-API-KEY` | Secret |
-| `FLASK_SECRET_KEY` | Key Vault: `UDIP-FLASK-SECRET` | Secret |
+| `FLASK_SECRET_KEY` | Key Vault: `UDAP-FLASK-SECRET` | Secret |
 | `DB_PASSWORD` | Key Vault: `PG-ADMIN-PASSWORD` | Secret |
 
 ### ADR Web Application
@@ -2218,7 +2218,7 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 | `SESSION_TIMEOUT_MINUTES` | `30` | Manual |
 | `MAX_CONTENT_LENGTH` | `52428800` | Manual |
 | `ARC_INTEGRATION_API_URL` | ARC Integration API internal URL | Manual |
-| `UDIP_INGEST_URL` | UDIP ingest internal URL | Manual |
+| `UDAP_INGEST_URL` | UDAP ingest internal URL | Manual |
 | `MCP_HUB_URL` | APIM internal URL | Manual |
 | `MCP_ENABLED` | `true` | Manual |
 | `MCP_PROTOCOL_ENABLED` | `true` | Manual |
@@ -2238,7 +2238,7 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 |----------|-------|--------|
 | `FUNCTIONS_WORKER_RUNTIME` | `python` | Manual |
 | `ARC_INTEGRATION_API_URL` | ARC Integration API internal URL | Manual |
-| `UDIP_INGEST_URL` | UDIP ingest internal URL | Manual |
+| `UDAP_INGEST_URL` | UDAP ingest internal URL | Manual |
 | `MCP_HUB_URL` | APIM internal URL | Manual |
 | `ARC_SYNC_SCHEDULE` | `0 */15 * * * *` | Manual |
 | `DISPOSITION_RETENTION_DAYS` | `2555` | Manual |
@@ -2253,7 +2253,7 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 | `SESSION_TIMEOUT_MINUTES` | `30` | Manual |
 | `MAX_CONTENT_LENGTH` | `52428800` | Manual |
 | `ARC_INTEGRATION_API_URL` | ARC Integration API internal URL | Manual |
-| `UDIP_INGEST_URL` | UDIP ingest internal URL | Manual |
+| `UDAP_INGEST_URL` | UDAP ingest internal URL | Manual |
 | `MCP_HUB_URL` | APIM internal URL | Manual |
 | `MCP_ENABLED` | `false` | Manual |
 | `ARC_LOOKUP_ENABLED` | `true` | Manual |
@@ -2271,7 +2271,7 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 |----------|-------|--------|
 | `FUNCTIONS_WORKER_RUNTIME` | `python` | Manual |
 | `ARC_INTEGRATION_API_URL` | ARC Integration API internal URL | Manual |
-| `UDIP_INGEST_URL` | UDIP ingest internal URL | Manual |
+| `UDAP_INGEST_URL` | UDAP ingest internal URL | Manual |
 | `MCP_HUB_URL` | APIM internal URL | Manual |
 | `AZURE_OPENAI_API_VERSION` | `2024-02-01` | Manual |
 | `DISPOSITION_RETENTION_DAYS` | `2555` | Manual |
@@ -2326,7 +2326,7 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 | `PG-ADMIN-PASSWORD` | `openssl rand -base64 24` | PostgreSQL, PgBouncer |
 | `REDIS-CONNECTION-STRING` | Copy from Redis Access Keys after creation | All apps |
 | `CDC-EVENTHUB-SEND-CONNECTION` | Event Hub > debezium-writer policy | Debezium |
-| `CDC-EVENTHUB-LISTEN-CONNECTION` | Event Hub > udip-reader policy | UDIP middleware |
+| `CDC-EVENTHUB-LISTEN-CONNECTION` | Event Hub > udap-reader policy | UDAP middleware |
 | `HUB-AUDIT-HMAC-KEY` | `openssl rand -base64 40` | MCP Hub |
 | `HUB-AUDIT-HASH-SALT` | `openssl rand -base64 40` | MCP Hub |
 | `ARC-AUDIT-HMAC-KEY` | `openssl rand -base64 40` | ARC Integration API |
@@ -2334,11 +2334,11 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 | `MCP-WEBHOOK-SECRET-TRIAGE` | `openssl rand -base64 32` | MCP Hub ↔ Triage |
 | `MCP-WEBHOOK-SECRET-ARC-INTEGRATION` | `openssl rand -base64 32` | MCP Hub ↔ ARC API |
 | `MCP-WEBHOOK-SECRET-OGC` | `openssl rand -base64 32` | MCP Hub ↔ OGC |
-| `MCP-WEBHOOK-SECRET-UDIP` | `openssl rand -base64 32` | MCP Hub ↔ UDIP |
+| `MCP-WEBHOOK-SECRET-UDAP` | `openssl rand -base64 32` | MCP Hub ↔ UDAP |
 | `HUB-CLIENT-SECRET` | Entra ID > EEOC-MCP-Hub > Client secret | MCP Hub |
 | `ADR-CLIENT-SECRET` | Entra ID > EEOC-ADR-Mediation > Client secret | ADR |
 | `TRIAGE-CLIENT-SECRET` | Entra ID > EEOC-OFS-Triage > Client secret | Triage |
-| `UDIP-CLIENT-SECRET` | Entra ID > EEOC-UDIP-Analytics > Client secret | UDIP |
+| `UDAP-CLIENT-SECRET` | Entra ID > EEOC-UDAP-Analytics > Client secret | UDAP |
 | `OGC-CLIENT-SECRET` | Entra ID > EEOC-OGC-TrialTool > Client secret | OGC |
 | `ARC-INTEGRATION-CLIENT-SECRET` | Entra ID > EEOC-ARC-Integration > Client secret | ARC API |
 | `ARC-OAUTH-CLIENT-ID` | From ARC team | ARC Integration API |
@@ -2348,8 +2348,8 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 | `ADR-FLASK-SECRET` | `openssl rand -hex 32` | ADR webapp |
 | `TRIAGE-FLASK-SECRET` | `openssl rand -hex 32` | Triage webapp |
 | `OGC-FLASK-SECRET` | `openssl rand -hex 32` | OGC webapp |
-| `UDIP-FLASK-SECRET` | `openssl rand -hex 32` | UDIP AI Assistant |
-| `SUPERSET-SECRET-KEY` | `openssl rand -hex 32` | UDIP Superset |
+| `UDAP-FLASK-SECRET` | `openssl rand -hex 32` | UDAP AI Assistant |
+| `SUPERSET-SECRET-KEY` | `openssl rand -hex 32` | UDAP Superset |
 | `LOGINGOV-CLIENT-ID` | Login.gov dashboard | ADR |
 | `LOGINGOV-PRIVATE-KEY` | Login.gov dashboard (PKCS#8 PEM) | ADR |
 | `PREPA-PG-HOST` | From ARC DBA | Debezium |
@@ -2368,7 +2368,7 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 | `EEOC-MCP-Hub` | `HUB_CLIENT_ID` | Hub.Read, Hub.Write | — (exposes APIs) | None (M2M) |
 | `EEOC-ADR-Mediation` | `ADR_CLIENT_ID` | MCP.Read, MCP.Write | EEOC-MCP-Hub: Hub.Read, Hub.Write | `https://{adr-domain}/auth/callback` |
 | `EEOC-OFS-Triage` | `TRIAGE_CLIENT_ID` | MCP.Read, MCP.Write | EEOC-MCP-Hub: Hub.Read, Hub.Write | `https://triage.internal.eeoc.gov/auth/callback` |
-| `EEOC-UDIP-Analytics` | `UDIP_CLIENT_ID` | Analytics.Read, Analytics.Write | EEOC-MCP-Hub: Hub.Read, Hub.Write | `https://udip.eeoc.gov/auth/callback` |
+| `EEOC-UDAP-Analytics` | `UDAP_CLIENT_ID` | Analytics.Read, Analytics.Write | EEOC-MCP-Hub: Hub.Read, Hub.Write | `https://udap.eeoc.gov/auth/callback` |
 | `EEOC-OGC-TrialTool` | `OGC_CLIENT_ID` | MCP.Read, MCP.Write | EEOC-MCP-Hub: Hub.Read, Hub.Write | `https://ogc-trialtool.eeoc.gov/auth/callback` |
 | `EEOC-ARC-Integration` | `ARC_CLIENT_ID` | ARC.Read, ARC.Write | EEOC-MCP-Hub: Hub.Read, Hub.Write | None (M2M) |
 
@@ -2377,12 +2377,12 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 | Group Name | Purpose | Members |
 |-----------|---------|---------|
 | `EEOC-AI-Platform-Admins` | Full platform access | Platform team |
-| `UDIP-Data-Analysts` | UDIP query access (PII Tier 1) | Analysts |
-| `UDIP-Data-Stewards` | UDIP admin access (PII Tier 2) | Data stewards |
-| `UDIP-Data-Region-{region}` | Regional RLS scoping | Users by district |
-| `UDIP-PII-Tier2` | De-identified PII access | Authorized analysts |
-| `UDIP-PII-Tier3` | Full PII access (restricted) | Legal, investigators |
-| `UDIP-Legal-Counsel` | OGC litigation access | OGC attorneys |
+| `UDAP-Data-Analysts` | UDAP query access (PII Tier 1) | Analysts |
+| `UDAP-Data-Stewards` | UDAP admin access (PII Tier 2) | Data stewards |
+| `UDAP-Data-Region-{region}` | Regional RLS scoping | Users by district |
+| `UDAP-PII-Tier2` | De-identified PII access | Authorized analysts |
+| `UDAP-PII-Tier3` | Full PII access (restricted) | Legal, investigators |
+| `UDAP-Legal-Counsel` | OGC litigation access | OGC attorneys |
 | `ADR-Mediators` | ADR mediator role | Mediators |
 | `ADR-Admins` | ADR admin role | ADR supervisors |
 
@@ -2410,9 +2410,9 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 │  │  ca-adr-functionapp-prod    (1 CPU, 2Gi, 2-6 replicas) │    │
 │  │  ca-triage-webapp-prod      (1 CPU, 2Gi, 2-6 replicas) │    │
 │  │  ca-triage-functionapp-prod (2 CPU, 4Gi, 2-8 replicas) │    │
-│  │  ca-udip-ai-assistant-prod  (2 CPU, 4Gi, 2-6 replicas) │    │
-│  │  ca-udip-superset-prod      (2 CPU, 4Gi, 2-4 replicas) │    │
-│  │  ca-udip-portal-prod        (0.25 CPU, 512Mi, 2-4 rep) │    │
+│  │  ca-udap-ai-assistant-prod  (2 CPU, 4Gi, 2-6 replicas) │    │
+│  │  ca-udap-superset-prod      (2 CPU, 4Gi, 2-4 replicas) │    │
+│  │  ca-udap-portal-prod        (0.25 CPU, 512Mi, 2-4 rep) │    │
 │  │  ca-debezium-connect-prod   (2 CPU, 4Gi, 1-2 replicas) │    │
 │  │  ca-pgbouncer-prod          (0.5 CPU, 1Gi, 2-4 rep)    │    │
 │  │  ca-mcp-hub-func-prod       (0.5 CPU, 1Gi, 2-4 rep)    │    │
@@ -2423,8 +2423,8 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 │  │  snet-postgres (10.100.2.0/24)   │                           │
 │  │  [NSG: nsg-eeoc-postgres-prod]   │                           │
 │  │                                   │                           │
-│  │  pg-eeoc-udip-prod               │  ← primary (R/W)         │
-│  │  pg-eeoc-udip-prod-replica       │  ← replica (R/O)         │
+│  │  pg-eeoc-udap-prod               │  ← primary (R/W)         │
+│  │  pg-eeoc-udap-prod-replica       │  ← replica (R/O)         │
 │  └──────────────────────────────────┘                           │
 │                                                                  │
 │  ┌──────────────────────────────────┐                           │

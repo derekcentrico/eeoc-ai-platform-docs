@@ -27,7 +27,7 @@ The entire platform runs on Azure Government (FedRAMP High authorized), using ma
                                |
             +---------+---------+---------+---------+
             |         |         |         |         |
-          ADR     Triage      UDIP     OGC TT    ARC API
+          ADR     Triage      UDAP     OGC TT    ARC API
        Container  Container  Container Container Container
         App        App        App       App       App
             \        \         |        /        /
@@ -35,7 +35,7 @@ The entire platform runs on Azure Government (FedRAMP High authorized), using ma
               \        --------+------/--------/
                \               |              /
           Azure Database for PostgreSQL Flexible Server
-                    (UDIP Central Data Store)
+                    (UDAP Central Data Store)
                            |
                     Read Replica
 ```
@@ -44,14 +44,14 @@ The entire platform runs on Azure Government (FedRAMP High authorized), using ma
 |-----------|--------------|--------------|
 | **ADR Mediation** | Container Apps + Azure Functions | Public-facing mediation case management for staff and external parties |
 | **OFS Triage** | Container Apps + Azure Functions | AI-powered charge classification and prioritization |
-| **UDIP Analytics** | Container Apps + PostgreSQL | Central data store, AI assistant, dashboards, semantic layer |
+| **UDAP Analytics** | Container Apps + PostgreSQL | Central data store, AI assistant, dashboards, semantic layer |
 | **OGC Trial Tool** | Container Apps | Litigation support with local LLM analysis |
 | **ARC Integration API** | Container Apps | Write-back bridge to ARC backbone |
 | **MCP Hub** | API Management + Azure Functions | Tool routing, auth, event forwarding |
 
 ### Real-Time Data Pipeline
 
-ARC's system of record (PrEPA) runs PostgreSQL. Rather than building API polling or batch ETL, the platform reads directly from PostgreSQL's write-ahead log (WAL) — a transaction log that the database already writes for crash recovery. This streams every data change to UDIP within seconds, with zero impact on ARC's production workload.
+ARC's system of record (PrEPA) runs PostgreSQL. Rather than building API polling or batch ETL, the platform reads directly from PostgreSQL's write-ahead log (WAL) — a transaction log that the database already writes for crash recovery. This streams every data change to UDAP within seconds, with zero impact on ARC's production workload.
 
 ```
 PrEPA PostgreSQL (ARC system of record)
@@ -62,9 +62,9 @@ PrEPA PostgreSQL (ARC system of record)
     |
     Azure Event Hub (Kafka-compatible message buffer)
     |
-    UDIP Data Middleware (YAML-driven translation, PII redaction)
+    UDAP Data Middleware (YAML-driven translation, PII redaction)
     |
-    UDIP PostgreSQL (clean, governed, AI-ready data)
+    UDAP PostgreSQL (clean, governed, AI-ready data)
     |
     AI Assistant + Dashboards + MCP Tools
 ```
@@ -85,14 +85,14 @@ Every Azure service used is FedRAMP High authorized in Azure Government. The pla
 | **AU (Audit)** | Every AI query, tool invocation, and data access logged to immutable Azure Table Storage + WORM-locked Blob Storage (7-year retention, NARA compliant). HMAC-SHA256 integrity signatures on audit records. |
 | **SC (System Communications)** | TLS 1.2+ on all connections. VNet isolation with private endpoints. No public internet exposure except ADR (behind Azure Front Door WAF). |
 | **SI (System Integrity)** | SQL injection prevention via AST-level validation (sqlglot). PII redaction (SSN, DOB, email, phone, EIN) via regex before data enters analytics schema. Prompt injection detection on AI inputs. |
-| **IA (Identification/Auth)** | Entra ID Government OIDC for staff. Login.gov OIDC+PKCE for external parties. OAuth 2.0 On-Behalf-Of for preserving caller identity through the hub to UDIP. |
+| **IA (Identification/Auth)** | Entra ID Government OIDC for staff. Login.gov OIDC+PKCE for external parties. OAuth 2.0 On-Behalf-Of for preserving caller identity through the hub to UDAP. |
 | **SA (System Acquisition)** | CycloneDX SBOM generation, Bandit SAST, Semgrep, pip-audit SCA, OWASP Dependency-Check, license compliance scanning — all in CI/CD on every push. |
 
 ### Data Governance
 
 **Two-schema architecture:** Raw ARC data lands in a `replica` schema (original column names, pre-translation). The Data Middleware transforms it into the `analytics` schema (clean labels, PII redacted, AI-ready). Nobody queries replica directly — all access goes through the analytics schema with row-level security enforced.
 
-**Data lifecycle management:** Every record tracks when it entered UDIP, when the source case closed, and when NARA 7-year retention expires. FOIA/litigation holds block deletion regardless of age. A Data Steward CLI manages holds and approves purges. Partition-level access tracking identifies cold data for archival.
+**Data lifecycle management:** Every record tracks when it entered UDAP, when the source case closed, and when NARA 7-year retention expires. FOIA/litigation holds block deletion regardless of age. A Data Steward CLI manages holds and approves purges. Partition-level access tracking identifies cold data for archival.
 
 **PII tiering:** Tier 1 (aggregated, public-safe), Tier 2 (de-identified detail), Tier 3 (full PII, legal/investigation staff only). The middleware enforces tiers during ingestion; the database enforces them at query time.
 
@@ -136,7 +136,7 @@ Once deployed, the platform provides capabilities that do not exist today:
 - **Bidirectional ARC integration.** ADR closes a mediation case and the settlement amount, signed agreement, and action dates flow back to ARC within seconds. Triage classifies a charge and the result appears in ARC's event log.
 - **Operational intelligence.** Model drift detection, AI reliance scoring, and correction flow analysis give leadership visibility into how AI tools are performing and whether analysts are over-relying on or ignoring AI recommendations.
 - **Self-service analytics.** Superset dashboards, JupyterHub notebooks, and the AI Assistant replace the dependency on manual SAS/Excel reporting.
-- **Future-proof integration.** Any new application registers as a spoke, discovers existing tools, and queries UDIP. No custom integration code.
+- **Future-proof integration.** Any new application registers as a spoke, discovers existing tools, and queries UDAP. No custom integration code.
 
 ### Cost Comparison: In-House vs. Commercial Development
 
@@ -148,7 +148,7 @@ Once deployed, the platform provides capabilities that do not exist today:
 |--------|----------------------|-------------------|
 | **ADR Mediation Platform** | Built (staff time) | $3-5M (public-facing, dual auth, AI, e-sig, complex workflows) |
 | **OFS Triage System** | Built (staff time) | $2-4M (AI classification pipeline, GPT-4o, OCR, drift detection) |
-| **UDIP Analytics Platform** | Built (staff time) | $3-5M (enterprise analytics, CDC, dbt, AI assistant, dashboards) |
+| **UDAP Analytics Platform** | Built (staff time) | $3-5M (enterprise analytics, CDC, dbt, AI assistant, dashboards) |
 | **ARC Integration + MCP Hub** | Built (staff time) | $1-2M (integration layer, event routing, Debezium CDC) |
 | **Development subtotal** | ~$200-300K labor (4 FTEs × 3 months) | **$9-16M** (competitive award, full-stack federal contractor) |
 | **Procurement cycle** | N/A (internal team) | 6-12 months, $50-100K in acquisition support costs |

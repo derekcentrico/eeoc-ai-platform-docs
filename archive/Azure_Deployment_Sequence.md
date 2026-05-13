@@ -19,7 +19,7 @@ az group create --name rg-eeoc-integration-dev --location usgovvirginia
 ### 0.2 Virtual Network
 - VNet: `vnet-eeoc-integration` (10.100.0.0/16)
 - Subnets: apim (10.100.1.0/24), apps (10.100.2.0/24), storage (10.100.3.0/24), keyvault (10.100.4.0/24), postgres (10.100.5.0/24)
-- VNet peering to existing spoke VNets (ADR, Triage, UDIP, OGC if separate)
+- VNet peering to existing spoke VNets (ADR, Triage, UDAP, OGC if separate)
 
 ### 0.3 Key Vault
 - `kv-eeoc-integration-prod`
@@ -37,15 +37,15 @@ az group create --name rg-eeoc-integration-dev --location usgovvirginia
 ### 0.5 Azure Cache for Redis
 - `redis-eeoc-integration`
 - Premium tier (for VNet integration)
-- Used by: hub aggregator (tool catalog cache), ADR (sessions + feature flags), Triage (sessions + rate limiting), UDIP (rate limiting)
+- Used by: hub aggregator (tool catalog cache), ADR (sessions + feature flags), Triage (sessions + rate limiting), UDAP (rate limiting)
 
 ### 0.6 Entra ID App Registrations
 Create per `Azure_MCP_Hub_Setup_Guide.md` Step 5:
 - EEOC-MCP-Hub (Hub.Read, Hub.Write)
 - EEOC-ARC-Integration (ARC.Read, ARC.Write)
-- Verify existing registrations for ADR, Triage, UDIP, OGC
+- Verify existing registrations for ADR, Triage, UDAP, OGC
 - Grant hub managed identity access to each spoke's app roles
-- Configure OBO permissions for UDIP (delegated Analytics.Read)
+- Configure OBO permissions for UDAP (delegated Analytics.Read)
 
 ---
 
@@ -67,7 +67,7 @@ Create per `Azure_MCP_Hub_Setup_Guide.md` Step 5:
 | **Total required** | **~1.7 TB** |
 
 **Instance configuration:**
-- `pg-eeoc-udip-prod`
+- `pg-eeoc-udap-prod`
 - PostgreSQL 16 (or highest available in Gov Cloud)
 - **Memory Optimized tier, 16 vCores, 128 GB RAM, 2 TB storage**
   - Memory Optimized (not General Purpose) because RLS predicate evaluation, GIN index scans, and pgvector HNSW distance calculations are memory-intensive
@@ -108,7 +108,7 @@ PgBouncer configuration for this workload:
 With this config: 3000 clients share 100 PostgreSQL connections. Each transaction takes a connection, runs the query (including SET LOCAL for RLS context), and returns the connection to the pool. Typical query duration: 50-200ms. At 100 connections × 5 queries/sec = 500 queries/sec throughput.
 
 **Read replica for query offloading:**
-- Enable Azure read replica (`pg-eeoc-udip-prod-replica`)
+- Enable Azure read replica (`pg-eeoc-udap-prod-replica`)
 - Route all MCP read queries and Superset dashboards to the replica
 - Route CDC writes, dbt rebuilds, and ingest to the primary
 - This doubles effective read throughput and protects the primary from analyst query load
@@ -176,7 +176,7 @@ Reconciliation → Read Replica
 ### 1.2 PgBouncer (from Prompt 23)
 - Deploy as standalone Container App: `ca-pgbouncer`
 - Configuration detailed in Section 1.1 above (3000 client connections → 100 PostgreSQL connections)
-- Points to pg-eeoc-udip-prod (primary for writes) and pg-eeoc-udip-prod-replica (for reads)
+- Points to pg-eeoc-udap-prod (primary for writes) and pg-eeoc-udap-prod-replica (for reads)
 - Health probe: PgBouncer SHOW STATS command via TCP check
 - Deploy before any application connects to PostgreSQL
 
@@ -186,14 +186,14 @@ Reconciliation → Read Replica
 - Standard tier, 4 throughput units
 - Auto-inflate enabled (up to 8 TU)
 - Topics auto-created by Debezium (prepa.public.*)
-- Consumer group: udip-middleware
+- Consumer group: udap-middleware
 - 7-day message retention
 
 ### 1.4 Request WAL/CDC Access from ARC DBA
 - Provide the two SQL commands:
   ```sql
-  SELECT pg_create_logical_replication_slot('udip_cdc', 'pgoutput');
-  CREATE PUBLICATION udip_publication FOR ALL TABLES;
+  SELECT pg_create_logical_replication_slot('udap_cdc', 'pgoutput');
+  CREATE PUBLICATION udap_publication FOR ALL TABLES;
   ```
 - Request read-only PostgreSQL credentials for Debezium
 - Request max_slot_wal_keep_size configuration
@@ -204,14 +204,14 @@ Reconciliation → Read Replica
 - Connects to PrEPA PostgreSQL → streams to Event Hub
 - Monitor: replication slot lag, connector health
 
-### 1.6 Deploy UDIP Data Middleware (CDC Consumer)
+### 1.6 Deploy UDAP Data Middleware (CDC Consumer)
 - Container App: always-on Deployment (not CronJob)
-- Consumes from Event Hub, applies YAML transforms, writes to UDIP PostgreSQL
+- Consumes from Event Hub, applies YAML transforms, writes to UDAP PostgreSQL
 - Verify: data flows from PrEPA → Event Hub → middleware → analytics tables
 
 ### 1.7 IDR Reconciliation CronJob
 - Kubernetes CronJob: Tuesday + Friday at 03:00 UTC
-- Compares UDIP analytics vs IDR SQL Server
+- Compares UDAP analytics vs IDR SQL Server
 - Verify: first reconciliation run completes, logs to middleware.reconciliation_log
 
 ---
@@ -229,7 +229,7 @@ Reconciliation → Read Replica
 - Follow `Azure_MCP_Hub_Setup_Guide.md` Steps 6-8
 - APIM instance: `apim-mcp-hub`
 - Internal VNet, Standard v2 tier
-- Configure backends, routing policy, OBO for UDIP
+- Configure backends, routing policy, OBO for UDAP
 - Deploy hub aggregator function: `func-mcp-hub-aggregator`
 - Verify: /mcp endpoint returns merged tool catalog
 
@@ -238,8 +238,8 @@ Reconciliation → Read Replica
 - Topic: `evgt-mcp-hub-events`
 - Subscriptions for ARC → ADR event routing
 
-### 2.4 UDIP AI Assistant
-- Container App: `ca-udip-ai-assistant`
+### 2.4 UDAP AI Assistant
+- Container App: `ca-udap-ai-assistant`
 - Environment: OPENAI_*, PG_*, REDIS_URL, KEY_VAULT_URI
 - Health probe: /healthz
 - Verify: /ai/query returns AI response, conversation history persists
@@ -271,7 +271,7 @@ Each spoke connection has gate criteria that must pass before moving to the next
 - Verify: read tools return data, async submit_case pattern works
 - Gate: classification results write back to ARC via hub
 
-### 3.4 Connect UDIP to Hub
+### 3.4 Connect UDAP to Hub
 - Verify OBO token delegation working (test with real user with region groups)
 - Register as spoke
 - Verify: AI query through hub returns regionally scoped data (NOT empty)
@@ -286,8 +286,8 @@ Each spoke connection has gate criteria that must pass before moving to the next
 
 ### 3.6 Cross-Spoke Verification
 - AI query touching 2+ spokes returns correct combined result
-- Example: "Settlement rates by region this quarter" → UDIP
-- Example: "Close mediation case 370-2026-00123" → ARC Integration API → PrEPA → WAL/CDC → UDIP
+- Example: "Settlement rates by region this quarter" → UDAP
+- Example: "Close mediation case 370-2026-00123" → ARC Integration API → PrEPA → WAL/CDC → UDAP
 - Verify request_id correlates across all audit logs
 
 ---
@@ -299,9 +299,9 @@ Each spoke connection has gate criteria that must pass before moving to the next
 - Verify: lifecycle_state transitions work, access_stats populated
 - Test: set a FOIA hold, verify purge blocked
 
-### 4.2 UDIP Analytics Push
-- Enable ADR → UDIP daily push (UDIPAnalyticsPush Azure Function)
-- Enable Triage → UDIP daily push
+### 4.2 UDAP Analytics Push
+- Enable ADR → UDAP daily push (UDAPAnalyticsPush Azure Function)
+- Enable Triage → UDAP daily push
 - Verify: analytics tables populated after push runs
 
 ### 4.3 Monitoring and Alerting
@@ -340,8 +340,8 @@ Run Prompt 27 per repo while deployment progresses:
 | Session | Repo | Modules to Test |
 |---------|------|----------------|
 | T1 | eeoc-data-analytics-and-dashboard | conversation_store, chart_generator, dashboard_builder, eventhub_source, reconciliation |
-| T2 | eeoc-ofs-adr | distributed_lock, UDIPAnalyticsPush, ARCSyncImporter |
-| T3 | eeoc-ofs-triage | arc_lookup, UDIPAnalyticsPush, OpenAI retry |
+| T2 | eeoc-ofs-adr | distributed_lock, UDAPAnalyticsPush, ARCSyncImporter |
+| T3 | eeoc-ofs-triage | arc_lookup, UDAPAnalyticsPush, OpenAI retry |
 | T4 | eeoc-ogc-trialtool | mcp_server, auth flow |
 
 Tests don't block deployment. Run them in parallel and fix any failures as they surface.
@@ -357,7 +357,7 @@ Phase 1.1-1.3 (PostgreSQL + Event Hub + PgBouncer)
     ↓
 Phase 1.4-1.5 (ARC DBA grants WAL access → Debezium deployed)
     ↓
-Phase 1.6 (CDC consumer running, data flowing to UDIP)
+Phase 1.6 (CDC consumer running, data flowing to UDAP)
     ↓
 Phase 2.1-2.4 (ARC API + Hub + Event Grid + AI Assistant deployed)
     ↓
