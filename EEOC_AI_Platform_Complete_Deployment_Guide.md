@@ -2122,8 +2122,8 @@ curl -X POST https://ca-udip-ai-assistant-prod.internal.{env}/api/chat \
 
 **Check:**
 1. Are the YAML mapping files deployed? Check `data-middleware/mappings/*.yaml` in the data-middleware container.
-2. Are lookup tables populated? The middleware uses `lookup_table` transforms that JOIN against replicated reference tables. If `replica.*` reference tables are empty, translations return NULL.
-3. Is the CDC pipeline replicating reference tables? Some reference tables are small and change infrequently — verify they have data.
+2. Are lookup tables populated? The middleware uses `lookup_table` transforms that JOIN against replicated reference tables. If `replica.*` reference tables are empty, translations return NULL. Run `python data-middleware/scripts/load_reference_csvs.py --verify-only` to check row counts. Expected: 11 tables, ~51K total rows (loaded from ARC export CSVs in `lookups/arc_reference/`).
+3. Were reference tables seeded? Run `psql -f data-middleware/sql/seed_replica_reference_tables.sql` then `python data-middleware/scripts/load_reference_csvs.py` if tables are missing.
 
 ### Redis connection refused
 

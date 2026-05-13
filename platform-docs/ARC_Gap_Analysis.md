@@ -288,6 +288,14 @@ covers only SBI combinations, document types, and document retrieval.
 
 ### 5.4 Data Middleware Gaps
 
+**Prerequisite resolved (May 2026):** All 11 ARC reference tables that back
+FK resolution in these mappings are loaded (shared_basis, shared_issue,
+shared_statute, shared_code, charge_event_code, shared_document_type,
+shared_valid_sbi_comb, hearing_event_code, hearing_shared_doc_type,
+hearing_shared_office_info, user_detail). Source: Shakil Aryal, ARC/IMS team.
+The gaps below are unmapped *entity* tables — the YAML mapping files need
+to be written, but the lookup data they depend on is available.
+
 | # | Gap Type | Source Entity | Target Table (proposed) | Priority | Rationale |
 |---|---|---|---|---|---|
 | D-01 | Unmapped entity | `charging_party_race` | `analytics.charging_party_races` | **Medium** | Multi-valued race data; required for demographic analytics per EEO reporting |
@@ -513,7 +521,7 @@ async def get_office_locations() -> list[dict]
     # GET /v1/all/offices/location/details
 ```
 
-**Impact:** Replaces the static `lookups/district_offices.csv` and `lookups/region_codes.csv` with live ARC data. Resolves the NEEDS_DATA gap in `prepa_charges.yaml` for office-to-region mapping.
+**Impact:** Replaces the static `lookups/district_offices.csv` and `lookups/region_codes.csv` with live ARC data. The office-to-region mapping gap is resolved — `shared_code` (1,360 rows across 74 domains) and `hearing_shared_office_info` (63 rows) were loaded from Shakil Aryal's ARC export (May 2026).
 
 #### 6.2.5 Employer Data Enrichment (S-06, G-03, F-06)
 
@@ -537,7 +545,7 @@ class EmployerClient:
         # GET /empdb/es/v1/employer/eeo1/id?eeoSurveyIds={ids}
 ```
 
-**data-middleware:** Add `lookups/naics_codes.csv` from EmployerWebService bulk export (resolves NEEDS_DATA in `prepa_respondent.yaml`). Alternatively, call `/empdb/census/v2/naics/all` at sync time.
+**data-middleware:** Add `lookups/naics_codes.csv` from EmployerWebService bulk export or Census Bureau public data. NAICS codes are the only remaining enrichment not covered by the ARC reference table exports — all other reference data gaps (shared_code, shared_basis, shared_issue, shared_statute, charge_event_code, shared_document_type, shared_valid_sbi_comb, user_detail) are resolved.
 
 #### 6.2.6 Closure Reason Reference Data (P-06, M-04)
 

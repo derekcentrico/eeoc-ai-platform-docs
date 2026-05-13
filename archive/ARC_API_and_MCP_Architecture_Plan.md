@@ -182,7 +182,7 @@ The MCP Hub Three-Application Integration document covers ADR, OFS Triage, and U
 
 **PrEPA's Service Bus is an untapped resource.** The `db-change-topic` is a ready-made event stream for case lifecycle changes. The document does not mention it.
 
-**No plan for SBI reference data synchronization.** ADR imports statutes as freeform text. OFS Triage accepts basis and issue codes as unvalidated strings. UDIP has basis codes in its charges table. Nobody is consuming the canonical SBI combination tree from ARC.
+**SBI reference data now available.** The `shared_valid_sbi_comb` table (24,048 rows, 21,542 active combinations) was exported from ARC (Shakil Aryal, May 2026) along with `shared_basis` (117), `shared_issue` (89), and `shared_statute` (9). Loaded into the UDIP replica schema. Original gap: ADR imported statutes as freeform text, OFS Triage accepted basis/issue codes as unvalidated strings, and nobody consumed the canonical SBI combination tree — that tree is now available.
 
 **ARC's authentication model is unaddressed.** The hub needs to call ARC, but the document only covers hub-to-spoke auth (Entra ID M2M). ARC uses its own OAuth2 token service with client credentials. Somebody has to bridge these.
 
