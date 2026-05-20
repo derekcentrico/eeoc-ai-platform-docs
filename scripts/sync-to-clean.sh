@@ -230,6 +230,19 @@ rsync -a --delete \
 
 info "File sync complete"
 
+# Remove build artifacts that rsync --delete skips (excluded paths
+# already present in the clean repo from prior syncs)
+find "$CLEAN" -not -path '*/.git/*' -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
+find "$CLEAN" -not -path '*/.git/*' \( -name '*.pyc' -o -name '*.pyo' \) -delete 2>/dev/null || true
+find "$CLEAN" -not -path '*/.git/*' -type d -name '.mypy_cache' -exec rm -rf {} + 2>/dev/null || true
+find "$CLEAN" -not -path '*/.git/*' -type d -name '.pytest_cache' -exec rm -rf {} + 2>/dev/null || true
+find "$CLEAN" -not -path '*/.git/*' -type d -name '.ruff_cache' -exec rm -rf {} + 2>/dev/null || true
+find "$CLEAN" -not -path '*/.git/*' -type d -name '.hypothesis' -exec rm -rf {} + 2>/dev/null || true
+find "$CLEAN" -not -path '*/.git/*' -name '.coverage' -delete 2>/dev/null || true
+find "$CLEAN" -not -path '*/.git/*' -name '.post-impl-verified' -delete 2>/dev/null || true
+find "$CLEAN" -not -path '*/.git/*' -name '.secrets.baseline' -delete 2>/dev/null || true
+info "Cleaned build artifacts from clean repo"
+
 # Restore agency-preserved files
 for preserved in "${AGENCY_PRESERVED_FILES[@]}"; do
     if [ -f "$BACKUP_DIR/$preserved" ]; then
