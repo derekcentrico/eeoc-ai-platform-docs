@@ -38,6 +38,13 @@ set -euo pipefail
 # working repo before export.
 PREFLIGHT_AI_PATTERNS=(
     "Co-Authored-By"
+    "Claude Desktop"
+    "Claude Code"
+    "508 skill"
+    "platform skill"
+    "skill-compliant"
+    "per the skill"
+    "required by the skill"
 )
 
 # Patterns checked AFTER sync on the clean copy.  Includes everything
@@ -46,6 +53,11 @@ PREFLIGHT_AI_PATTERNS=(
 POSTSYNC_AI_PATTERNS=(
     "anthropic"
     "Co-Authored-By"
+    "Claude Desktop"
+    "Claude Code"
+    "508 skill"
+    "platform skill"
+    "skill-compliant"
     "\.claude/"
     "CLAUDE\.md"
 )
