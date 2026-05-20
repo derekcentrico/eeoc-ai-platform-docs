@@ -171,13 +171,11 @@ echo "Gate 2: AI tooling artifact check"
 AI_FAILURES=0
 
 for pattern in "${PREFLIGHT_AI_PATTERNS[@]}"; do
-    hits=$(grep -ril --include='*.py' --include='*.md' --include='*.html' \
-        --include='*.txt' --include='*.yaml' --include='*.yml' \
-        --include='*.toml' --include='*.cfg' --include='*.j2' \
-        --include='*.sh' --include='*.json' \
+    hits=$(grep -ril \
         -E "$pattern" "$WORKING" 2>/dev/null \
         | grep -v '.git/' | grep -v '__pycache__' | grep -v '.venv/' \
-        | grep -v 'node_modules/' | grep -v '.hypothesis/' || true)
+        | grep -v 'node_modules/' | grep -v '.hypothesis/' \
+        | grep -v '\.png$\|\.jpg$\|\.ico$\|\.gif$\|\.woff' || true)
     if [ -n "$hits" ]; then
         count=$(echo "$hits" | wc -l)
         warn "AI pattern \"$pattern\" found in $count file(s):"
@@ -241,6 +239,7 @@ find "$CLEAN" -not -path '*/.git/*' -type d -name '.hypothesis' -exec rm -rf {} 
 find "$CLEAN" -not -path '*/.git/*' -name '.coverage' -delete 2>/dev/null || true
 find "$CLEAN" -not -path '*/.git/*' -name '.post-impl-verified' -delete 2>/dev/null || true
 find "$CLEAN" -not -path '*/.git/*' -name '.secrets.baseline' -delete 2>/dev/null || true
+find "$CLEAN" -not -path '*/.git/*' -type d -name '*.egg-info' -exec rm -rf {} + 2>/dev/null || true
 info "Cleaned build artifacts from clean repo"
 
 # Restore agency-preserved files
@@ -282,7 +281,7 @@ if data and 'repos' in data:
 with open('$CLEAN/.pre-commit-config.yaml', 'w') as f:
     yaml.dump(data, f, default_flow_style=False, sort_keys=False)
 " 2>/dev/null && info "Stripped local hooks from .pre-commit-config.yaml" \
-    || warn "Could not parse .pre-commit-config.yaml — manual review needed"
+    || { fail "Could not parse .pre-commit-config.yaml — PyYAML may not be installed"; die "Pre-commit scrub failed (local hooks may survive)"; }
 fi
 
 # Remove any CLAUDE.md files
@@ -290,15 +289,6 @@ rm -f "$CLEAN/CLAUDE.md" "$CLEAN/.claude" 2>/dev/null
 find "$CLEAN" -name 'CLAUDE.md' -not -path '*/.git/*' -delete 2>/dev/null
 find "$CLEAN" -type d -name '.claude' -not -path '*/.git/*' -exec rm -rf {} + 2>/dev/null
 info "Removed any CLAUDE.md files and .claude/ directories"
-
-# Strip .claude/ path references from all text files in the clean copy
-find "$CLEAN" -not -path '*/.git/*' \
-    \( -name '*.md' -o -name '*.txt' -o -name '*.yaml' -o -name '*.yml' \
-       -o -name '*.toml' -o -name '*.cfg' -o -name '*.sh' \) \
-    -exec grep -l '\.claude/' {} \; 2>/dev/null | while read -r f; do
-    sed -i 's|\.claude/[^ ]*||g' "$f"
-    info "Scrubbed .claude/ references from $(basename "$f")"
-done
 
 # ---------------------------------------------------------------------------
 # Post-sync verification — scan the CLEAN copy for any remaining artifacts
@@ -309,13 +299,11 @@ echo "Post-sync verification"
 POSTSYNC_HITS=0
 
 for pattern in "${POSTSYNC_AI_PATTERNS[@]}"; do
-    hits=$(grep -ril --include='*.py' --include='*.md' --include='*.html' \
-        --include='*.txt' --include='*.yaml' --include='*.yml' \
-        --include='*.toml' --include='*.cfg' --include='*.j2' \
-        --include='*.sh' --include='*.json' \
+    hits=$(grep -ril \
         -E "$pattern" "$CLEAN" 2>/dev/null \
         | grep -v '.git/' \
-        | grep -v 'THIRD_PARTY_LICENSES' || true)
+        | grep -v 'THIRD_PARTY_LICENSES' \
+        | grep -v '\.png$\|\.jpg$\|\.ico$\|\.gif$\|\.woff\|\.ttf\|\.eot' || true)
     if [ -n "$hits" ]; then
         count=$(echo "$hits" | wc -l)
         warn "Post-sync: \"$pattern\" still present in $count file(s):"
