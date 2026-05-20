@@ -187,7 +187,11 @@ for pattern in "${PREFLIGHT_AI_PATTERNS[@]}"; do
         -E "$pattern" "$WORKING" 2>/dev/null \
         | grep -v '.git/' | grep -v '__pycache__' | grep -v '.venv/' \
         | grep -v 'node_modules/' | grep -v '.hypothesis/' \
-        | grep -v '\.png$\|\.jpg$\|\.ico$\|\.gif$\|\.woff' || true)
+        | grep -v '\.png$\|\.jpg$\|\.ico$\|\.gif$\|\.woff' \
+        | grep -v '\.gitignore$' \
+        | grep -v '\.pre-commit-config\.yaml$' \
+        | grep -v 'CLAUDE\.md$' \
+        | grep -v '\.claude/' || true)
     if [ -n "$hits" ]; then
         count=$(echo "$hits" | wc -l)
         warn "AI pattern \"$pattern\" found in $count file(s):"
