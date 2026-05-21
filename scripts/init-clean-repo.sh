@@ -104,7 +104,7 @@ jobs:
     runs-on: [azure-linux-runner]
     steps:
     - name: Checkout Source
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Black Duck SCA Scan
       id: black-duck-sca-scan
       uses: blackduck-inc/black-duck-security-scan@v2
