@@ -73,6 +73,8 @@ EXCLUDE_PATHS=(
     ".venv"
     "venv"
     "__pycache__"
+    "build"
+    "dist"
     "debug"
     "misc"
     "*.pyc"
@@ -256,6 +258,8 @@ find "$CLEAN" -not -path '*/.git/*' -name '.coverage' -delete 2>/dev/null || tru
 find "$CLEAN" -not -path '*/.git/*' -name '.post-impl-verified' -delete 2>/dev/null || true
 find "$CLEAN" -not -path '*/.git/*' -name '.secrets.baseline' -delete 2>/dev/null || true
 find "$CLEAN" -not -path '*/.git/*' -type d -name '*.egg-info' -exec rm -rf {} + 2>/dev/null || true
+find "$CLEAN" -not -path '*/.git/*' -type d -name 'build' -exec rm -rf {} + 2>/dev/null || true
+find "$CLEAN" -not -path '*/.git/*' -type d -name 'dist' -exec rm -rf {} + 2>/dev/null || true
 info "Cleaned build artifacts from clean repo"
 
 # Restore agency-preserved files
