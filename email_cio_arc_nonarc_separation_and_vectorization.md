@@ -128,9 +128,12 @@ embedded, it passes through a redaction stage. Two layers run:
    narratives OGC reviews today, so a document is de-identified the same way a
    narrative is.
 2. Named-entity recognition for free-text identifiers — person names and
-   locations. Each name is replaced with a stable token derived from a one-way
-   hash, so the same person reads as the same token throughout a document and an
-   analyst can still follow who did what without seeing the name.
+   locations. Each name is replaced with a stable token derived from the
+   platform's salted one-way hash — the same keyed PII hash used across the
+   platform, with the salt held in Key Vault — so the same person reads as the
+   same token throughout a document and an analyst can still follow who did what
+   without seeing the name. The salt is what stops someone from reversing a token
+   back to a name by precomputing hashes of common names.
 
 Each document produces a manifest: a count of how many identifiers of each kind
 were removed. That manifest, and the redacted text, are what land in the review
