@@ -32,9 +32,12 @@ databases on the same Flexible Server instance:
   charge.
 
 One server keeps the cost and operational footprint flat; two databases mean ARC
-charge data and office data never share a schema, a connection, or a backup set.
-The AI layer holds a connection to each and queries both when a question spans
-sources, but every query runs under the access rules of the database it touches.
+charge data and office data never share a schema or a connection. Backups run at
+the Flexible Server level and cover both databases, so backup isolation is not
+part of this separation — the boundary is the schema and connection, enforced by
+the row-level access rules in section 3. The AI layer holds a connection to each
+and queries both when a question spans sources, but every query runs under the
+access rules of the database it touches.
 
 ```
                  PostgreSQL Flexible Server (one instance)
@@ -54,7 +57,8 @@ sources, but every query runs under the access rules of the database it touches.
 
 Existing OCHCO and CFO data was the only data that moved; no application reads it
 yet, so the move carried low risk. The charge database was renamed in place. The
-cutover steps are written down in `docs/Database_Separation_Cutover_Runbook.md`.
+cutover steps are written down in the platform's analytics application repository,
+in `Database_Separation_Cutover_Runbook.md`.
 
 ---
 
