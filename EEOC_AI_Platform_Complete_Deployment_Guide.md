@@ -2352,7 +2352,18 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 | `SUPERSET-SECRET-KEY` | `openssl rand -hex 32` | UDAP Superset |
 | `LOGINGOV-CLIENT-ID` | Login.gov dashboard | ADR |
 | `LOGINGOV-PRIVATE-KEY` | Login.gov dashboard (PKCS#8 PEM) | ADR |
+| `ESIGNATURE-ENABLED` | Set `true` to enable e-signature; `false` until a FedRAMP-authorized provider is configured | ADR (master e-signature toggle) |
+| `ESIGNATURE-PROVIDER` | Provider selection: `adobe` or `docusign` | ADR |
+| `ADOBE-SIGN-BASE-URL` | Adobe Acrobat Sign API endpoint for the authorized shard (e.g. `https://api.na1.adobesign.com/api/rest/v6`) | ADR e-signature |
+| `ADOBE-SIGN-CLIENT-ID` | Adobe admin console > API integration | ADR e-signature |
+| `ADOBE-SIGN-CLIENT-SECRET` | Adobe admin console > API integration (rotate every 90 days) | ADR e-signature |
+| `ADOBE-SIGN-REFRESH-TOKEN` | Adobe OAuth authorization (does not expire unless revoked) | ADR e-signature |
+| `ADOBE-SIGN-TOKEN-URL` | Adobe IMS OAuth token endpoint (Server-to-Server flow) | ADR e-signature |
+| `ADOBE-SIGN-SCOPE` | OAuth scope granted to the Adobe Sign API integration | ADR e-signature |
+| `ADOBE-SIGN-API-KEY` | Adobe integration key; dev/test only, used when OAuth is not configured | ADR e-signature (non-prod) |
+| `ADOBE-SIGN-GROUP-ID` | Adobe Sign group ID for multi-application segregation (optional) | ADR e-signature |
 | `ADOBE-SIGN-SENDER-EMAIL` | M365 service account `EEOC.SVC-ESIGN@EEOC.GOV` (Adobe Sign licensed, provisioned as an Adobe Sign user). Agreements are sent on behalf of this mailbox so signers see a named EEOC sender. | ADR e-signature; shared Adobe Sign sender identity, reuse for future Adobe Sign integrations |
+| `ESIGNATURE-WEBHOOK-SECRET` | `openssl rand -base64 32`; fallback only - polling (`PollESignatureStatus`) is the primary status mechanism per the May 2026 CIO directive | ADR e-signature (fallback) |
 | `PREPA-PG-HOST` | From ARC DBA | Debezium |
 | `PREPA-PG-USER` | From ARC DBA | Debezium |
 | `PREPA-PG-PASSWORD` | From ARC DBA | Debezium |
