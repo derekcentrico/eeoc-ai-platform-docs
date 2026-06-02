@@ -2352,6 +2352,7 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 | `SUPERSET-SECRET-KEY` | `openssl rand -hex 32` | UDAP Superset |
 | `LOGINGOV-CLIENT-ID` | Login.gov dashboard | ADR |
 | `LOGINGOV-PRIVATE-KEY` | Login.gov dashboard (PKCS#8 PEM) | ADR |
+| `ADOBE-SIGN-SENDER-EMAIL` | M365 service account `EEOC.SVC-ESIGN@EEOC.GOV` (Adobe Sign licensed, provisioned as an Adobe Sign user). Agreements are sent on behalf of this mailbox so signers see a named EEOC sender. | ADR e-signature; shared Adobe Sign sender identity, reuse for future Adobe Sign integrations |
 | `PREPA-PG-HOST` | From ARC DBA | Debezium |
 | `PREPA-PG-USER` | From ARC DBA | Debezium |
 | `PREPA-PG-PASSWORD` | From ARC DBA | Debezium |
