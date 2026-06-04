@@ -1,8 +1,8 @@
-# EEOC AI Platform Documentation
+# Data and AI Enterprise System (DAES) Documentation
 
 **Author:** Derek Gordon
 
-Consolidated platform documentation for the EEOC AI Platform.
+Consolidated platform documentation for the Data and AI Enterprise System (DAES).
 Per-application docs remain in each repo's `docs/` directory; this repo
 holds platform-wide architecture, deployment, compliance, and governance
 documents that span multiple applications.
@@ -18,11 +18,6 @@ eeoc-ai-platform-docs/
 │   ├── Leadership_AI_Assistant_Architecture.md
 │   ├── UDAP_Authentication_and_Authorization.md
 │   └── ARC_Gap_Analysis.md
-├── eeoc-workspace/                    # Workspace config (CLAUDE.md, skills, agents)
-│   ├── CLAUDE.md
-│   └── .claude/
-│       ├── agents/
-│       └── skills/
 ├── archive/                           # Superseded docs (kept for reference)
 │   ├── ARC_API_and_MCP_Architecture_Plan.md
 │   ├── Architecture_Gap_Analysis.md
@@ -81,21 +76,11 @@ eeoc-ai-platform-docs/
 
 ---
 
-## Workspace Configuration
-
-The `eeoc-workspace/` directory contains the Claude Code workspace configuration
-that governs all development across the platform:
-
-- `CLAUDE.md` — Platform rules, commands, skills table, hard limits
-- `.claude/agents/` — Specialized agent definitions (post-impl-verifier, architect, security-reviewer, etc.)
-- `.claude/skills/` — Domain skills (508 accessibility, AI audit, FedRAMP, ARC, doc-style, pre-pentest, human-tone)
-
----
-
 ## Sync Policy
 
 This repo is synced from the workspace root and individual repos. Platform-wide
 docs that span multiple applications live here. Per-application docs stay in
 each repo's `docs/` directory.
 
-Last full sync: 2026-05-01
+Last updated: 2026-06-04. Individual documents carry their own dates; a full
+root-vs-repo reconciliation is still pending.
