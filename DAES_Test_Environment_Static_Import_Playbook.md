@@ -38,10 +38,11 @@ Access Admin). Those are out of scope for the proof and are not deployed.
 | **MCP Hub** — aggregator function | `eeoc-mcp-hub-functions` | Routes the AI assistant's tool calls to the spoke(s) |
 | **ARC Integration API** | `eeoc-arc-integration-api` | MCP spoke + data/reference endpoints. **Its live-ARC upstream stays unset** — the static import replaces it |
 
-From the Complete Guide's Container Apps list, this is the subset:
-`ca-udap-ai-assistant`, `ca-udap-superset`, `ca-udap-portal`, `ca-mcp-hub-func`, and the ARC
-Integration API app. **Do not deploy** `ca-debezium-connect`, the ADR/Triage/OGC/OCHCO apps,
-or the Access Admin app.
+The compute target is **AKS** (see §6) — deploy from each repo's `deploy/k8s/` manifests. The
+subset to deploy: UDAP's stack (`ai-assistant`, Superset, `portal-nginx`, `pgbouncer`; JupyterHub
+is available for the data team but is not part of the smoke test), the **MCP Hub**, and the
+**ARC Integration API**. **Do not deploy** the Debezium / Event Hub CDC pipeline, the
+ADR/Triage/OGC/OCHCO apps, or the Access Admin app.
 
 ### Supporting Azure resources (must exist)
 
@@ -53,7 +54,7 @@ or the Access Admin app.
 | Key Vault | `kv-eeoc-ai-*` | HMAC keys, DB password, OpenAI key, Flask/secret keys |
 | Storage account | `steeocai*` | WORM blob (AI audit archive) + Table Storage (audit/access) |
 | Container Registry | `acreeocai*` | Holds the three components' images |
-| Container Apps Env **or** AKS | `cae-eeoc-ai-*` / cluster | Compute host — see §6 on the target divergence |
+| AKS cluster | `aks-eeoc-…` | Compute host for all components (§6); deploy via each repo's `deploy/k8s/` |
 | Log Analytics + App Insights | `log-…` / `appi-…` | Smoke-test log queries |
 | Entra app registrations + managed identities | per component | Auth + the app-role wiring in §4 |
 
@@ -127,14 +128,22 @@ are **skipped**. Instead:
 
 ---
 
-## 6. Open decision: compute target
+## 6. Compute target: AKS (decided)
 
-The Complete Deployment Guide describes **Azure Container Apps** (`cae-…`, `ca-*`). The
-per-repo deploy manifests in the application repos are **AKS** (`deploy/k8s/...`,
-SecretProviderClass, NetworkPolicy). These are two different hosting models and the test env
-must pick one before the team begins. This playbook is written to be host-agnostic on wiring,
-import, and smoke test; **confirm Container Apps vs AKS for the test env** and follow the
-matching manifests. (Tracked as the topology-reconciliation item.)
+The test environment runs on **AKS** — the same hosting model as production — so the test env
+also rehearses the production deploy, and the data team's JupyterHub (which spawns Kubernetes
+pods) runs natively. Deploy each component from its repo's `deploy/k8s/` manifests
+(SecretProviderClass, workload identity, NetworkPolicy, HPA, PDB).
+
+UDAP and the ARC Integration API ship complete `deploy/k8s/` manifests. **The MCP Hub does not
+have AKS manifests yet** — it has only a Dockerfile (itself being corrected to the Azure Functions
+base image). Its Deployment / Service / SecretProviderClass / ServiceAccount / NetworkPolicy set
+must be authored, modeled on the ARC manifests, before the MCP Hub can be deployed to AKS. Until
+then, the MCP Hub can run via `func azure functionapp publish` for an interim catalog check.
+
+The Complete Deployment Guide's Container Apps sections (`cae-…`, `ca-*`) are superseded for the
+test env by these per-repo AKS manifests: use the Complete Guide for the supporting-resource
+provisioning (compute-agnostic) and the per-repo manifests for compute.
 
 ---
 
