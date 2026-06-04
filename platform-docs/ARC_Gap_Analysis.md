@@ -1,14 +1,14 @@
 # ARC Source Repository Gap Analysis
 **Author:** Derek Gordon
 
-## EEOC AI Platform — ARC Integration Coverage
+## Data and AI Enterprise System (DAES) — ARC Integration Coverage
 
 ---
 
 ## 1. Purpose
 
 This document identifies gaps between the ARC source repositories in `eeoc-arc-payloads/`
-and the current EEOC AI Platform implementation. The platform was built from 58
+and the current DAES implementation. The platform was built from 58
 implementation prompts that assumed a specific set of ARC repos and endpoints. New ARC
 repositories and endpoints have been added since then. This analysis maps every ARC
 capability against the current integration surface, identifies what is missing, and
