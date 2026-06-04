@@ -158,9 +158,9 @@ If all four pass, the static-import proof is complete.
 
 ## 8. Known accuracy caveats in the referenced guide
 
-- The Complete Guide's Appendix B still shows GCC-High endpoints (`oai-…openai.azure.us`,
-  `login.microsoftonline.us`). The platform is **Azure Commercial** — use `*.openai.azure.com`,
-  `login.microsoftonline.com`, `graph.microsoft.com`, `AzurePublicCloud`. The application code
-  and provisioning scripts have been corrected; this guide's examples are pending the same pass.
+- The Complete Guide has been updated to Azure Commercial endpoints throughout (`*.openai.azure.com`,
+  `*.vault.azure.net`, `*.postgres.database.azure.com`, `*.servicebus.windows.net`,
+  `login.microsoftonline.com`, `graph.microsoft.com`, region `eastus`). The application code,
+  provisioning scripts, and the guide now all target Azure Commercial.
 - Verify Key Vault secret **names** in each repo's SecretProviderClass against what the
   provisioning script actually creates before first pod start.
