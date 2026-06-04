@@ -53,7 +53,7 @@ eeoc-ai-platform-docs/
 
 ### Architecture
 - [Leadership AI Assistant Architecture](platform-docs/Leadership_AI_Assistant_Architecture.md) — Multi-domain query engine, RBAC, dashboard system, data onboarding pipeline
-- [EEOC AI Platform Azure Overview](EEOC_AI_Platform_Azure_Overview.md) — Infrastructure topology and service map
+- [DAES Azure Overview](EEOC_AI_Platform_Azure_Overview.md) — Infrastructure topology and service map
 - [ARC Gap Analysis](platform-docs/ARC_Gap_Analysis.md) — Integration gaps with legacy ARC systems
 
 ### Authentication and Access Control
