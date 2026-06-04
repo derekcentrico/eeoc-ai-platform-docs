@@ -37,11 +37,11 @@ redirect URI.
 | ADR Portal | `EEOC-ADR-Mediation` | `AZURE_CLIENT_ID` (Key Vault: `AAD-CLIENT-ID`) | Interactive OIDC (EEOC staff) + M2M bearer (MCP callers) |
 | Triage | `EEOC-OFS-Triage` | `AZURE_CLIENT_ID` (Key Vault: `AAD-CLIENT-ID`) | Interactive OIDC + M2M bearer |
 | OGC Trial Tool | `EEOC-OGC-TrialTool` | `AZURE_CLIENT_ID` | Interactive OIDC + M2M bearer |
-| OCHCO Benefits Validation | `EEOC-OCHCO-Benefits` | `AZURE_CLIENT_ID` (Key Vault: `benefits-azure-client-secret`) | M2M bearer only (spoke) |
+| OCHCO Benefits Validation | `EEOC-OCHCO-Benefits` | `AZURE_CLIENT_ID` | M2M bearer only (spoke) |
 | UDAP (AI assistant) | `EEOC-UDAP-Analytics` | `AZURE_CLIENT_ID` | Interactive OIDC + M2M bearer |
 | ARC Integration API | `EEOC-ARC-Integration` | `AZURE_CLIENT_ID` | M2M bearer only |
 | MCP Hub | `EEOC-MCP-Hub` | Managed identity (no client secret for spoke calls) | Managed identity + M2M bearer (inbound) |
-| Access Admin | `EEOC-Access-Admin` | `AZURE_CLIENT_ID` (Key Vault: `access-admin-azure-client-secret`) | Interactive OIDC only |
+| Access Admin | `EEOC-Access-Admin` | `AZURE_CLIENT_ID` | Interactive OIDC only |
 
 **Authority URL** for all registrations: `https://login.microsoftonline.com/<EEOC-tenant-id>/v2.0`
 
@@ -132,7 +132,7 @@ Source: `eeoc-arc-integration-api/app/auth/__init__.py:9-12`.
 | `MCP.WriteConfidential` | ADR only | MCP Hub managed identity (separate grant) |
 | `Analytics.Read` | UDAP | MCP Hub managed identity |
 | `Analytics.Write` | UDAP | MCP Hub managed identity (only if ingest tools are exercised) |
-| `ARC.Read` | ARC Integration API | MCP Hub managed identity; ADR; Triage; Access Admin |
+| `ARC.Read` | ARC Integration API | MCP Hub managed identity; ADR; Triage |
 | `ARC.Write` | ARC Integration API | MCP Hub managed identity; ADR (write-back path) |
 | `Access.Read` | ARC Integration API | Access Admin |
 | `Access.Admin` | ARC Integration API | Access Admin |
@@ -168,7 +168,7 @@ Required grants for the Hub managed identity:
 | `EEOC-OFS-Triage` | `MCP.Read`, `MCP.Write` |
 | `EEOC-OGC-TrialTool` | `MCP.Read`, `MCP.Write` |
 | `EEOC-OCHCO-Benefits` | `MCP.Read` |
-| `EEOC-UDAP-Analytics` | `Analytics.Read` |
+| `EEOC-UDAP-Analytics` | `Analytics.Read`, `Analytics.Write` |
 | `EEOC-ARC-Integration` | `ARC.Read`, `ARC.Write` |
 
 > `MCP.ReadConfidential` and `MCP.WriteConfidential` (ADR caucus channels) are not
@@ -422,3 +422,4 @@ The Hub does not hold a client secret for spoke calls. It uses `DefaultAzureCred
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | June 2026 | Derek Gordon / OIT | Initial release — consolidates Entra config from three prior docs |
+| 1.1 | June 2026 | Derek Gordon / OIT | Add `Analytics.Write` to UDAP Hub grant (ingest tools require it per `mcp_api.py:385`); remove Access Admin from `ARC.Read` consumers (calls only `/arc/v1/access/` endpoints); correct Client-ID env var column for OCHCO and Access Admin (both use `AZURE_CLIENT_ID`, not a KV secret name) |
