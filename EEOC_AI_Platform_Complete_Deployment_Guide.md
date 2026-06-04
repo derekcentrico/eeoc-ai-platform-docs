@@ -121,7 +121,7 @@
 
 ### Expected Outcome
 
-When deployment is complete, an EEOC analyst can open UDAP, type "Show me the top 10 offices by mediation settlement rate this quarter" and get a chart back. ADR mediators can schedule sessions and record outcomes that flow back into ARC. Triage staff can upload charge documents and get AI-driven classifications. All of this runs on Azure Government under FedRAMP High controls, with 7-year NARA-compliant audit trails.
+When deployment is complete, an EEOC analyst can open UDAP, type "Show me the top 10 offices by mediation settlement rate this quarter" and get a chart back. ADR mediators can schedule sessions and record outcomes that flow back into ARC. Triage staff can upload charge documents and get AI-driven classifications. All of this runs on Azure Commercial under FedRAMP High controls, with 7-year NARA-compliant audit trails.
 
 ---
 
@@ -133,7 +133,7 @@ Complete every item before touching Azure. Missing any of these will block you m
 
 | Prerequisite | Description | Status |
 |-------------|-------------|--------|
-| Azure Government subscription | Active subscription with Contributor role assigned to your account | [ ] |
+| Azure Commercial subscription | Active subscription with Contributor role assigned to your account | [ ] |
 | Global Administrator access | Entra ID Global Admin or Application Administrator — needed for app registrations (Section 2.12) | [ ] |
 | GitHub access | Read access to all 6 repositories (eeoc-ofs-adr, eeoc-ofs-triage, eeoc-data-analytics-and-dashboard, eeoc-ogc-trialtool, eeoc-arc-integration-api, eeoc-mcp-hub-functions) | [ ] |
 
@@ -191,7 +191,7 @@ Collect these values now. You will enter them repeatedly during deployment.
 
 Every step below follows the same pattern: what to search for, what to click, what to type, and what to verify after creation.
 
-> All resources are deployed to **Azure Government** region **US Gov Virginia** (`usgovvirginia`) unless otherwise noted.
+> All resources are deployed to **Azure Commercial** region **East US** (`eastus`) unless otherwise noted. Substitute your approved Azure Commercial region if East US is not available to your subscription — use a single region consistently throughout.
 
 ### 2.1 Resource Group
 
@@ -203,7 +203,7 @@ Every step below follows the same pattern: what to search for, what to click, wh
 |---------|-------|
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 
 **Tags Tab:**
 
@@ -232,7 +232,7 @@ Click **Review + create**, then **Create**.
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
 | Name | `vnet-eeoc-ai-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 
 **IP Addresses Tab:**
 
@@ -256,7 +256,7 @@ To add each subnet: Click **+ Add a subnet**, fill in the name, address range, s
 
 **Security Tab:**
 
-Leave BastionHost and DDoS Protection as defaults (disabled). DDoS is managed at the subscription level for Azure Government.
+Leave BastionHost and DDoS Protection as defaults (disabled). DDoS is managed at the subscription level for Azure Commercial.
 
 Click **Review + create**, then **Create**.
 
@@ -274,7 +274,7 @@ Create one NSG per subnet that hosts application workloads.
 |---------|-------|
 | Resource group | `rg-eeoc-ai-platform-prod` |
 | Name | `nsg-eeoc-apps-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 
 After creation, add these inbound rules:
 
@@ -311,7 +311,7 @@ Associate with `snet-postgres`.
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
 | Key vault name | `kv-eeoc-ai-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 | Pricing tier | `Standard` |
 | Days to retain deleted vaults | `90` |
 | Purge protection | `Enable` |
@@ -392,7 +392,7 @@ Store each generated value in Key Vault. Full secret list in [Appendix C](#appen
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
 | Storage account name | `steeocaiprod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 | Performance | `Standard` |
 | Redundancy | `Geo-redundant storage (GRS)` |
 
@@ -477,7 +477,7 @@ Navigate to Storage account > Tables > + Table for each:
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
 | Registry name | `acreeocaiprod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 | SKU | `Premium` |
 
 **Networking Tab:**
@@ -505,35 +505,35 @@ From your build machine with Docker access:
 az acr login --name acreeocaiprod
 
 # tag and push each image (repeat for all 10 images)
-docker tag eeoc-udap-superset:latest acreeocaiprod.azurecr.us/udap/superset:v1.0.0
-docker push acreeocaiprod.azurecr.us/udap/superset:v1.0.0
+docker tag eeoc-udap-superset:latest acreeocaiprod.azurecr.io/udap/superset:v1.0.0
+docker push acreeocaiprod.azurecr.io/udap/superset:v1.0.0
 
-docker tag eeoc-udap-ai-assistant:latest acreeocaiprod.azurecr.us/udap/ai-assistant:v1.0.0
-docker push acreeocaiprod.azurecr.us/udap/ai-assistant:v1.0.0
+docker tag eeoc-udap-ai-assistant:latest acreeocaiprod.azurecr.io/udap/ai-assistant:v1.0.0
+docker push acreeocaiprod.azurecr.io/udap/ai-assistant:v1.0.0
 
-docker tag eeoc-udap-data-middleware:latest acreeocaiprod.azurecr.us/udap/data-middleware:v1.0.0
-docker push acreeocaiprod.azurecr.us/udap/data-middleware:v1.0.0
+docker tag eeoc-udap-data-middleware:latest acreeocaiprod.azurecr.io/udap/data-middleware:v1.0.0
+docker push acreeocaiprod.azurecr.io/udap/data-middleware:v1.0.0
 
-docker tag eeoc-debezium-connect:latest acreeocaiprod.azurecr.us/udap/debezium-connect:v1.0.0
-docker push acreeocaiprod.azurecr.us/udap/debezium-connect:v1.0.0
+docker tag eeoc-debezium-connect:latest acreeocaiprod.azurecr.io/udap/debezium-connect:v1.0.0
+docker push acreeocaiprod.azurecr.io/udap/debezium-connect:v1.0.0
 
-docker tag eeoc-udap-portal-nginx:latest acreeocaiprod.azurecr.us/udap/portal-nginx:v1.0.0
-docker push acreeocaiprod.azurecr.us/udap/portal-nginx:v1.0.0
+docker tag eeoc-udap-portal-nginx:latest acreeocaiprod.azurecr.io/udap/portal-nginx:v1.0.0
+docker push acreeocaiprod.azurecr.io/udap/portal-nginx:v1.0.0
 
-docker tag eeoc-adr-webapp:latest acreeocaiprod.azurecr.us/adr/webapp:v1.0.0
-docker push acreeocaiprod.azurecr.us/adr/webapp:v1.0.0
+docker tag eeoc-adr-webapp:latest acreeocaiprod.azurecr.io/adr/webapp:v1.0.0
+docker push acreeocaiprod.azurecr.io/adr/webapp:v1.0.0
 
-docker tag eeoc-adr-functionapp:latest acreeocaiprod.azurecr.us/adr/functionapp:v1.0.0
-docker push acreeocaiprod.azurecr.us/adr/functionapp:v1.0.0
+docker tag eeoc-adr-functionapp:latest acreeocaiprod.azurecr.io/adr/functionapp:v1.0.0
+docker push acreeocaiprod.azurecr.io/adr/functionapp:v1.0.0
 
-docker tag eeoc-triage-webapp:latest acreeocaiprod.azurecr.us/triage/webapp:v1.0.0
-docker push acreeocaiprod.azurecr.us/triage/webapp:v1.0.0
+docker tag eeoc-triage-webapp:latest acreeocaiprod.azurecr.io/triage/webapp:v1.0.0
+docker push acreeocaiprod.azurecr.io/triage/webapp:v1.0.0
 
-docker tag eeoc-triage-functionapp:latest acreeocaiprod.azurecr.us/triage/functionapp:v1.0.0
-docker push acreeocaiprod.azurecr.us/triage/functionapp:v1.0.0
+docker tag eeoc-triage-functionapp:latest acreeocaiprod.azurecr.io/triage/functionapp:v1.0.0
+docker push acreeocaiprod.azurecr.io/triage/functionapp:v1.0.0
 
-docker tag eeoc-arc-integration-api:latest acreeocaiprod.azurecr.us/arc/integration-api:v1.0.0
-docker push acreeocaiprod.azurecr.us/arc/integration-api:v1.0.0
+docker tag eeoc-arc-integration-api:latest acreeocaiprod.azurecr.io/arc/integration-api:v1.0.0
+docker push acreeocaiprod.azurecr.io/arc/integration-api:v1.0.0
 ```
 
 **Verify:** Navigate to ACR > Repositories. All 10 images appear with v1.0.0 tag.
@@ -551,7 +551,7 @@ docker push acreeocaiprod.azurecr.us/arc/integration-api:v1.0.0
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
 | Server name | `pg-eeoc-udap-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 | PostgreSQL version | `16` |
 | Workload type | `Production (Small/Medium-size)` |
 | Compute + storage | See below |
@@ -577,7 +577,7 @@ docker push acreeocaiprod.azurecr.us/arc/integration-api:v1.0.0
 | Connectivity method | `Private access (VNet Integration)` |
 | Virtual network | `vnet-eeoc-ai-prod` |
 | Subnet | `snet-postgres` |
-| Private DNS zone | Create new: `privatelink.postgres.database.usgovcloudapi.net` |
+| Private DNS zone | Create new: `privatelink.postgres.database.azure.com` |
 
 **Server Parameters Tab (configure after creation):**
 
@@ -624,7 +624,7 @@ CREATE EXTENSION IF NOT EXISTS unaccent;       -- accent-insensitive search
 From the `eeoc-data-analytics-and-dashboard/analytics-db/postgres/` directory, run scripts in this exact order:
 
 ```bash
-export PGHOST=pg-eeoc-udap-prod.postgres.database.usgovcloudapi.net
+export PGHOST=pg-eeoc-udap-prod.postgres.database.azure.com
 export PGUSER=udap_admin
 export PGDATABASE=udap
 export PGSSLMODE=require
@@ -666,7 +666,7 @@ SELECT extname FROM pg_extension WHERE extname IN ('vector', 'pgcrypto', 'pg_trg
 | Setting | Value |
 |---------|-------|
 | Server name | `pg-eeoc-udap-prod-replica` |
-| Region | `US Gov Virginia` (same-region replica) |
+| Region | `East US` (same-region replica) |
 | Compute | Same as primary (`Standard_E16ds_v5`) |
 
 The replica inherits server parameters from the primary. It takes 15-30 minutes to provision depending on data volume.
@@ -688,7 +688,7 @@ PgBouncer pools connections from all applications into a small number of Postgre
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
 | Container app name | `ca-pgbouncer-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 | Container Apps Environment | (create in Section 2.13 first, then come back) |
 
 **Container Tab:**
@@ -712,7 +712,7 @@ PgBouncer pools connections from all applications into a small number of Postgre
 | `PGBOUNCER_MAX_DB_CONNECTIONS` | `200` |
 | `PGBOUNCER_QUERY_TIMEOUT` | `60` |
 | `PGBOUNCER_SERVER_TLS_SSLMODE` | `require` |
-| `POSTGRESQL_HOST` | `pg-eeoc-udap-prod.postgres.database.usgovcloudapi.net` |
+| `POSTGRESQL_HOST` | `pg-eeoc-udap-prod.postgres.database.azure.com` |
 | `POSTGRESQL_PORT` | `5432` |
 | `POSTGRESQL_USERNAME` | `udap_admin` |
 | `POSTGRESQL_PASSWORD` | (Key Vault reference: `PG-ADMIN-PASSWORD`) |
@@ -736,7 +736,7 @@ PgBouncer pools connections from all applications into a small number of Postgre
 **Verify:** From within the VNet, test connectivity:
 
 ```bash
-psql "host=ca-pgbouncer-prod.internal.{env-suffix}.usgovcloudapi.net port=6432 dbname=udap user=udap_admin sslmode=require"
+psql "host=ca-pgbouncer-prod.internal.{env-suffix}.azurecontainerapps.io port=6432 dbname=udap user=udap_admin sslmode=require"
 ```
 
 ---
@@ -752,7 +752,7 @@ psql "host=ca-pgbouncer-prod.internal.{env-suffix}.usgovcloudapi.net port=6432 d
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
 | DNS name | `redis-eeoc-ai-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 | Cache SKU | `Premium` |
 | Cache size | `P1` (6 GB) |
 
@@ -799,7 +799,7 @@ After creation, navigate to Settings > Access keys. Copy the **Primary connectio
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
 | Namespace name | `evhns-eeoc-cdc-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 | Pricing tier | `Standard` |
 | Throughput units | `4` |
 | Enable Auto-Inflate | `Yes` |
@@ -874,7 +874,7 @@ Copy both connection strings and store in Key Vault:
 |---------|-------|
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 | Name | `oai-eeoc-ai-prod` |
 | Pricing tier | `Standard S0` |
 
@@ -935,7 +935,7 @@ Triage uses this for retrieval-augmented generation (RAG) — fetches reference 
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
 | Service name | `srch-eeoc-triage-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 | Pricing tier | `Standard (S1)` |
 
 **Networking Tab:**
@@ -1066,7 +1066,7 @@ See [Appendix D](#appendix-d-all-entra-id-app-registrations-and-roles) for the c
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
 | Environment name | `cae-eeoc-ai-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 | Environment type | `Workload profiles` |
 | Zone redundancy | `Enabled` |
 
@@ -1127,7 +1127,7 @@ Environment variables — see [Appendix B](#appendix-b-all-environment-variables
 |------|--------|-------|
 | `FLASK_ENV` | Manual | `production` |
 | `AI_ASSISTANT_PORT` | Manual | `5000` |
-| `OPENAI_API_BASE` | Manual | `https://oai-eeoc-ai-prod.openai.azure.us/` |
+| `OPENAI_API_BASE` | Manual | `https://oai-eeoc-ai-prod.openai.azure.com/` |
 | `OPENAI_API_VERSION` | Manual | `2024-02-01` |
 | `OPENAI_DEPLOYMENT` | Manual | `gpt-4o` |
 | `AI_MODEL_PROVIDER` | Manual | `azure_openai` |
@@ -1193,7 +1193,7 @@ Key environment variables:
 
 | Name | Value |
 |------|-------|
-| `BOOTSTRAP_SERVERS` | `evhns-eeoc-cdc-prod.servicebus.usgovcloudapi.net:9093` |
+| `BOOTSTRAP_SERVERS` | `evhns-eeoc-cdc-prod.servicebus.windows.net:9093` |
 | `GROUP_ID` | `debezium-connect` |
 | `CONNECT_KEY_CONVERTER` | `org.apache.kafka.connect.json.JsonConverter` |
 | `CONNECT_VALUE_CONVERTER` | `org.apache.kafka.connect.json.JsonConverter` |
@@ -1222,7 +1222,7 @@ Key environment variables:
 | `ARC_GATEWAY_URL` | Manual | `{from worksheet}` |
 | `ARC_PREPA_URL` | Manual | `{from worksheet}` |
 | `ARC_AUTH_URL` | Manual | `{from worksheet}` |
-| `KEY_VAULT_URI` | Manual | `https://kv-eeoc-ai-prod.vault.usgovcloudapi.net/` |
+| `KEY_VAULT_URI` | Manual | `https://kv-eeoc-ai-prod.vault.azure.net/` |
 | `RATE_LIMIT_PER_MINUTE` | Manual | `120` |
 | `ARC_CLIENT_SECRET` | Secret ref | Key Vault |
 | `MCP_HUB_HMAC_SECRET` | Secret ref | Key Vault |
@@ -1307,7 +1307,7 @@ Key environment variables:
 | Setting | Value |
 |---------|-------|
 | Container app name | `ca-mcp-hub-func-prod` |
-| Image | `acreeocaiprod.azurecr.us/hub/aggregator-function:v1.0.0` |
+| Image | `acreeocaiprod.azurecr.io/hub/aggregator-function:v1.0.0` |
 | CPU | `0.5` |
 | Memory | `1 Gi` |
 | Target port | `80` |
@@ -1320,7 +1320,7 @@ Environment variables:
 |------|-------|
 | `FUNCTIONS_WORKER_RUNTIME` | `python` |
 | `REDIS_URL` | Key Vault ref |
-| `KEY_VAULT_URI` | `https://kv-eeoc-ai-prod.vault.usgovcloudapi.net/` |
+| `KEY_VAULT_URI` | `https://kv-eeoc-ai-prod.vault.azure.net/` |
 | `RECONCILIATION_INTERVAL_SECONDS` | `300` |
 | `MAX_TOOLS_PER_CONTEXT` | `15` |
 | `SPOKE_REQUEST_TIMEOUT_SECONDS` | `30` |
@@ -1348,7 +1348,7 @@ ADR and Triage function apps are deployed as Container Apps (Sections 2.14.6 and
 
 #### OGC Trial Tool (App Service)
 
-OGC runs on Azure App Service in Azure Government, not Container Apps. It has its own provisioning script (`provision_ogc_trialtool.sh` in the OGC repo) that handles:
+OGC runs on Azure App Service in Azure Commercial, not Container Apps. It has its own provisioning script (`provision_ogc_trialtool.sh` in the OGC repo) that handles:
 - App Service Plan (Premium V3 P1V3)
 - Web App (Python 3.11)
 - Function App for document indexing
@@ -1362,7 +1362,7 @@ cd eeoc-ogc-trialtool/
 ./provision_ogc_trialtool.sh \
   --rg-name eeoc-ogc-prod-va \
   --suffix va001 \
-  --location usgovvirginia \
+  --location eastus \
   --tenant-id {TENANT_ID}
 ```
 
@@ -1384,7 +1384,7 @@ APIM acts as the MCP Hub router. It receives tool calls from the AI Assistant, i
 |---------|-------|
 | Subscription | `{your subscription}` |
 | Resource group | `rg-eeoc-ai-platform-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 | Resource name | `apim-eeoc-mcp-hub-prod` |
 | Organization name | `EEOC OCIO` |
 | Administrator email | `{platform team email}` |
@@ -1407,7 +1407,7 @@ After creation (takes 30-45 minutes):
 | `triage-spoke` | `https://ca-triage-webapp-prod.internal.{env}/api/mcp` | Triage MCP endpoint |
 | `udap-spoke` | `https://ca-udap-ai-assistant-prod.internal.{env}/api/mcp` | UDAP MCP endpoint |
 | `arc-spoke` | `https://ca-arc-integration-prod.internal.{env}/api/mcp` | ARC Integration MCP endpoint |
-| `ogc-spoke` | `https://app-ogctrialtool-web.azurewebsites.us/api/mcp` | OGC MCP endpoint |
+| `ogc-spoke` | `https://app-ogctrialtool-web.azurewebsites.net/api/mcp` | OGC MCP endpoint |
 | `hub-aggregator` | `https://ca-mcp-hub-func-prod.internal.{env}/api` | Hub aggregator function |
 
 2. **Create API** — POST `/mcp` with tool-prefix routing policies
@@ -1439,7 +1439,7 @@ Event Grid handles inter-spoke event notifications (e.g., ARC Integration API no
 |---------|-------|
 | Resource group | `rg-eeoc-ai-platform-prod` |
 | Name | `evgt-eeoc-ai-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 | Event Schema | `Cloud Events Schema v1.0` |
 
 After creation, add event subscriptions for each spoke that needs notifications:
@@ -1634,7 +1634,7 @@ The Log Analytics workspace `log-eeoc-ai-prod` was created with the Container Ap
 |---------|-------|
 | Resource group | `rg-eeoc-ai-platform-prod` |
 | Name | `appi-eeoc-ai-prod` |
-| Region | `US Gov Virginia` |
+| Region | `East US` ([your approved Azure Commercial region]) |
 | Log Analytics Workspace | `log-eeoc-ai-prod` |
 
 After creation, copy the **Instrumentation Key** and **Connection String** and store in Key Vault as `APPINSIGHTS-CONNECTION-STRING`.
@@ -1899,11 +1899,11 @@ curl -X POST "$HUB_URL/api/spokes" \
   -d '{
     "name": "ogc",
     "display_name": "OGC Trial Tool",
-    "endpoint": "https://app-ogctrialtool-web.azurewebsites.us/api/mcp",
+    "endpoint": "https://app-ogctrialtool-web.azurewebsites.net/api/mcp",
     "auth_type": "entra_id",
     "client_id": "{OGC_CLIENT_ID}",
     "tool_prefix": "trial",
-    "health_endpoint": "https://app-ogctrialtool-web.azurewebsites.us/health"
+    "health_endpoint": "https://app-ogctrialtool-web.azurewebsites.net/health"
   }'
 ```
 
@@ -2188,7 +2188,7 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 |----------|-------|--------|
 | `FLASK_ENV` | `production` | Manual |
 | `AI_ASSISTANT_PORT` | `5000` | Manual |
-| `OPENAI_API_BASE` | `https://oai-eeoc-ai-prod.openai.azure.us/` | Manual |
+| `OPENAI_API_BASE` | `https://oai-eeoc-ai-prod.openai.azure.com/` | Manual |
 | `OPENAI_API_VERSION` | `2024-02-01` | Manual |
 | `OPENAI_DEPLOYMENT` | `gpt-4o` | Manual |
 | `AI_MODEL_PROVIDER` | `azure_openai` | Manual |
@@ -2227,10 +2227,10 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 | `GUNICORN_WORKER_CLASS` | `gevent` | Manual |
 | `GUNICORN_TIMEOUT` | `120` | Manual |
 | `AI_MODEL_PROVIDER` | `azure_openai` | Manual |
-| `AZURE_OPENAI_ENDPOINT` | `https://oai-eeoc-ai-prod.openai.azure.us/` | Manual |
+| `AZURE_OPENAI_ENDPOINT` | `https://oai-eeoc-ai-prod.openai.azure.com/` | Manual |
 | `AZURE_OPENAI_API_VERSION` | `2024-02-01` | Manual |
 | `AZURE_OPENAI_DEPLOYMENT_CHAT` | `gpt-4o` | Manual |
-| `KEY_VAULT_URI` | `https://kv-eeoc-ai-prod.vault.usgovcloudapi.net/` | Manual |
+| `KEY_VAULT_URI` | `https://kv-eeoc-ai-prod.vault.azure.net/` | Manual |
 
 ### ADR Function App
 
@@ -2261,7 +2261,7 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 | `GUNICORN_WORKER_CLASS` | `gevent` | Manual |
 | `GUNICORN_TIMEOUT` | `120` | Manual |
 | `AI_MODEL_PROVIDER` | `azure_openai` | Manual |
-| `AZURE_OPENAI_ENDPOINT` | `https://oai-eeoc-ai-prod.openai.azure.us/` | Manual |
+| `AZURE_OPENAI_ENDPOINT` | `https://oai-eeoc-ai-prod.openai.azure.com/` | Manual |
 | `AZURE_OPENAI_API_VERSION` | `2024-02-01` | Manual |
 | `AZURE_OPENAI_DEPLOYMENT_CHAT` | `gpt-4o` | Manual |
 
@@ -2286,7 +2286,7 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 | `ARC_GATEWAY_URL` | From worksheet | Manual |
 | `ARC_PREPA_URL` | From worksheet | Manual |
 | `ARC_AUTH_URL` | From worksheet | Manual |
-| `KEY_VAULT_URI` | `https://kv-eeoc-ai-prod.vault.usgovcloudapi.net/` | Manual |
+| `KEY_VAULT_URI` | `https://kv-eeoc-ai-prod.vault.azure.net/` | Manual |
 | `RATE_LIMIT_PER_MINUTE` | `120` | Manual |
 | `CACHE_TTL_REFERENCE` | `86400` | Manual |
 | `CACHE_TTL_CASE_LIST` | `300` | Manual |
@@ -2312,7 +2312,7 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 | `FUNCTIONS_WORKER_RUNTIME` | `python` | Manual |
 | `AZURE_STORAGE_CONNECTION_STRING` | Key Vault | Secret |
 | `REDIS_URL` | Key Vault | Secret |
-| `KEY_VAULT_URI` | `https://kv-eeoc-ai-prod.vault.usgovcloudapi.net/` | Manual |
+| `KEY_VAULT_URI` | `https://kv-eeoc-ai-prod.vault.azure.net/` | Manual |
 | `RECONCILIATION_INTERVAL_SECONDS` | `300` | Manual |
 | `MAX_TOOLS_PER_CONTEXT` | `15` | Manual |
 | `SPOKE_REQUEST_TIMEOUT_SECONDS` | `30` | Manual |
