@@ -163,7 +163,7 @@ app reaches prod. Therefore:
 
 | App | Top remediation items |
 |---|---|
-| **ADR** | A-G1 security events → audit table; A-G3 link reliance/drift to audit rows |
+| **ADR** | A-G1 security events → audit table (403/CSRF/rate-limit done; route local CSRF 403s through a shared validate-or-403 helper that logs); A-G3 link reliance/drift to audit rows |
 | **UDAP** | Security events → WORM audit; move grant audit off mutable SQL; real audit UI; `audit.query` tool |
 | **MCP Hub** | Security events (SSRF/auth/rate-limit) → `hubauditlog`; `audit.query` tool |
 | **ARC** | Security events (403/429) → audit; `audit.query` tool; expose grant audit for Access Admin |
