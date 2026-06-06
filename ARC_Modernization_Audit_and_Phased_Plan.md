@@ -1112,7 +1112,7 @@ configuration.setAllowedOrigins(List.of(
 **EmployerWebService** - `src/main/java/gov/eeoc/employer/ws/resource/es/EmployerElasticResource.java:45`:
 ```java
 // BEFORE: @CrossOrigin(origins = "*")
-// AFTER:  @CrossOrigin(origins = {"https://eeoc.gov", "https://*.eeoc.gov"})
+// AFTER:  @CrossOrigin(originPatterns = {"https://eeoc.gov", "https://*.eeoc.gov"})
 ```
 
 Same pattern for:
@@ -1544,7 +1544,7 @@ echo "=== License ==="
 mvn license:check || echo "WARN: license (non-gating)"
 
 echo "=== SBOM ==="
-cyclonedx-maven-plugin:makeBom || echo "WARN: sbom generation"
+mvn cyclonedx:makeBom || echo "WARN: sbom generation"
 
 echo "=== Container: Trivy ==="
 trivy fs --severity CRITICAL,HIGH --exit-code 1 . || { echo "FAIL: trivy"; exit 1; }

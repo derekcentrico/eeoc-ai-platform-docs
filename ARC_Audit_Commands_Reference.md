@@ -42,7 +42,7 @@ grep -oP '"react"\s*:\s*"\K[^"]+' */package.json 2>/dev/null
 
 # Count source files by language
 find . -name '*.java' -not -path '*/node_modules/*' -not -path '*/target/*' | wc -l
-find . -name '*.ts' -o -name '*.tsx' -not -path '*/node_modules/*' | wc -l
+find . \( -name '*.ts' -o -name '*.tsx' \) -not -path '*/node_modules/*' | wc -l
 find . -name '*.jsp' -o -name '*.xhtml' | wc -l
 
 # Identify Docker base images
@@ -118,7 +118,7 @@ by_sev = collections.Counter(
 )
 print(f'Total: {len(matches)}')
 for s in ['Critical','High','Medium','Low']:
-    print(f'  {s}: {by_sev.get(s, 0)}')
+    print(f'  {s}: {by_sev.get(s.lower(), 0)}')
 "
 ```
 

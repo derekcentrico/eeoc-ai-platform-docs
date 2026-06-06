@@ -439,7 +439,7 @@ is already configured correctly — copy its pattern.
    `src/main/java/gov/eeoc/employer/ws/resource/es/EmployerElasticResource.java:45`:
    ```java
    // BEFORE: @CrossOrigin(origins = "*")
-   // AFTER:  @CrossOrigin(origins = {"https://eeoc.gov", "https://*.eeoc.gov"})
+   // AFTER:  @CrossOrigin(originPatterns = {"https://eeoc.gov", "https://*.eeoc.gov"})
    ```
 3. Same change for:
    - `SearchDataWebService-ims-aks-test-es8/src/main/java/gov/eeoc/searchws/resource/HearingSearchResource.java:39`
@@ -891,7 +891,7 @@ PII never goes to logs in any form.
    log.info("Sending email to [REDACTED] for case {}", caseNumber);
    // OR (hash, when you need correlation):
    log.info("Sending email to hash={} for case {}",
-       DigestUtils.sha256Hex(userEmail).substring(0, 8), caseNumber);
+       userEmail != null ? DigestUtils.sha256Hex(userEmail).substring(0, 8) : "null", caseNumber);
    ```
 
 **Do NOT**
