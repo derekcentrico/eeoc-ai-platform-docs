@@ -15,7 +15,7 @@ cross-platform architecture, and lays out a phased roadmap.
 Compliance basis: FOIA 7-year retention, NARA records schedule, NIST 800-53
 Rev 5: AU-2/3 (event content), AU-5/6 (security-event capture and review),
 AU-9 (audit protection / WORM), AU-10 (non-repudiation / HMAC), AU-11
-(retention), and M-21-31 (event logging maturity).
+(retention), and OMB Memorandum M-21-31 (event logging maturity).
 
 ---
 
@@ -92,8 +92,11 @@ Legend: ✓ complete · ◐ partial · ✗ missing · — N/A
    displays them.
 5. **HMAC derivation and key validation** standardized to hex-decode (OGC #125,
    ADR #382, Triage #158), in flight; UDAP/MCP-Hub/ARC use their own consistent
-   schemes (verify). Enforce a minimum 32-character (256-bit) key-length check in
-   production on every app (MCP Hub already fails hard) to rule out weak keys.
+   schemes (verify). Validate the **derived** key is at least 32 bytes / 256-bit
+   in production on every app (a 64-character hex key, or a 32-byte secret) to rule
+   out weak keys. A 32-character hex string decodes to only 16 bytes (128-bit), so
+   check the decoded length, not the source string (MCP Hub already fails hard;
+   Triage #158 adds the derived-length check).
 
 ---
 
@@ -144,8 +147,9 @@ app reaches prod. Therefore:
   `apiauditlog`/`useractivityaudit`). Start with ADR (A-G1) as the template.
 - Define the standard `audit.query` / `audit.export` MCP tool contract (filters:
   date range, user-hash, event type, case/charge, app) and a common record shape,
-  including the standard correlation fields (request_id, caller_oid, response_hash,
-  retention_tag) for cross-system traceability.
+  including the standard correlation fields (request_id, caller_oid, tool_name,
+  spoke_system, response_hash, retention_tag, timestamp) for cross-system
+  traceability.
 
 **Phase 1: Per-app audit query API**
 - Implement `audit.query` (read-only, RBAC-gated) on every app over its WORM store.
