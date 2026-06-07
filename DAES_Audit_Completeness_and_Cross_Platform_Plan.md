@@ -90,8 +90,10 @@ Legend: ✓ complete · ◐ partial · ✗ missing · — N/A
 4. **Access-change audit is not viewable.** ARC records grant lifecycle (well),
    but Access Admin (the tool that *makes* those changes) neither stores nor
    displays them.
-5. **HMAC derivation** standardized to hex-decode (OGC #125, ADR #382, Triage #158),
-   in flight; UDAP/MCP-Hub/ARC use their own consistent schemes (verify).
+5. **HMAC derivation and key validation** standardized to hex-decode (OGC #125,
+   ADR #382, Triage #158), in flight; UDAP/MCP-Hub/ARC use their own consistent
+   schemes (verify). Enforce a minimum 32-character (256-bit) key-length check in
+   production on every app (MCP Hub already fails hard) to rule out weak keys.
 
 ---
 
@@ -141,7 +143,9 @@ app reaches prod. Therefore:
   CSRF, and rate-limit events to the immutable audit store (model on ADR's
   `apiauditlog`/`useractivityaudit`). Start with ADR (A-G1) as the template.
 - Define the standard `audit.query` / `audit.export` MCP tool contract (filters:
-  date range, user-hash, event type, case/charge, app) and a common record shape.
+  date range, user-hash, event type, case/charge, app) and a common record shape,
+  including the standard correlation fields (request_id, caller_oid, response_hash,
+  retention_tag) for cross-system traceability.
 
 **Phase 1: Per-app audit query API**
 - Implement `audit.query` (read-only, RBAC-gated) on every app over its WORM store.
@@ -167,10 +171,10 @@ app reaches prod. Therefore:
 | **UDAP** | Security events → WORM audit; move grant audit off mutable SQL; real audit UI; `audit.query` tool |
 | **MCP Hub** | Security events (SSRF/auth/rate-limit) → `hubauditlog`; `audit.query` tool |
 | **ARC** | Security events (403/429) → audit; `audit.query` tool; expose grant audit for Access Admin |
-| **Triage** | Auth failures → audit table; `audit.query` tool; REST export |
+| **Triage** | Auth failures → audit table; access/authorization audit; `audit.query` tool; REST export |
 | **OGC** | Security events → audit; complete audit UI; `audit.query` tool |
 | **OCHCO** | Security events + access audit; audit UI; `audit.query` tool (WORM now handled #45/#46) |
-| **Access Admin** | Grant-change audit (local or surfaced from ARC); security events → audit; the cross-platform console |
+| **Access Admin** | Grant-change audit (local or surfaced from ARC); security events → dedicated WORM store or routed via API to a central store (it has no local storage account); the cross-platform console |
 
 ---
 
