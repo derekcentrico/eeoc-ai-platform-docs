@@ -27,7 +27,7 @@ Estimated timeline: 4-5 months to build the full analytics platform with AI assi
 
 ---
 
-**Option 2: Elasticsearch (leverage ARC's existing cluster or stand up our own)**
+**Option 2: Elasticsearch (reuse ARC's existing cluster or stand up our own)**
 
 ARC currently runs Elasticsearch 9.1.5 on Kubernetes via ECK. I reviewed the SearchDataWebService source code and index mappings. Today, it polls PrEPA every 10-300 seconds and indexes charge data for the search bar in the Angular UI. It uses keyword and wildcard search only. No vector embeddings, no kNN queries, no dense_vector fields, no semantic search. None of the 6 indices have vector mappings. There is no embedding pipeline. There is no Azure OpenAI integration. The Elasticsearch instance is a keyword search box for case lookups.
 

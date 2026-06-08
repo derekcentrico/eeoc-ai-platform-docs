@@ -320,7 +320,7 @@ The OGC Trial Tool currently uses demo session-based authentication
 (GET /demo_login?role=attorney). This must be replaced with Entra ID
 Government OIDC before the tool can integrate with the MCP hub.
 
-Additionally, the trial tool needs an MCP server endpoint so it can
+The trial tool also needs an MCP server endpoint so it can
 register as a spoke with the hub.
 
 PART 1: Replace demo auth with Entra ID Government
@@ -2665,7 +2665,7 @@ Write a CHANGES.md and unified diff.
 
 ```
 The cross-ecosystem audit found 5 new modules in UDAP with zero test
-coverage. Write comprehensive unit tests for each. Follow the existing
+coverage. Write full unit tests for each. Follow the existing
 test patterns in ai-assistant/tests/ and data-middleware/tests/.
 
 Use the existing conftest.py fixtures (ai-assistant/tests/conftest.py)
@@ -4276,7 +4276,7 @@ Write a CHANGES.md and unified diff.
 
 ```
 FedRAMP Rev5 introduced the Supply Chain Risk Management (SR) control family.
-Additionally, SI-2 (Flaw Remediation) requires timely patching, and CM-8
+SI-2 (Flaw Remediation) requires timely patching, and CM-8
 (Information System Component Inventory) requires a complete SBOM. Implement
 the following across ALL repositories.
 
@@ -4425,7 +4425,7 @@ This is a DOCUMENTATION + CONFIGURATION prompt, not heavy code changes.
 
    f. Update sast-scan.sh in all repos:
       - Keep the existing grep-based Phase 4 as a fast local check
-      - Add a note: "For comprehensive scanning including git history,
+      - Add a note: "For deeper scanning including git history,
         see the gitleaks CI job in .github/workflows/"
       - The grep scan remains useful for quick local validation but
         gitleaks in CI is the authoritative gate
@@ -6691,7 +6691,7 @@ Write a CHANGES.md and unified diff.
 ### Prompt (Triage — run in eeoc-ofs-triage/)
 
 ```
-FINAL HARDENING: The comprehensive audit identified the following issues
+FINAL HARDENING: The full audit identified the following issues
 in the Triage repo. Fix ALL of them.
 
 PART A — Missing unit tests (7 gaps):
@@ -6764,7 +6764,7 @@ Write a CHANGES.md and unified diff.
 ### Prompt (UDAP — run in eeoc-data-analytics-and-dashboard/)
 
 ```
-FINAL HARDENING: The comprehensive audit identified the following issues
+FINAL HARDENING: The full audit identified the following issues
 in the UDAP repo. Fix ALL of them.
 
 PART A — Missing unit tests (4 gaps):
@@ -7925,7 +7925,7 @@ the feature_flags.py module was created.
 ### Prompt
 
 ```
-Write comprehensive unit tests for all Phase 4b code. Read existing
+Write full unit tests for all Phase 4b code. Read existing
 test files in tests/ first to match the fixture patterns, mock
 strategy, and assertion style before writing.
 
@@ -9741,7 +9741,7 @@ endpoint with Entra ID authentication.
    - Word brokers SSO with Entra ID (user already signed in)
    - Token sent to our API in Authorization header
    - Our API validates token against same Entra ID tenant
-   - No additional login required — seamless for the attorney
+   - No additional login required for the attorney
 
    Document the Entra ID app registration requirements:
    - Register a new app: "EEOC OGC Word Add-in"
@@ -10482,7 +10482,7 @@ Create a dedicated audit log viewer page accessible to system admins.
 
 === PART 2: Per-Case Activity Timeline ===
 
-Add a comprehensive activity timeline to the case detail view.
+Add a full activity timeline to the case detail view.
 
 5. Create route in adr_webapp/routes/admin.py (or mediator.py):
    GET /cases/<case_id>/activity

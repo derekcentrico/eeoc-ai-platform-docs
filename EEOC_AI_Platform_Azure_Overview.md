@@ -153,7 +153,7 @@ Once deployed, the platform provides capabilities that do not exist today:
 | **Development subtotal** | ~$200-300K labor (4 FTEs × 3 months) | **$9-16M** (competitive award, full-stack federal contractor) |
 | **Procurement cycle** | N/A (internal team) | 6-12 months, $50-100K in acquisition support costs |
 | **Azure infrastructure** | $6,500-8,200/month ($78-98K/year) | Same base + 15-30% managed services markup ($90-127K/year) |
-| **FedRAMP assessment** | Leverages existing Azure Gov ATO; agency-level assessment ~$50-100K | 3PAO assessment for new system: $300-600K. Vendor typically bills separately. |
+| **FedRAMP assessment** | Uses existing Azure Gov ATO; agency-level assessment ~$50-100K | 3PAO assessment for new system: $300-600K. Vendor typically bills separately. |
 | **Ongoing operations** | 1-2 FTEs for maintenance + Azure costs (~$250-350K/year) | Vendor O&M contract: $1.5-3M/year (includes SLA guarantees, on-call, patching, change orders at premium rates) |
 | **Change orders** | Same team implements, same week | SOW amendment: 4-8 weeks, $50-200K per significant change |
 | **Time to production** | 13 weeks from kickoff | 18-30 months (6-12 procurement + 12-18 development/testing) |
