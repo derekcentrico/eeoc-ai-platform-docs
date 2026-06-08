@@ -437,6 +437,7 @@ Navigate to Storage account > Containers > + Container for each:
 |---------------|-------------------|-------------------|
 | `hub-audit-archive` | Private | WORM: 2555 days (7 years), locked |
 | `arc-integration-archive` | Private | WORM: 2555 days (7 years), locked |
+| `security-audit-archive` | Private | WORM: 2555 days (7 years), locked |
 | `adr-case-files` | Private | None |
 | `adr-quarantine` | Private | None |
 | `triage-processing` | Private | None |
@@ -451,6 +452,8 @@ Navigate to Storage account > Containers > + Container for each:
 To set a WORM policy: click the container > Settings > Access policy > Add policy > select **Time-based retention** > set retention period to **2555 days** > **Lock** the policy.
 
 > Once locked, a WORM policy cannot be shortened or removed. Verify the retention period is correct before locking.
+
+> **`security-audit-archive`:** the security-event audit writers in ADR, Triage, OGC Trial Tool, and OCHCO dual-write each `EventCategory=SECURITY` row (auth denials, CSRF and rate-limit rejections) to this container under a `security/{YYYY}/{MM}/{DD}/{event_type}/{rowkey}.json` path. Azure immutable-storage controls cover Blob data, not Table entities, so this blob copy is the enforced write-once record (NIST 800-53 AU-9). If you provision the policy by CLI instead of the portal, note that `az storage container immutability-policy create` is a management-plane (ARM) call: it takes `--resource-group` and does **not** accept the data-plane `--auth-mode` flag.
 
 #### Create Storage Tables
 
