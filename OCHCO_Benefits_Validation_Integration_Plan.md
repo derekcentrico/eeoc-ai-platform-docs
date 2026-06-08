@@ -392,7 +392,7 @@ eeoc-ochco-benefits-validation/
 └── docs/
     ├── Architecture.md
     ├── Validation_Rules.md
-    └── Data_Dictionary.md
+    └── Data_Dictionary_and_Schema.md
 ```
 
 ---
