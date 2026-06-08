@@ -10758,7 +10758,7 @@ Implement ALL of the following.
 
    f. requirements.txt comment headers mentioning Python 3.12
 
-   g. CLAUDE.md (workspace level — if it mentions Python 3.12)
+   g. Workspace configuration file (if it mentions Python 3.12)
 
    Do NOT update:
    - debug/ directory (historical logs, leave as-is)

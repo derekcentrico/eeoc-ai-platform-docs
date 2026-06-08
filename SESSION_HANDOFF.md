@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-05 (updated from 2026-04-04 session)
 **Working Directory:** `/home/derek/ai-platform/workspace/`
-**Purpose:** Everything a new Claude session needs to pick up where this one left off.
+**Purpose:** Everything a new working session needs to pick up where this one left off.
 
 ---
 
@@ -83,7 +83,7 @@ All prompts executed in the following order:
 
 ### How to Run Prompts
 
-Each prompt targets a single repo. Start a new Claude session, paste:
+Each prompt targets a single repo. Open a new working session, paste:
 
 ```
 Working directory: ~/ai-platform/workspace/{repo-name}/
@@ -223,7 +223,7 @@ Prompts targeting multiple repos (27, 40, 41, 47) should be run once per repo.
 The file is ~4500 lines with 51 prompts. Each prompt has:
 - Header: `## Prompt N: Title`
 - Metadata: Repository, Owner, Phase
-- Body inside triple-backtick code block — this is what you paste into a Claude session
+- Body inside triple-backtick code block — this is what you paste into a working session
 - Some prompts have multiple sub-prompts (e.g., Prompt 27 has 4 sub-prompts, one per repo)
 
 The summary table near line 610 shows all prompts with status (DONE/PENDING).
@@ -233,7 +233,7 @@ The execution order section near line 640 shows dependencies.
 
 ## Memory Files
 
-Saved to `/home/derek/.claude/projects/-home-derek-ai-platform-workspace/memory/`:
+Saved to the workspace memory directory:
 - `project_arc_integration.md` — Architecture decisions and context
 - `user_derek.md` — Derek's role and preferences
 

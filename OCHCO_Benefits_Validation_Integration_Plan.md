@@ -264,7 +264,7 @@ Flask application with the standard platform patterns:
   - Flagged items queue (batch review findings awaiting human confirmation)
   - Overpayment case list and detail views
   - Dashboard (error rates, trends, dollar impact)
-- **508 compliance** — all WCAG 2.1 AA requirements per the platform 508 skill.
+- **508 compliance** — all WCAG 2.1 AA requirements per the platform accessibility standard.
   Bootstrap 5.3.3 with EEOC contrast overrides. Charts require accessible
   data tables.
 
@@ -351,8 +351,6 @@ These must be resolved before development begins:
 
 ```
 eeoc-ochco-benefits-validation/
-├── .claude/
-│   └── CLAUDE.md                  # Repo-specific instructions
 ├── app/
 │   ├── __init__.py                # Flask app factory
 │   ├── auth.py                    # Entra ID authentication
