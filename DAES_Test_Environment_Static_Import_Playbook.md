@@ -1,10 +1,10 @@
-# DAES Test Environment — Static-Import Proof Playbook
+# DAES Test Environment - Static-Import Proof Playbook
 
 **Author:** Derek Gordon
 **Platform:** Data and AI Enterprise System (DAES)
-**Purpose:** Stand up the smallest set of components that proves the end-to-end claim —
+**Purpose:** Stand up the smallest set of components that proves the end-to-end claim -
 **import a static database file and query it through the integrated stack (MCP Hub +
-ARC Integration API + UDAP dashboard/AI assistant)** — without live ARC ingest.
+ARC Integration API + UDAP dashboard/AI assistant)** - without live ARC ingest.
 
 This is a focused subset of the full
 [EEOC AI Platform Complete Deployment Guide](EEOC_AI_Platform_Complete_Deployment_Guide.md).
@@ -23,8 +23,13 @@ MCP Hub, which routes to the ARC Integration API tool surface. That is the
 `import → warehouse → MCP/API → dashboard + AI` chain.
 
 **Does not exercise (intentionally deferred):** live ARC ingest (Debezium → Event Hub →
-middleware), and the case-management applications (ADR, Triage, OGC Trial Tool, OCHCO,
+middleware), and the case-management applications (Triage, OGC Trial Tool, OCHCO,
 Access Admin). Those are out of scope for the proof and are not deployed.
+
+**Optional add-on:** the ADR mediation portal can be brought up in the *same* resource group
+for broader testing. It is not part of the import → warehouse → MCP/API → dashboard chain, so
+it does not change the proof; deploy it only if you also want to exercise the case-management
+app. See §9.
 
 ---
 
@@ -34,11 +39,11 @@ Access Admin). Those are out of scope for the proof and are not deployed.
 
 | Component | Repo | Role in the proof |
 |---|---|---|
-| **UDAP** — AI assistant, dashboard (Superset), portal | `eeoc-data-analytics-and-dashboard` | Import target, presentation, and the AI chat over the data |
-| **MCP Hub** — aggregator function | `eeoc-mcp-hub-functions` | Routes the AI assistant's tool calls to the spoke(s) |
-| **ARC Integration API** | `eeoc-arc-integration-api` | MCP spoke + data/reference endpoints. **Its live-ARC upstream stays unset** — the static import replaces it |
+| **UDAP** - AI assistant, dashboard (Superset), portal | `eeoc-data-analytics-and-dashboard` | Import target, presentation, and the AI chat over the data |
+| **MCP Hub** - aggregator function | `eeoc-mcp-hub-functions` | Routes the AI assistant's tool calls to the spoke(s) |
+| **ARC Integration API** | `eeoc-arc-integration-api` | MCP spoke + data/reference endpoints. **Its live-ARC upstream stays unset** - the static import replaces it |
 
-The compute target is **AKS** (see §6) — deploy from each repo's `deploy/k8s/` manifests. The
+The compute target is **AKS** (see §6) - deploy from each repo's `deploy/k8s/` manifests. The
 subset to deploy: UDAP's stack (`ai-assistant`, Superset, `portal-nginx`, `pgbouncer`; JupyterHub
 is available for the data team but is not part of the smoke test), the **MCP Hub**, and the
 **ARC Integration API**. **Do not deploy** the Debezium / Event Hub CDC pipeline, the
@@ -48,7 +53,7 @@ ADR/Triage/OGC/OCHCO apps, or the Access Admin app.
 
 | Resource | Complete Guide name | Why |
 |---|---|---|
-| PostgreSQL Flexible Server | `pg-eeoc-udap-*` | The analytics warehouse — the static import target |
+| PostgreSQL Flexible Server | `pg-eeoc-udap-*` | The analytics warehouse - the static import target |
 | Azure OpenAI | `oai-eeoc-ai-*` | The AI assistant's model (`gpt-4o`) |
 | Redis | `redis-eeoc-ai-*` | Sessions + cache for UDAP and the API |
 | Key Vault | `kv-eeoc-ai-*` | HMAC keys, DB password, OpenAI key, Flask/secret keys |
@@ -66,18 +71,19 @@ Hub with APIM (see §4).
 
 ## 3. Deployment order
 
-1. **Foundational infra** — Resource Group, VNet/subnets/NSGs, Key Vault, Storage, ACR,
+1. **Foundational infra** - Resource Group, VNet/subnets/NSGs, Key Vault, Storage, ACR,
    Postgres, Redis, Azure OpenAI (Complete Guide Part 2).
-2. **Secrets into Key Vault** — at minimum: DB admin password, `OPENAI-API-KEY`,
+2. **Secrets into Key Vault** - at minimum: DB admin password, `OPENAI-API-KEY`,
    `REDIS-CONNECTION-STRING`, the per-component audit HMAC keys
-   (`AI-AUDIT-HMAC-KEY`, `ARC-AUDIT-HMAC-KEY`, `HUB-AUDIT-HMAC-KEY`), and Flask/app secret
+   (`AI-AUDIT-HMAC-KEY`, `ARC-AUDIT-HMAC-KEY`, `HUB-AUDIT-HMAC-KEY`), the Hub's
+   `HUB-AUDIT-HASH-SALT` (a distinct PII salt, not the HMAC key), and Flask/app secret
    keys. The provisioning scripts in each repo create these; verify every name the
    SecretProviderClass/app settings reference actually exists, or the pod will not start.
-3. **Entra registrations + app-roles** (§4) — before the apps start, since auth is wired at boot.
-4. **Push images to ACR** — build and push the three components (Complete Guide Part 2 image step).
-5. **Deploy ARC Integration API** — with its live-ARC upstream left unset (§5).
-6. **Deploy MCP Hub** — point its spoke registry at the ARC Integration API.
-7. **Deploy UDAP** (API assistant, Superset, portal) — point it at Postgres, Redis, OpenAI,
+3. **Entra registrations + app-roles** (§4) - before the apps start, since auth is wired at boot.
+4. **Push images to ACR** - build and push the three components (Complete Guide Part 2 image step).
+5. **Deploy ARC Integration API** - with its live-ARC upstream left unset (§5).
+6. **Deploy MCP Hub** - point its spoke registry at the ARC Integration API.
+7. **Deploy UDAP** (API assistant, Superset, portal) - point it at Postgres, Redis, OpenAI,
    and the MCP Hub.
 8. **Load the static file** (§5).
 9. **Smoke test** (§7).
@@ -102,11 +108,24 @@ Key env vars that wire the components together (full list in Complete Guide Appe
 - **ARC Integration API:** `MCP_HUB_URL`, `MCP_HUB_HMAC_SECRET`, `ARC_AUDIT_HMAC_KEY`,
   `REDIS_URL`. **Leave `ARC_GATEWAY_URL` / `ARC_PREPA_URL` / `ARC_AUTH_URL` unset** for the
   static proof so no live-ARC call is attempted.
-- **MCP Hub:** `HUB_AUDIT_HMAC_KEY` (must be set — the Hub fails closed on audit without it),
-  spoke registry pointing at the ARC Integration API internal URL.
+- **MCP Hub:** `HUB_AUDIT_HMAC_KEY` and `HUB_AUDIT_HASH_SALT` (both required, at least 32 chars;
+  the Hub fails closed on audit without the HMAC key), `ALLOWED_SPOKE_PRIVATE_CIDRS` set to the
+  in-cluster spoke subnet CIDR, and the spoke registry pointing at the ARC Integration API
+  internal URL. The Hub's SSRF validator rejects a private-IP spoke URL unless its range is
+  listed in `ALLOWED_SPOKE_PRIVATE_CIDRS`; that value is substituted from the same
+  `PRIVATE_ENDPOINTS_CIDR` token as the NetworkPolicy egress rule, so the allowlist and the
+  network policy stay in sync. The ARC spoke runs in-cluster on a private IP for this proof, so
+  this must be set or the routed tool call is blocked.
 
 > **Default-off integrations:** `MCP_ENABLED` and `MCP_PROTOCOL_ENABLED` default to `false`
 > platform-wide. For this proof you intentionally set `MCP_ENABLED=true` on UDAP and the Hub.
+
+> **ARC self-service auth:** ARC self-service authorization (a caller resolving its own roles or
+> profile) matches the token's lowercased `email`/UPN claim, not `sub`. App-only tokens (managed
+> identity / client credentials) carry no email, so any user-scoped ARC lookup needs the
+> `Access.Admin` role. The data and reference tool calls the smoke test exercises do not hit
+> these endpoints; if you add a user-context call, surface the optional `email`/`upn` claim on
+> the caller's app registration.
 
 ---
 
@@ -116,13 +135,13 @@ The Complete Guide's Part 3 (ARC DBA coordination) and Part 5 (Debezium/Event Hu
 are **skipped**. Instead:
 
 1. **Confirm the target schema.** The static file must load into the **warehouse** model that
-   the dashboard and queries read — the Postgres `arc_analytics` analytics schema — **not** the
+   the dashboard and queries read - the Postgres `arc_analytics` analytics schema - **not** the
    source IMS SQL Server model. (The demo's "8 schemas / 331 tables" figures describe the
    *source* system, not the warehouse. Pin the warehouse target before anyone loads data.)
 2. **Load.** Restore the static dump into the warehouse database
    (`psql`/`pg_restore` into `pg-eeoc-udap-*`), then apply the schema/RLS/grants the analytics
    layer expects. The `udap-demo` initialization (its `090`-series DB+RLS setup and the
-   dashboard-seed scripts) is the proven mechanism — adapt those for the Azure Postgres target.
+   dashboard-seed scripts) is the proven mechanism - adapt those for the Azure Postgres target.
 3. **Point the catalog at the warehouse.** Ensure the data catalog / dashboard datasource
    resolves to the loaded warehouse schema, not the demo placeholder figures.
 
@@ -130,16 +149,18 @@ are **skipped**. Instead:
 
 ## 6. Compute target: AKS (decided)
 
-The test environment runs on **AKS** — the same hosting model as production — so the test env
+The test environment runs on **AKS** - the same hosting model as production - so the test env
 also rehearses the production deploy, and the data team's JupyterHub (which spawns Kubernetes
 pods) runs natively. Deploy each component from its repo's `deploy/k8s/` manifests
 (SecretProviderClass, workload identity, NetworkPolicy, HPA, PDB).
 
-UDAP and the ARC Integration API ship complete `deploy/k8s/` manifests. **The MCP Hub does not
-have AKS manifests yet** — it has only a Dockerfile (itself being corrected to the Azure Functions
-base image). Its Deployment / Service / SecretProviderClass / ServiceAccount / NetworkPolicy set
-must be authored, modeled on the ARC manifests, before the MCP Hub can be deployed to AKS. Until
-then, the MCP Hub can run via `func azure functionapp publish` for an interim catalog check.
+All three components now ship complete `deploy/k8s/` manifests: UDAP, the ARC Integration API,
+and the MCP Hub (`deploy/k8s/mcp-hub/` carries the Deployment, Service, SecretProviderClass,
+ServiceAccount, ConfigMap, NetworkPolicy, HPA, and PDB). Follow each repo's `Deployment_Guide.md`
+for the apply steps; the MCP Hub guide covers the image build, placeholder substitution, and the
+`PRIVATE_ENDPOINTS_CIDR` token that wires the SSRF allowlist and the NetworkPolicy egress rule
+together. The interim `func azure functionapp publish` path remains available for a quick catalog
+check before the cluster namespace is ready.
 
 The Complete Deployment Guide's Container Apps sections (`cae-…`, `ca-*`) are superseded for the
 test env by these per-repo AKS manifests: use the Complete Guide for the supporting-resource
@@ -154,11 +175,11 @@ provisioning (compute-agnostic) and the per-repo manifests for compute.
 2. **Dashboard renders.** Open the UDAP portal/Superset; confirm a dashboard built on the
    loaded schema shows the imported data.
 3. **AI assistant answers via MCP.** Send a question to the UDAP AI assistant (Complete Guide
-   Part 5, steps 5–6 pattern). Confirm the response includes the generated SQL and a result,
+   Part 5, steps 5-6 pattern). Confirm the response includes the generated SQL and a result,
    and that the MCP Hub logs show a tool call routed to the ARC Integration API spoke
-   (App Insights / Log Analytics on `ca-mcp-hub-func`).
+   (App Insights / Log Analytics for the `mcp-hub` pods in the `eeoc-mcp` namespace).
 4. **Audit trail.** Confirm an AI-generation audit record was written (Table Storage
-   `arcintegrationaudit` / the UDAP audit table) with an HMAC signature — this is the
+   `arcintegrationaudit` / the UDAP audit table) with an HMAC signature - this is the
    NARA/AU-10 requirement and proves the governed path, not a bypass.
 
 If all four pass, the static-import proof is complete.
@@ -173,3 +194,53 @@ If all four pass, the static-import proof is complete.
   provisioning scripts, and the guide now all target Azure Commercial.
 - Verify Key Vault secret **names** in each repo's SecretProviderClass against what the
   provisioning script actually creates before first pod start.
+- The storage account needs the **`security-audit-archive`** WORM container (2555-day
+  immutability) in addition to the AI/hub/ARC audit archives: ARC, MCP Hub, and (if deployed)
+  ADR write their security-event audit rows there. The Complete Guide's blob-container table
+  lists it. When provisioning the policy by CLI, `az storage container immutability-policy
+  create` is a management-plane (ARM) call and does not take `--auth-mode`.
+
+---
+
+## 9. Optional: a test ADR in the same resource group
+
+The ADR mediation portal is independent of the static-import proof, but it can share this test
+environment's resource group and supporting resources (Key Vault, Redis, Storage, Azure OpenAI,
+AKS, Log Analytics). Deploy it only if you want to exercise the case-management app as well.
+
+**No name collisions.** `provision_adr_system.sh` derives its resource names from a `--suffix`
+and prefixes them `eeoc-adr-*`, which does not overlap the UDAP/`udap-*`/`eeoc-ai-*` names. Pass
+the shared resource group with `--rg-name`:
+
+```bash
+./provision_adr_system.sh \
+  --rg-name rg-daes-test \
+  --suffix test \
+  --location eastus \
+  --custom-dns adr-test.eeoc.gov \
+  --tenant-id <tenant-id> \
+  --mediator-group-id <guid> --admin-group-id <guid> --stats-admin-group-id <guid> \
+  --ir-email security@eeoc.gov \
+  --triage-rg rg-daes-test --triage-storage <triage-or-shared-storage> \
+  --gateway-cidrs "<your-test-source-cidrs>"   # lock the gateway for a test env
+```
+
+**ADR-specific storage.** ADR adds its own Table Storage audit tables and these blob containers:
+`adr-case-files`, `adr-quarantine`, the `ai-generation-archive` WORM container (AI generation
+records), and the `security-audit-archive` WORM container (security-event rows). The provisioning
+script creates both WORM containers with the 2555-day time-based immutability policy and a
+matching lifecycle cleanup rule; it never creates them at app runtime.
+
+**Manual steps before first run** (the script validates the second one and exits if missing):
+
+1. Import the TLS certificate into Key Vault under the name `provision_adr_system.sh` expects
+   (`az keyvault certificate import ... --name eeoc-adr-cert`). The all-in-one
+   `provision_eeoc_ai_platform.sh` path names the same cert `adr-tls-cert`; use the name matching
+   the script you run.
+2. Upload the settlement boilerplate document to the Triage/shared storage `priority-docs`
+   container (`ADR_Settlement_Boilerplate.docx`).
+3. Register the ADR Entra app (web OIDC) and grant admin consent; provision Azure Communication
+   Services for email if you exercise notifications.
+
+ADR does not participate in the §7 smoke test. To confirm it is healthy, hit its `/health`
+endpoint with `MCP_ENABLED=false` (the platform default) and sign in through Entra ID.
