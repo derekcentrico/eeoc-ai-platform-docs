@@ -1,4 +1,4 @@
-# MCP Hub Build Guide — Supplement for Hub Team
+# MCP Hub Build Guide - Supplement for Hub Team
 
 **Purpose:** This document fills the gaps between the existing MCP Hub Three-Application Integration document and what the hub team actually needs to build. The original document covers the three spoke apps well but does not address how the hub gets data from ARC, how OGC Trial Tool fits in, or several integration details that surfaced during the codebase review.
 
@@ -20,7 +20,7 @@ The hub is a routing layer. It does not store case data, run AI models, or make 
 
 That is the entire scope. If you find yourself building business logic into the hub, stop and push it to a spoke instead.
 
-**Important architectural context:** UDAP is the central internal data repository. It ingests a full replica of ARC's database in real-time via a WAL/CDC pipeline (PrEPA PostgreSQL → logical replication FOR ALL TABLES → Debezium → Azure Event Hub → UDAP replica schema → Data Middleware → analytics schema). All data passes through the UDAP Data Middleware, which provides YAML-driven column translation, value mapping, PII redaction, and schema validation. The IDR (nightly SQL Server snapshot) serves as a twice-weekly reconciliation source to verify CDC pipeline completeness. UDAP serves as the primary query target for analytics, cross-system lookups, and AI consumers. When an AI consumer asks a data question, the hub should route it to UDAP, not to ARC. The ARC Integration API spoke exists solely for **write-back** (pushing mediation outcomes and triage results back to ARC) and a small number of **targeted real-time lookups** (mediation eligibility, charge metadata at upload time, document metadata from ECM). It does not feed bulk data to UDAP — the CDC pipeline handles that independently.
+**Important architectural context:** UDAP is the central internal data repository. It ingests a full replica of ARC's database in real-time via a WAL/CDC pipeline (PrEPA PostgreSQL → logical replication FOR ALL TABLES → Debezium → Azure Event Hub → UDAP replica schema → Data Middleware → analytics schema). All data passes through the UDAP Data Middleware, which provides YAML-driven column translation, value mapping, PII redaction, and schema validation. The IDR (nightly SQL Server snapshot) serves as a twice-weekly reconciliation source to verify CDC pipeline completeness. UDAP serves as the primary query target for analytics, cross-system lookups, and AI consumers. When an AI consumer asks a data question, the hub should route it to UDAP, not to ARC. The ARC Integration API spoke exists solely for **write-back** (pushing mediation outcomes and triage results back to ARC) and a small number of **targeted real-time lookups** (mediation eligibility, charge metadata at upload time, document metadata from ECM). It does not feed bulk data to UDAP - the CDC pipeline handles that independently.
 
 ---
 
@@ -41,7 +41,7 @@ Your existing document covers three. There are five.
 - **Event types:** case.created, case.started, case.closed, case.disposed, case.reassigned
 - **Webhook validation:** X-MCP-Signature header, signed with a shared secret (32+ characters, stored in Key Vault on both sides)
 - **Timeout:** 30 seconds recommended for tool calls
-- **Pagination:** ADR case lists are bounded at 5,000 entities. Use filters (date range, office, status) for large result sets. There is no cursor pagination — results are capped, not paged.
+- **Pagination:** ADR case lists are bounded at 5,000 entities. Use filters (date range, office, status) for large result sets. There is no cursor pagination - results are capped, not paged.
 
 **ADR write-back through ARC Integration API:** ADR does not write directly to ARC. Instead, ADR calls the hub, which routes write operations to the ARC Integration API spoke. The key write-back flows are:
 - Mediation closure with outcome (success, impasse, withdrawal) and settlement data
@@ -96,7 +96,7 @@ Decide with the Triage team before connecting. The recommendation is Option A.
 
 - **MCP endpoint:** `POST /mcp` (JSON-RPC 2.0, protocol version 2025-03-26)
 - **Feature gate:** `MCP_ENABLED=true`, `MCP_PROTOCOL_ENABLED=true`, `MCP_SERVER_EXPOSE=true`
-- **Auth:** Entra ID M2M bearer token. App roles: `Analytics.Read`, `Analytics.Write` (NOT MCP.Read/MCP.Write — this is intentional)
+- **Auth:** Entra ID M2M bearer token. App roles: `Analytics.Read`, `Analytics.Write` (NOT MCP.Read/MCP.Write - this is intentional)
 - **Tools:** 3 built-in (`search_narratives`, `get_metrics`, `get_dashboards`) plus N auto-generated `query_{dataset_name}` tools from dbt models. N changes whenever dbt runs.
 - **Capability categories:** `analytics`, `narrative_search`, `reporting`
 - **Events:** UDAP does not push events natively.
@@ -112,12 +112,12 @@ Decide with the Triage team before connecting. The recommendation is Option A.
 **Critical: Row-Level Security is a blocker until token delegation is resolved.**
 
 UDAP enforces row-level security at the PostgreSQL layer. Every SQL query runs with session context set from the caller's Entra ID token:
-- `app.current_regions` — comma-separated list of regions the caller can see
-- `app.current_role` — the caller's role (Admin, Director, Analyst, etc.)
-- `app.current_pii_tier` — what level of PII the caller can access (1, 2, or 3)
+- `app.current_regions` - comma-separated list of regions the caller can see
+- `app.current_role` - the caller's role (Admin, Director, Analyst, etc.)
+- `app.current_pii_tier` - what level of PII the caller can access (1, 2, or 3)
 
 The hub's managed identity has no region claim, no role beyond `Analytics.Read`, and no PII tier. If the hub calls UDAP with its own token:
-- Queries return zero rows (not an error — just empty results)
+- Queries return zero rows (not an error - just empty results)
 - The connection appears to work
 - The data is silently wrong
 - This is harder to diagnose than a connection failure
@@ -149,7 +149,7 @@ The hub's managed identity has no region claim, no role beyond `Analytics.Read`,
 
 - **MCP endpoint:** Will be built at `POST /mcp` (does not exist yet)
 - **Feature gate:** `MCP_ENABLED=true`, `MCP_SERVER_EXPOSE=true` (will be added)
-- **Auth:** Will use Entra ID M2M bearer token with `MCP.Read`, `MCP.Write` (currently uses demo session auth — must be replaced first)
+- **Auth:** Will use Entra ID M2M bearer token with `MCP.Read`, `MCP.Write` (currently uses demo session auth - must be replaced first)
 - **Tools:** 3 planned (`trial_get_case_status`, `trial_analyze_case`, `trial_list_cases`)
 - **Capability categories:** `litigation`, `document_storage`
 - **Events:** None planned
@@ -158,7 +158,7 @@ The hub's managed identity has no region claim, no role beyond `Analytics.Read`,
 1. Production authentication (replace demo login with Entra ID Government OIDC)
 2. An MCP server endpoint exposing its AI analysis tools
 
-Both are being handled separately (see the implementation prompts document). The hub team does not need to build anything special for OGC Trial Tool — it registers and connects the same way as every other spoke. But do not attempt to connect it until the auth and MCP server work is done.
+Both are being handled separately (see the implementation prompts document). The hub team does not need to build anything special for OGC Trial Tool - it registers and connects the same way as every other spoke. But do not attempt to connect it until the auth and MCP server work is done.
 
 **What the hub needs to provide to OGC Trial Tool before connecting:**
 1. Hub's managed identity granted `MCP.Read` and `MCP.Write` on Trial Tool's app registration
@@ -262,15 +262,15 @@ Spokes register themselves with the hub at startup. You need a registration endp
 Store registrations in Azure Table Storage. The hub should survive restarts without requiring all spokes to re-register.
 
 **Endpoints:**
-- `POST /api/v1/spokes/register` — register or update a spoke
-- `GET /api/v1/spokes` — list all registered spokes with health status
-- `DELETE /api/v1/spokes/{name}` — deregister a spoke
+- `POST /api/v1/spokes/register` - register or update a spoke
+- `GET /api/v1/spokes` - list all registered spokes with health status
+- `DELETE /api/v1/spokes/{name}` - deregister a spoke
 
-**Health checking:** Every 60 seconds, call each spoke's health endpoint. Track status (healthy, degraded, unreachable). Do not remove unreachable spokes automatically — just mark them and exclude their tools from the catalog until they recover.
+**Health checking:** Every 60 seconds, call each spoke's health endpoint. Track status (healthy, degraded, unreachable). Do not remove unreachable spokes automatically - just mark them and exclude their tools from the catalog until they recover.
 
 ### 2. Tool Registry and Reconciliation
 
-The hub maintains a merged tool catalog from all spokes. This is the most important piece of the hub — it is what AI consumers interact with.
+The hub maintains a merged tool catalog from all spokes. This is the most important piece of the hub - it is what AI consumers interact with.
 
 **How it works:**
 
@@ -287,7 +287,7 @@ Example filtering:
 - `categories=["litigation"]` → OGC Trial Tool + ARC litigation tools (~5 tools)
 - No categories parameter → all tools (use sparingly)
 
-**Handling dynamic catalogs (UDAP):** The reconciliation loop must handle tools that appear or disappear between cycles. When a tool was in the catalog last cycle but is not in this cycle's `tools/list` response, remove it. When a new tool appears, add it. Do not cache tool catalogs across hub restarts — always reconcile from spokes on startup.
+**Handling dynamic catalogs (UDAP):** The reconciliation loop must handle tools that appear or disappear between cycles. When a tool was in the catalog last cycle but is not in this cycle's `tools/list` response, remove it. When a new tool appears, add it. Do not cache tool catalogs across hub restarts - always reconcile from spokes on startup.
 
 **Naming collisions:** If two spokes register tools with the same name, prefix with the spoke name. For example, both ADR and Triage have a tool called `list_cases`. In the merged catalog, these become `adr.list_cases` and `ofs-triage.list_cases`. Apply this prefixing to all tools to avoid ambiguity.
 
@@ -315,7 +315,7 @@ When an AI consumer calls `tools/call` on the hub, the hub must:
 
 ### 4. Event Ingestion and Forwarding
 
-The hub accepts events from spokes and the ARC Integration API, validates them, and optionally forwards them to interested subscribers. These events are for inter-spoke notifications (e.g., ADR needs to know when a case status changes in ARC). This is separate from the WAL/CDC pipeline that feeds UDAP — UDAP gets its data independently via PostgreSQL logical replication through the Data Middleware, not through the hub's event system.
+The hub accepts events from spokes and the ARC Integration API, validates them, and optionally forwards them to interested subscribers. These events are for inter-spoke notifications (e.g., ADR needs to know when a case status changes in ARC). This is separate from the WAL/CDC pipeline that feeds UDAP - UDAP gets its data independently via PostgreSQL logical replication through the Data Middleware, not through the hub's event system.
 
 **Ingestion endpoint:** `POST /api/v1/events`
 
@@ -352,7 +352,7 @@ The hub accepts events from spokes and the ARC Integration API, validates them, 
 | ARC Integration API | `case.created` | ADR |
 | ARC Integration API | `case.closed` | ADR |
 | ARC Integration API | `case.staff_assigned` | ADR |
-| ADR | `case.closed` | (log only — no subscribers initially) |
+| ADR | `case.closed` | (log only - no subscribers initially) |
 | ADR | `case.reassigned` | (log only) |
 
 UDAP does not subscribe to real-time events. It uses watermark-based batch sync on its own schedule.
@@ -362,8 +362,8 @@ UDAP does not subscribe to real-time events. It uses watermark-based batch sync 
 Every tool invocation and every event must be logged to an immutable audit trail.
 
 **Storage:** Two targets (dual-write, same pattern as ADR and Triage):
-1. Azure Table Storage (`hubauditlog` table) — structured fields, truncated to 32 KB per property
-2. Azure Blob Storage (`hub-audit-archive` container) — full JSON, WORM policy with 2555-day retention
+1. Azure Table Storage (`hubauditlog` table) - structured fields, truncated to 32 KB per property
+2. Azure Blob Storage (`hub-audit-archive` container) - full JSON, WORM policy with 2555-day retention
 
 **Fields per audit record:**
 
@@ -415,9 +415,9 @@ Every tool invocation and every event must be logged to an immutable audit trail
 
 Three health endpoints:
 
-- `GET /healthz` — liveness probe. Returns 200 if the process is running. No dependency checks.
-- `GET /readyz` — readiness probe. Returns 200 if the hub can reach its dependencies (Table Storage, Key Vault). Returns 503 if not.
-- `GET /api/v1/health` — detailed health for operators. Returns per-spoke health status, tool counts, last reconciliation time, event ingestion status.
+- `GET /healthz` - liveness probe. Returns 200 if the process is running. No dependency checks.
+- `GET /readyz` - readiness probe. Returns 200 if the hub can reach its dependencies (Table Storage, Key Vault). Returns 503 if not.
+- `GET /api/v1/health` - detailed health for operators. Returns per-spoke health status, tool counts, last reconciliation time, event ingestion status.
 
 ---
 
@@ -431,7 +431,7 @@ Do not connect all five spokes at once. Follow this sequence:
 | 2 | ARC Integration API (as first spoke) | Write-back tools and targeted read tools return correct data. Event forwarding from Service Bus works. Audit records are being written. Note: UDAP data currency is handled by the WAL/CDC pipeline, not this spoke |
 | 3 | ADR | All 10 tools callable. Events round-trip (ADR -> hub -> audit). Audit correlation (request_id) verified in both hub and ADR audit tables |
 | 4 | OFS Triage | Read tools return live data. Async submit_case pattern is documented or wrapped. Charge metadata auto-population working through ARC spoke |
-| 5 | UDAP (after token delegation is resolved) | OBO token returns correct regional data. Dynamic tool catalog reconciles cleanly. Empty results confirmed to be a scoping issue, not a bug. Verify UDAP's WAL/CDC pipeline is populating data independently — the hub routes queries TO UDAP but does not feed data INTO UDAP |
+| 5 | UDAP (after token delegation is resolved) | OBO token returns correct regional data. Dynamic tool catalog reconciles cleanly. Empty results confirmed to be a scoping issue, not a bug. Verify UDAP's WAL/CDC pipeline is populating data independently - the hub routes queries TO UDAP but does not feed data INTO UDAP |
 | 6 | OGC Trial Tool (after auth replacement is done) | Entra ID auth is live. MCP server responds. Litigation data flows from ARC spoke through hub to trial tool |
 | 7 | Cross-spoke verification | An AI query that touches two or more spokes returns a correct combined result |
 
@@ -498,7 +498,7 @@ Before declaring each phase complete, verify these:
 - [ ] HMAC validation rejects events with wrong signature
 - [ ] HMAC validation accepts events with correct signature
 - [ ] Audit records appear in both Table Storage and Blob archive
-- [ ] Blob archive container has WORM policy enforced (try to delete a blob — it should fail)
+- [ ] Blob archive container has WORM policy enforced (try to delete a blob - it should fail)
 
 ### ARC Integration API Connection (Phase 2-3)
 - [ ] `tools/list` returns 11 ARC tools

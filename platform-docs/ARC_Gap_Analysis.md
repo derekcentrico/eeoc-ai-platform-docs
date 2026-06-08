@@ -1,7 +1,7 @@
 # ARC Source Repository Gap Analysis
 **Author:** Derek Gordon
 
-## Data and AI Enterprise System (DAES) — ARC Integration Coverage
+## Data and AI Enterprise System (DAES) - ARC Integration Coverage
 
 ---
 
@@ -31,7 +31,7 @@ recommends specific changes.
 
 ## 3. Current Integration Surface
 
-### 3.1 PrepaClient — PrEPA Endpoints Currently Wired
+### 3.1 PrepaClient - PrEPA Endpoints Currently Wired
 
 | Method | PrEPA Path | Consumer |
 |---|---|---|
@@ -54,7 +54,7 @@ recommends specific changes.
 | `patch_charge` | PATCH /charges/{num} | Triage |
 | `trigger_nrts` | POST /charges/{num}/nrts | Triage |
 
-### 3.2 FepaClient — FEPA Gateway Endpoints Currently Wired
+### 3.2 FepaClient - FEPA Gateway Endpoints Currently Wired
 
 | Method | Gateway Path | Consumer |
 |---|---|---|
@@ -63,7 +63,7 @@ recommends specific changes.
 | `get_case_documents` | GET /fepagateway/v1/documents/{num} | ADR Portal, OGC |
 | `get_document` | GET /fepagateway/v1/documents/download/{id} | ADR Portal, OGC |
 
-### 3.3 Data Middleware — CDC/Source Mappings
+### 3.3 Data Middleware - CDC/Source Mappings
 
 | YAML File | Source Table | Target Table |
 |---|---|---|
@@ -94,7 +94,7 @@ recommends specific changes.
 
 ## 4. ARC Repository Inventory
 
-### 4.1 PrEPAWebService-ims-aks-test (Primary — ~280 endpoints)
+### 4.1 PrEPAWebService-ims-aks-test (Primary - ~280 endpoints)
 
 The main charge processing service. Our integration covers mediation, basic case CRUD,
 allegations (read), events (write), documents, and a few reference endpoints. The
@@ -107,7 +107,7 @@ following endpoint groups exist in source but are not wired:
 | FEPA Credit | ~16 | Credit requests, responses, SWR (Statement of Work Release), beneficiary management, acknowledgments |
 | Dual Filing/Deferral | ~12 | Deferral info, office notifications/acknowledgments, case cloning, receiving office management |
 | Systemic Cases | ~18 | Systemic case CRUD, related charges, subscriptions, notes, search criteria |
-| Case Notes | ~12 | Particular notes, mediation notes, general notes — CRUD plus amend |
+| Case Notes | ~12 | Particular notes, mediation notes, general notes - CRUD plus amend |
 | Case Review | ~6 | Review assignments, approvals, review types |
 | Transfer | ~3 | Transfer requests, actions, transfer list |
 | Suspension | ~7 | Create, update, remove, reasons lookup, case age |
@@ -195,16 +195,16 @@ covers only SBI combinations, document types, and document retrieval.
 | fepagateway | `http://fepagateway/gateway` | 8080 | ~10 |
 | authsvc | `http://authsvc/oauth` | 9000 | ~5 |
 | ecmsvc | `http://ecmsvc/ecm` | 9000 | ~7 |
-| emailws | `http://emailws/ews/v2` | 9000 | — |
-| searchdataws | `http://searchdataws/searchws` | 9000 | — |
+| emailws | `http://emailws/ews/v2` | 9000 | - |
+| searchdataws | `http://searchdataws/searchws` | 9000 | - |
 | federalws | `http://federalws/federalws` | 9000 | ~5 |
 | litigation | `http://litigation/litigation` | 9000 | ~3 |
-| contentgen | `http://contentgen/content-generator` | 9000 | — |
-| templatemgmtws | `http://templatemgmtws/tms/v1` | 9000 | — |
-| usermgmtws | `http://usermgmtws/UserManagement` | 9000 | — |
-| employerws | `http://employerws/empdb` | — | — |
+| contentgen | `http://contentgen/content-generator` | 9000 | - |
+| templatemgmtws | `http://templatemgmtws/tms/v1` | 9000 | - |
+| usermgmtws | `http://usermgmtws/UserManagement` | 9000 | - |
+| employerws | `http://employerws/empdb` | - | - |
 | imsnxgng | `http://imsnxgng/` | 80 | ~3 |
-| respondentportal | redirect to `/rsp` | 80 | — |
+| respondentportal | redirect to `/rsp` | 80 | - |
 
 **Azure Service Bus Topics** (from `service_bus.tf`):
 
@@ -224,12 +224,12 @@ covers only SBI combinations, document types, and document retrieval.
 
 | # | Gap Type | ARC Resource | Endpoints | Affected Repos | Priority | Rationale |
 |---|---|---|---|---|---|---|
-| P-01 | New endpoint group | Enforcement — position statements, fact-finding, subpoenas | ~12 | arc-integration-api, ogc-trialtool, analytics | **High** | OGC TrialTool needs enforcement activity data for trial preparation; analytics needs investigation metrics |
-| P-02 | New endpoint group | Enforcement — conciliation | ~4 | arc-integration-api, ofs-adr, analytics | **High** | Conciliation follows mediation; ADR and analytics need resolution outcome data |
-| P-03 | New endpoint group | Enforcement — conferences | ~4 | arc-integration-api, ogc-trialtool, analytics | **Medium** | Conference scheduling supports investigation workflow |
-| P-04 | New endpoint group | Closure — allegation-level close and benefit-groups | ~10 | arc-integration-api, ofs-adr, analytics | **High** | ADR posts high-level close but cannot close individual allegations or manage benefit groups per allegation |
-| P-05 | New endpoint group | Closure — NRTS document generation | ~2 | arc-integration-api, ofs-triage | **High** | Triage triggers NRTS via `trigger_nrts` but cannot generate the actual NRTS document; ARC's `/closure/generation-of-nrts` does this |
-| P-06 | New endpoint group | Closure — reason codes and admin reasons | ~4 | arc-integration-api, analytics | **Medium** | Reference data for closure types; enriches analytics closure breakdowns |
+| P-01 | New endpoint group | Enforcement - position statements, fact-finding, subpoenas | ~12 | arc-integration-api, ogc-trialtool, analytics | **High** | OGC TrialTool needs enforcement activity data for trial preparation; analytics needs investigation metrics |
+| P-02 | New endpoint group | Enforcement - conciliation | ~4 | arc-integration-api, ofs-adr, analytics | **High** | Conciliation follows mediation; ADR and analytics need resolution outcome data |
+| P-03 | New endpoint group | Enforcement - conferences | ~4 | arc-integration-api, ogc-trialtool, analytics | **Medium** | Conference scheduling supports investigation workflow |
+| P-04 | New endpoint group | Closure - allegation-level close and benefit-groups | ~10 | arc-integration-api, ofs-adr, analytics | **High** | ADR posts high-level close but cannot close individual allegations or manage benefit groups per allegation |
+| P-05 | New endpoint group | Closure - NRTS document generation | ~2 | arc-integration-api, ofs-triage | **High** | Triage triggers NRTS via `trigger_nrts` but cannot generate the actual NRTS document; ARC's `/closure/generation-of-nrts` does this |
+| P-06 | New endpoint group | Closure - reason codes and admin reasons | ~4 | arc-integration-api, analytics | **Medium** | Reference data for closure types; enriches analytics closure breakdowns |
 | P-07 | New endpoint group | FEPA credit request/response | ~16 | arc-integration-api, analytics | **Medium** | Cross-agency credit tracking not surfaced in platform; relevant for FEPA coordination analytics |
 | P-08 | New endpoint group | Dual filing/deferral | ~12 | arc-integration-api, analytics | **Medium** | Dual-filing workflow between EEOC and FEPAs; needed for accurate charge counts and jurisdiction analytics |
 | P-09 | New endpoint group | Systemic cases | ~18 | arc-integration-api, analytics, mcp-hub | **High** | Systemic investigations (multi-charge, multi-employer) are a core EEOC function; zero visibility in platform |
@@ -271,20 +271,20 @@ covers only SBI combinations, document types, and document retrieval.
 
 | # | Gap Type | ARC Service | Affected Repos | Priority | Rationale |
 |---|---|---|---|---|---|
-| S-01 | Missing service | FederalWebService — federal sector case handling | arc-integration-api, ofs-triage, analytics | **High** | Federal sector charges (~40% of EEOC caseload) use different workflows; Triage classifies both sectors but lacks federal data paths |
-| S-02 | Missing service | FederalHearings — hearing scheduling and management | arc-integration-api, analytics | **High** | Federal hearings are a distinct EEOC function; zero visibility in analytics |
-| S-03 | Missing service | FedSep-NG — federal sector separation process | arc-integration-api | **Medium** | Federal employee separation proceedings; active development |
-| S-04 | Missing service | IntakeCollectionsService — online intake workflows | arc-integration-api, ofs-triage | **Medium** | Intake events could feed Triage earlier in the lifecycle |
-| S-05 | Missing service | ContentGeneratorWebService — document generation | arc-integration-api, ofs-adr | **Medium** | Centralized document generation; ADR could request agreement documents |
-| S-06 | Missing service | EmployerWebService — employer data (EEO-1, matching) | arc-integration-api, analytics | **Medium** | EEO-1 employer data, NAICS resolution, employer matching scores |
-| S-07 | Missing service | SearchDataWebService — Elasticsearch search | arc-integration-api, mcp-hub | **Medium** | Full-text search across ARC data; could power MCP search tool |
-| S-08 | Missing service | EmailWebService — email delivery | arc-integration-api | **Low** | Transactional email; apps have their own email via Azure |
-| S-09 | Missing service | TemplateMangementWebService — templates | arc-integration-api | **Low** | Template CRUD; internal ARC concern |
-| S-10 | Missing service | ECMService — Alfresco ECM | arc-integration-api | **Low** | Direct ECM access; we proxy through PrEPA/Gateway |
-| S-11 | Missing service | AuthorizationService — RBAC | arc-integration-api | **Low** | ARC's internal RBAC; we use Entra ID roles |
-| S-12 | Missing service | ImsNXG-NG — next-gen case management | arc-integration-api | **Low** | Appears to be ARC's replacement UI; overlaps with PrEPA data |
-| S-13 | Missing service | EEOCWebService — core service | arc-integration-api | **Low** | Legacy service layer; functionality available through PrEPA |
-| S-14 | Missing service | LitigationWebService — 17 JPA entities (LitigationCase, LitigationAllegation, LitigationAssignment, LitigationBenefit, LitigationDefendantAssc, LitigationChargeAssc, etc.) but controller has zero active endpoints. Entities define schema for `litigation_case`, `litigation_allegation`, `litigation_assignment`, `litigation_benefit`, `litigation_benefit_detail` tables | arc-integration-api, ogc-trialtool | **Medium** | Rich data model exists but no REST surface yet; OGC reads from PrEPA generic case endpoint. When ARC activates these endpoints, we need a LitigationClient |
+| S-01 | Missing service | FederalWebService - federal sector case handling | arc-integration-api, ofs-triage, analytics | **High** | Federal sector charges (~40% of EEOC caseload) use different workflows; Triage classifies both sectors but lacks federal data paths |
+| S-02 | Missing service | FederalHearings - hearing scheduling and management | arc-integration-api, analytics | **High** | Federal hearings are a distinct EEOC function; zero visibility in analytics |
+| S-03 | Missing service | FedSep-NG - federal sector separation process | arc-integration-api | **Medium** | Federal employee separation proceedings; active development |
+| S-04 | Missing service | IntakeCollectionsService - online intake workflows | arc-integration-api, ofs-triage | **Medium** | Intake events could feed Triage earlier in the lifecycle |
+| S-05 | Missing service | ContentGeneratorWebService - document generation | arc-integration-api, ofs-adr | **Medium** | Centralized document generation; ADR could request agreement documents |
+| S-06 | Missing service | EmployerWebService - employer data (EEO-1, matching) | arc-integration-api, analytics | **Medium** | EEO-1 employer data, NAICS resolution, employer matching scores |
+| S-07 | Missing service | SearchDataWebService - Elasticsearch search | arc-integration-api, mcp-hub | **Medium** | Full-text search across ARC data; could power MCP search tool |
+| S-08 | Missing service | EmailWebService - email delivery | arc-integration-api | **Low** | Transactional email; apps have their own email via Azure |
+| S-09 | Missing service | TemplateMangementWebService - templates | arc-integration-api | **Low** | Template CRUD; internal ARC concern |
+| S-10 | Missing service | ECMService - Alfresco ECM | arc-integration-api | **Low** | Direct ECM access; we proxy through PrEPA/Gateway |
+| S-11 | Missing service | AuthorizationService - RBAC | arc-integration-api | **Low** | ARC's internal RBAC; we use Entra ID roles |
+| S-12 | Missing service | ImsNXG-NG - next-gen case management | arc-integration-api | **Low** | Appears to be ARC's replacement UI; overlaps with PrEPA data |
+| S-13 | Missing service | EEOCWebService - core service | arc-integration-api | **Low** | Legacy service layer; functionality available through PrEPA |
+| S-14 | Missing service | LitigationWebService - 17 JPA entities (LitigationCase, LitigationAllegation, LitigationAssignment, LitigationBenefit, LitigationDefendantAssc, LitigationChargeAssc, etc.) but controller has zero active endpoints. Entities define schema for `litigation_case`, `litigation_allegation`, `litigation_assignment`, `litigation_benefit`, `litigation_benefit_detail` tables | arc-integration-api, ogc-trialtool | **Medium** | Rich data model exists but no REST surface yet; OGC reads from PrEPA generic case endpoint. When ARC activates these endpoints, we need a LitigationClient |
 
 ### 5.4 Data Middleware Gaps
 
@@ -293,7 +293,7 @@ FK resolution in these mappings are loaded (shared_basis, shared_issue,
 shared_statute, shared_code, charge_event_code, shared_document_type,
 shared_valid_sbi_comb, hearing_event_code, hearing_shared_doc_type,
 hearing_shared_office_info, user_detail). Source: Shakil Aryal, ARC/IMS team.
-The gaps below are unmapped *entity* tables — the YAML mapping files need
+The gaps below are unmapped *entity* tables - the YAML mapping files need
 to be written, but the lookup data they depend on is available.
 
 | # | Gap Type | Source Entity | Target Table (proposed) | Priority | Rationale |
@@ -315,14 +315,14 @@ to be written, but the lookup data they depend on is available.
 
 | # | Gap Type | Proposed Tool | Priority | Rationale |
 |---|---|---|---|---|
-| M-01 | Missing tool | `arc_get_enforcement_status` — read enforcement activity | **High** | OGC and Triage need enforcement context |
-| M-02 | Missing tool | `arc_get_systemic_cases` — search/read systemic investigations | **Medium** | Cross-charge pattern detection |
-| M-03 | Missing tool | `arc_get_case_notes` — read case notes | **Medium** | AI summarization of case notes |
-| M-04 | Missing tool | `arc_get_closure_reasons` — reference data | **Medium** | Enriches AI classification context |
-| M-05 | Missing tool | `arc_get_suspension_status` — check if case suspended | **Medium** | Prevents acting on suspended cases |
-| M-06 | Missing tool | `arc_search_elasticsearch` — full-text search | **Medium** | More powerful search than current PrEPA search |
-| M-07 | Missing tool | `arc_get_court_hearings` — litigation schedule | **Medium** | OGC trial preparation |
-| M-08 | Missing tool | `arc_get_federal_hearing` — federal hearing data | **High** | Federal sector case handling |
+| M-01 | Missing tool | `arc_get_enforcement_status` - read enforcement activity | **High** | OGC and Triage need enforcement context |
+| M-02 | Missing tool | `arc_get_systemic_cases` - search/read systemic investigations | **Medium** | Cross-charge pattern detection |
+| M-03 | Missing tool | `arc_get_case_notes` - read case notes | **Medium** | AI summarization of case notes |
+| M-04 | Missing tool | `arc_get_closure_reasons` - reference data | **Medium** | Enriches AI classification context |
+| M-05 | Missing tool | `arc_get_suspension_status` - check if case suspended | **Medium** | Prevents acting on suspended cases |
+| M-06 | Missing tool | `arc_search_elasticsearch` - full-text search | **Medium** | More powerful search than current PrEPA search |
+| M-07 | Missing tool | `arc_get_court_hearings` - litigation schedule | **Medium** | OGC trial preparation |
+| M-08 | Missing tool | `arc_get_federal_hearing` - federal hearing data | **High** | Federal sector case handling |
 
 ### 5.6 Event Subscription Gaps
 
@@ -350,11 +350,11 @@ The ARC Service Bus has three topics that the AI Platform does not subscribe to:
 
 ## 6. Recommended Changes
 
-### 6.1 High Priority — Blocks Data Flow or Compliance
+### 6.1 High Priority - Blocks Data Flow or Compliance
 
 #### 6.1.1 Enforcement Data Integration (P-01, P-02, D-02, D-03, M-01, F-01)
 
-**arc-integration-api — new service client methods:**
+**arc-integration-api - new service client methods:**
 
 ```
 # PrepaClient additions
@@ -370,13 +370,13 @@ async def get_conciliation(case_id: str) -> dict
     # GET /v1/cases/{caseId}/enforcement/conciliation
 ```
 
-**New router:** `app/routers/enforcement.py` — exposes enforcement data to OGC TrialTool and analytics.
+**New router:** `app/routers/enforcement.py` - exposes enforcement data to OGC TrialTool and analytics.
 
-**data-middleware — new YAML mappings:**
-- `source_mappings/prepa_conciliation.yaml` — conciliation outcomes to `analytics.conciliations`
-- `source_mappings/prepa_benefits.yaml` — benefit/remedy detail to `analytics.benefits`
+**data-middleware - new YAML mappings:**
+- `source_mappings/prepa_conciliation.yaml` - conciliation outcomes to `analytics.conciliations`
+- `source_mappings/prepa_benefits.yaml` - benefit/remedy detail to `analytics.benefits`
 
-**MCP Hub — new tool:** `arc_get_enforcement_status`
+**MCP Hub - new tool:** `arc_get_enforcement_status`
 
 #### 6.1.2 Federal Sector Integration (S-01, S-02, M-08, F-02)
 
@@ -384,7 +384,7 @@ FederalHearings has 26 REST controllers and 38 JPA entities (schema `fed_hearing
 
 FederalWebService bridges to legacy IMS with hearing/appeal CRUD and PDF report generation.
 
-**arc-integration-api — new service clients:**
+**arc-integration-api - new service clients:**
 
 ```
 # New: FederalHearingsClient (services/federal_hearings_client.py)
@@ -406,7 +406,7 @@ class FederalHearingsClient:
         # GET /v1/common/lookup/domain/{domainName}
 ```
 
-**New router:** `app/routers/federal.py` — federal sector data for Triage and analytics.
+**New router:** `app/routers/federal.py` - federal sector data for Triage and analytics.
 
 **Config:** New `ARC_FEDERAL_HEARINGS_URL` setting (targets `http://federalws/federalws`). Feature flag `FEDERAL_SECTOR_ENABLED=false`.
 
@@ -414,7 +414,7 @@ class FederalHearingsClient:
 
 #### 6.1.3 Systemic Cases (P-09, M-02, F-03)
 
-**arc-integration-api — new service client methods:**
+**arc-integration-api - new service client methods:**
 
 ```
 # PrepaClient additions
@@ -428,11 +428,11 @@ async def get_systemic_case_charges(id: str) -> list[dict]
 
 **New router:** `app/routers/systemic.py`
 
-**MCP Hub — new tool:** `arc_get_systemic_cases`
+**MCP Hub - new tool:** `arc_get_systemic_cases`
 
 #### 6.1.4 Court Hearing Data for OGC (P-18)
 
-**arc-integration-api — new service client methods:**
+**arc-integration-api - new service client methods:**
 
 ```
 # PrepaClient additions
@@ -448,7 +448,7 @@ async def update_court_hearing(case_id: str, data: dict) -> dict
 
 #### 6.1.5 Allegation-Level Closure and Benefits (P-04, P-05)
 
-**arc-integration-api — PrepaClient additions:**
+**arc-integration-api - PrepaClient additions:**
 
 ```
 async def close_allegation(case_id: str, allegation_id: str, data: dict) -> dict
@@ -463,11 +463,11 @@ async def generate_nrts(case_id: str) -> dict
 
 **ADR Portal impact:** `ofs-adr` posts high-level closure but cannot manage allegation-level closures or structured benefit assignments. These endpoints complete the ADR closure workflow.
 
-### 6.2 Medium Priority — Enriches Existing Features
+### 6.2 Medium Priority - Enriches Existing Features
 
 #### 6.2.1 FEPA Credit and Dual Filing (P-07, P-08, F-04, F-05)
 
-**arc-integration-api — PrepaClient additions:**
+**arc-integration-api - PrepaClient additions:**
 
 ```
 async def get_credit_requests(case_id: str) -> list[dict]
@@ -480,7 +480,7 @@ async def get_deferral_info(case_id: str) -> dict
 
 #### 6.2.2 Case Notes Access (P-10, M-03)
 
-**arc-integration-api — PrepaClient additions:**
+**arc-integration-api - PrepaClient additions:**
 
 ```
 async def get_case_notes(case_id: str) -> list[dict]
@@ -489,13 +489,13 @@ async def get_mediation_notes(case_id: str) -> list[dict]
     # GET /v1/cases/{caseId}/notes/mediation
 ```
 
-**MCP Hub — new tool:** `arc_get_case_notes` — enables AI summarization of case history.
+**MCP Hub - new tool:** `arc_get_case_notes` - enables AI summarization of case history.
 
 **PII:** Notes contain PII. Must apply `_mask_pii()` before any AI processing or analytics storage.
 
 #### 6.2.3 Suspension Status (P-13, M-05, D-04)
 
-**arc-integration-api — PrepaClient additions:**
+**arc-integration-api - PrepaClient additions:**
 
 ```
 async def get_suspension(case_id: str) -> dict
@@ -508,7 +508,7 @@ async def get_suspension_reasons() -> list[dict]
 
 #### 6.2.4 Rich Office Reference Data (P-19)
 
-**arc-integration-api — PrepaClient additions:**
+**arc-integration-api - PrepaClient additions:**
 
 ```
 async def get_district_offices() -> list[dict]
@@ -521,13 +521,13 @@ async def get_office_locations() -> list[dict]
     # GET /v1/all/offices/location/details
 ```
 
-**Impact:** Replaces the static `lookups/district_offices.csv` and `lookups/region_codes.csv` with live ARC data. The office-to-region mapping gap is resolved — `shared_code` (1,360 rows across 74 domains) and `hearing_shared_office_info` (63 rows) were loaded from Shakil Aryal's ARC export (May 2026).
+**Impact:** Replaces the static `lookups/district_offices.csv` and `lookups/region_codes.csv` with live ARC data. The office-to-region mapping gap is resolved - `shared_code` (1,360 rows across 74 domains) and `hearing_shared_office_info` (63 rows) were loaded from Shakil Aryal's ARC export (May 2026).
 
 #### 6.2.5 Employer Data Enrichment (S-06, G-03, F-06)
 
 EmployerWebService has ~30 endpoints with PostgreSQL + Elasticsearch dual store. Key endpoints: NAICS code lookup (`/empdb/census/v1/naics/{code}`), employer search by name/zip/address (`/empdb/es/v2/employer/search`), fuzzy search (`/empdb/es/v1/employer/fuzzy/search`), EEO-1 data (`/empdb/es/v1/eeo/search`), and employer CRUD. Entity model includes `Employer` (with EIN, DUNS, CAGE, NAICS, employee count, franchise flag) and `EmployerContact`.
 
-**arc-integration-api — new client:**
+**arc-integration-api - new client:**
 
 ```
 # New: EmployerClient (services/employer_client.py)
@@ -545,11 +545,11 @@ class EmployerClient:
         # GET /empdb/es/v1/employer/eeo1/id?eeoSurveyIds={ids}
 ```
 
-**data-middleware:** Add `lookups/naics_codes.csv` from EmployerWebService bulk export or Census Bureau public data. NAICS codes are the only remaining enrichment not covered by the ARC reference table exports — all other reference data gaps (shared_code, shared_basis, shared_issue, shared_statute, charge_event_code, shared_document_type, shared_valid_sbi_comb, user_detail) are resolved.
+**data-middleware:** Add `lookups/naics_codes.csv` from EmployerWebService bulk export or Census Bureau public data. NAICS codes are the only remaining enrichment not covered by the ARC reference table exports - all other reference data gaps (shared_code, shared_basis, shared_issue, shared_statute, charge_event_code, shared_document_type, shared_valid_sbi_comb, user_detail) are resolved.
 
 #### 6.2.6 Closure Reason Reference Data (P-06, M-04)
 
-**arc-integration-api — PrepaClient additions:**
+**arc-integration-api - PrepaClient additions:**
 
 ```
 async def get_closure_reason_codes() -> list[dict]
@@ -564,7 +564,7 @@ async def get_adr_benefit_codes() -> list[dict]
 
 #### 6.2.7 Transfer Tracking (P-12, D-11)
 
-**arc-integration-api — PrepaClient additions:**
+**arc-integration-api - PrepaClient additions:**
 
 ```
 async def get_transfers() -> list[dict]
@@ -575,7 +575,7 @@ async def get_transfers() -> list[dict]
 
 #### 6.2.8 Charging Party Race (D-01)
 
-**data-middleware — new YAML:**
+**data-middleware - new YAML:**
 - `source_mappings/prepa_charging_party_race.yaml`
 
 ```yaml
@@ -605,7 +605,7 @@ columns:
 
 #### 6.2.9 SearchDataWebService Integration (S-07, M-06, F-07)
 
-**arc-integration-api — new client:**
+**arc-integration-api - new client:**
 
 ```
 # New: SearchClient (services/search_client.py)
@@ -615,7 +615,7 @@ class SearchClient:
 
 **Config:** New `ARC_SEARCH_URL` setting. Feature flag `SEARCH_ELASTICSEARCH_ENABLED=false`.
 
-**MCP Hub — new tool:** `arc_search_elasticsearch` — enables more powerful full-text search than current PrEPA `/cases/search`.
+**MCP Hub - new tool:** `arc_search_elasticsearch` - enables more powerful full-text search than current PrEPA `/cases/search`.
 
 #### 6.2.10 Litigation Service (S-14)
 
@@ -625,7 +625,7 @@ class SearchClient:
 
 ## 7. Implementation Phasing
 
-### Phase 1 — High Priority (Q3 2026)
+### Phase 1 - High Priority (Q3 2026)
 
 | Work Item | Gap IDs | Effort (est.) |
 |---|---|---|
@@ -635,7 +635,7 @@ class SearchClient:
 | Allegation-level closure and benefits | P-04, P-05 | 1 week |
 | Systemic cases | P-09, M-02, F-03 | 1 week |
 
-### Phase 2 — Medium Priority (Q4 2026)
+### Phase 2 - Medium Priority (Q4 2026)
 
 | Work Item | Gap IDs | Effort (est.) |
 |---|---|---|
@@ -649,7 +649,7 @@ class SearchClient:
 | Charging party race mapping | D-01 | 1 day |
 | Elasticsearch search | S-07, M-06, F-07 | 3 days |
 
-### Phase 3 — Low Priority (2027+)
+### Phase 3 - Low Priority (2027+)
 
 | Work Item | Gap IDs |
 |---|---|

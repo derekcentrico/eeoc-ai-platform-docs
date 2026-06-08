@@ -100,7 +100,7 @@ PgBouncer configuration for this workload:
 | max_client_conn | 3000 | Accept up to 3000 simultaneous client connections |
 | default_pool_size | 80 | 80 actual PostgreSQL connections per database |
 | reserve_pool_size | 20 | 20 extra connections for burst traffic |
-| max_db_connections | 100 | Hard cap — never exceed 100 connections to PostgreSQL |
+| max_db_connections | 100 | Hard cap - never exceed 100 connections to PostgreSQL |
 | server_idle_timeout | 300 | Close idle server connections after 5 minutes |
 | query_timeout | 30 | Kill queries exceeding 30 seconds |
 | client_idle_timeout | 600 | Disconnect idle clients after 10 minutes |

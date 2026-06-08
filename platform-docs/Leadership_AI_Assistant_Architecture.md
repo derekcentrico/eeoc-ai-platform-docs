@@ -1,4 +1,4 @@
-# Leadership AI Assistant — Functional Architecture
+# Leadership AI Assistant - Functional Architecture
 
 **Author:** Derek Gordon
 
@@ -19,7 +19,7 @@ from query results.
 | Constraint | Requirement |
 |---|---|
 | **User scale** | Up to 2,500 concurrent staff users |
-| **Data domains** | Extensible — HR, Financial, Production, ADR, Triage, Hearings, future |
+| **Data domains** | Extensible - HR, Financial, Production, ADR, Triage, Hearings, future |
 | **RBAC** | Row-level security per domain, enforced at query time |
 | **508 compliance** | All generated UI meets WCAG 2.1 AA out of the box |
 | **Dashboards** | Personal CRUD, sharing between colleagues, stable UX |
@@ -84,14 +84,14 @@ The current NL-to-SQL pipeline handles single-domain queries. Cross-domain quest
 (e.g., "production trend for staff rated 3 or below in the southwest region") require
 joining across domain schemas. The engine must:
 
-1. **Classify the query domains** — Identify which schemas are referenced (HR, production,
+1. **Classify the query domains** - Identify which schemas are referenced (HR, production,
    financial, etc.) from the natural language input.
-2. **Load domain-specific schema context** — Each domain publishes a schema descriptor
+2. **Load domain-specific schema context** - Each domain publishes a schema descriptor
    (tables, columns, relationships, join keys) via the dbt semantic layer manifest.
-3. **Generate cross-domain SQL** — When multiple domains are referenced, the model
+3. **Generate cross-domain SQL** - When multiple domains are referenced, the model
    receives join metadata (shared keys like `staff_id`, `office_code`, `region_code`)
    and generates the appropriate JOINs.
-4. **Validate and bound** — The existing `sql_validator.py` (sqlglot AST) validates the
+4. **Validate and bound** - The existing `sql_validator.py` (sqlglot AST) validates the
    generated SQL. Cross-domain queries are additionally bounded by:
    - Maximum 3 JOINs per query (configurable)
    - Row limit enforcement (10,000 default)
@@ -184,7 +184,7 @@ distinct data ownership and cross-office visibility needs:
 | **Commissioners** | Individual Commissioners + staff | Policy oversight, case review, all-office visibility (scoped) |
 | **OIG** | Office of Inspector General | Audits, investigations (separate authority) |
 
-### 4.2 Access Model — Three Dimensions
+### 4.2 Access Model - Three Dimensions
 
 Access is controlled across three independent axes. A user's effective permissions
 are the intersection of all three:
@@ -207,14 +207,14 @@ are the intersection of all three:
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**A. Role** — Determines capabilities (can query, can export, can share, can admin).
-**B. Data Domains** — Determines which schemas/tables are queryable.
-**C. Scope** — Determines which rows are visible within those tables (region, office, program).
+**A. Role** - Determines capabilities (can query, can export, can share, can admin).
+**B. Data Domains** - Determines which schemas/tables are queryable.
+**C. Scope** - Determines which rows are visible within those tables (region, office, program).
 
 ### 4.3 Cross-Office Query Eligibility
 
-The original query example — "24-month production trend for staff rated 3 or below
-in the southwest region of OFP" — requires access to both Production and HR domains.
+The original query example - "24-month production trend for staff rated 3 or below
+in the southwest region of OFP" - requires access to both Production and HR domains.
 Multiple offices legitimately need this cross-reference:
 
 | Requester | Why | Domains Needed | Scope |
@@ -290,7 +290,7 @@ handles *data access grants* (which domains, which scope).
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 4.6 Admin UX — Access Management
+### 4.6 Admin UX - Access Management
 
 The admin interface provides a single screen for managing user access. Designed for
 daily use by OCHCO administrators, office directors, or delegated access managers.
@@ -341,7 +341,7 @@ Select a domain → see all users who have access, filter by office/role:
 │                                                                         │
 │  Name              Office   Role      Scope         Granted By  Date    │
 │  ─────────────────────────────────────────────────────────────────────  │
-│  T. Williams       OCHCO    Admin     Agency-wide   System      —       │
+│  T. Williams       OCHCO    Admin     Agency-wide   System      -       │
 │  J. Smith          OFP      Director  SE, SW        T. Williams 04/15   │
 │  R. Chen           OCH      Director  Agency-wide   T. Williams 03/01   │
 │  M. Johnson        OFP-ATL  Analyst   Atlanta only  J. Smith    04/20   │
@@ -354,12 +354,12 @@ Select a domain → see all users who have access, filter by office/role:
 **4.6.3 Bulk Operations**
 
 For onboarding new offices or reorganizations:
-- **Grant domain to role** — "Give all Directors access to HR domain" (applies to
+- **Grant domain to role** - "Give all Directors access to HR domain" (applies to
   existing and future users with that role)
-- **Grant scope by office** — "All OFP staff can see Production data for their office"
-- **Time-limited grants** — "Commissioner staff get Financial access through Sept 30
+- **Grant scope by office** - "All OFP staff can see Production data for their office"
+- **Time-limited grants** - "Commissioner staff get Financial access through Sept 30
   for budget review" (auto-expires)
-- **CSV import** — Upload a spreadsheet of user → domain → scope mappings
+- **CSV import** - Upload a spreadsheet of user → domain → scope mappings
 
 **4.6.4 Delegation**
 
@@ -370,7 +370,7 @@ authority to manage access within their scope:
 |---|---|---|
 | Office Director (OFP) | Production domain, scoped to their region | HR, Financial, agency-wide scope |
 | OCHCO Director | HR domain, any scope | Financial, Production |
-| System Admin | Any domain, any scope | — |
+| System Admin | Any domain, any scope | - |
 
 Delegation rules are themselves stored as grants (grant_type: "delegation") and
 are audited identically.
@@ -425,7 +425,7 @@ def apply_rls(query: str, user: EffectiveAccess, domains: list[str]) -> str:
 ```
 
 Users with agency-wide scope (OCH, Commissioners with full access) have no
-region/office predicates injected — they see all rows within their granted domains.
+region/office predicates injected - they see all rows within their granted domains.
 
 ### 4.9 PII Tier per Domain
 
@@ -435,7 +435,7 @@ Each domain declares PII classification at the column level:
 |---|---|---|
 | 1 (public) | Aggregate counts, region-level stats | "150 charges filed in SW region" |
 | 2 (internal) | De-identified records, staff IDs without names | "Staff ID 4872 closed 23 cases" |
-| 3 (restricted) | Full PII — names, SSN fragments, party details | "Jane Doe, SSN ***-**-1234" |
+| 3 (restricted) | Full PII - names, SSN fragments, party details | "Jane Doe, SSN ***-**-1234" |
 
 ### 4.10 Access Audit Trail
 
@@ -462,12 +462,12 @@ Retention: 7 years (NARA). Queryable by OIG for compliance reviews.
 
 | Requirement | Implementation |
 |---|---|
-| Create personal dashboards | Existing — `POST /ai/dashboards` |
-| Add/remove panels | Existing — `POST /ai/dashboards/<id>/panels`, `DELETE` |
-| Edit panel arrangement | **New** — drag-and-drop reorder, resize within 12-col grid |
-| Rename/describe dashboards | Existing — `PUT /ai/dashboards/<id>` |
-| Delete dashboards | Existing — `DELETE /ai/dashboards/<id>` |
-| Share with colleagues | **New** — share link with viewer/editor permission |
+| Create personal dashboards | Existing - `POST /ai/dashboards` |
+| Add/remove panels | Existing - `POST /ai/dashboards/<id>/panels`, `DELETE` |
+| Edit panel arrangement | **New** - drag-and-drop reorder, resize within 12-col grid |
+| Rename/describe dashboards | Existing - `PUT /ai/dashboards/<id>` |
+| Delete dashboards | Existing - `DELETE /ai/dashboards/<id>` |
+| Share with colleagues | **New** - share link with viewer/editor permission |
 | 508 compliance | Existing charts use Vega-Lite `description` field; grid layout uses semantic HTML |
 | Stable UX | Pre-built widget library, not arbitrary AI-generated HTML |
 
@@ -517,7 +517,7 @@ partitions:
    own PartitionKey, then fetches full dashboard from `aidashboards` by ID.
 3. **Permissions** → `view` (read-only render) or `edit` (can add/remove/reorder panels).
 4. **Revocation** → Owner deletes the share entry. Immediate effect.
-5. **RBAC enforcement** — When a shared dashboard refreshes, the *viewer's* RBAC
+5. **RBAC enforcement** - When a shared dashboard refreshes, the *viewer's* RBAC
    context is applied to the query. If the viewer lacks access to a domain, that
    panel shows "Insufficient permissions" rather than data.
 
@@ -532,9 +532,9 @@ The frontend uses a 12-column CSS Grid with drag handles for repositioning:
 - **Add from conversation**: "Pin to dashboard" action on any AI-generated chart
 
 All layout changes persist immediately via `PUT /ai/dashboards/<id>` with the
-updated positions array. No save button — changes auto-persist on drop/resize end.
+updated positions array. No save button - changes auto-persist on drop/resize end.
 
-### 5.5 508 Compliance — Dashboard Rendering
+### 5.5 508 Compliance - Dashboard Rendering
 
 | Element | Accessibility Pattern |
 |---|---|
@@ -677,30 +677,30 @@ tables:
 
 ### 7.1 Execution Steps
 
-1. **Input** — User submits natural language query via chat interface.
-2. **Domain classification** — GPT-4o classifies which domains are referenced.
+1. **Input** - User submits natural language query via chat interface.
+2. **Domain classification** - GPT-4o classifies which domains are referenced.
    Model receives the domain registry catalog (names + descriptions only, not
    full schemas) to make this determination.
-3. **Access check** — Verify user has the required `UDAP-Domain-*` group for
+3. **Access check** - Verify user has the required `UDAP-Domain-*` group for
    each referenced domain. Reject with explanation if not.
-4. **Schema loading** — Load full schema context (tables, columns, types,
+4. **Schema loading** - Load full schema context (tables, columns, types,
    descriptions, join keys) for the classified domains only. This bounds the
-   token cost — loading all domains for every query would exceed context limits
+   token cost - loading all domains for every query would exceed context limits
    as domains grow.
-5. **SQL generation** — GPT-4o generates SQL with explicit JOINs using the
+5. **SQL generation** - GPT-4o generates SQL with explicit JOINs using the
    declared join keys from the domain registry.
-6. **Validation** — sqlglot AST validation (existing). Additional checks:
+6. **Validation** - sqlglot AST validation (existing). Additional checks:
    - All referenced tables belong to the classified domains
    - JOIN keys match the declared relationships
    - No cross-domain JOINs on undeclared keys
-7. **RLS injection** — Domain-specific predicates injected per the user's
+7. **RLS injection** - Domain-specific predicates injected per the user's
    regions, office, and PII tier.
-8. **Execution** — Query runs against PostgreSQL with 20s timeout.
-9. **Response generation** — Results formatted as:
+8. **Execution** - Query runs against PostgreSQL with 20s timeout.
+9. **Response generation** - Results formatted as:
    - Prose summary (natural language answer)
    - Chart (Vega-Lite spec if data is visual)
    - Data table (if user requests raw data)
-10. **Audit** — Query, result row count, domains accessed, and user context
+10. **Audit** - Query, result row count, domains accessed, and user context
     logged with HMAC signature to WORM storage.
 
 ### 7.2 Performance at Scale (2,500 Users)
@@ -721,7 +721,7 @@ tables:
 
 | Attribute | Value |
 |---|---|
-| **Source system** | TBD — NFC extract, USA Performance, or eOPF |
+| **Source system** | TBD - NFC extract, USA Performance, or eOPF |
 | **Key entities** | Staff roster, performance ratings, org assignments, position history |
 | **Join keys** | `staff_id` → `production.staff_assignments.staff_id`, `office_code` → all domains |
 | **RLS columns** | `region_code`, `office_code`, `supervisory_chain` |
@@ -739,7 +739,7 @@ tables:
 
 | Attribute | Value |
 |---|---|
-| **Source system** | TBD — Oracle Federal Financials, Pegasys, or manual extract |
+| **Source system** | TBD - Oracle Federal Financials, Pegasys, or manual extract |
 | **Key entities** | Budget allocations, obligations, expenditures, contracts, travel |
 | **Join keys** | `office_code`, `program_code`, `fiscal_year` |
 | **RLS columns** | `region_code`, `office_code` |
@@ -766,7 +766,7 @@ tables:
 
 ## 9. Implementation Phases
 
-### Phase 1 — Access Management + Dashboard Enhancement
+### Phase 1 - Access Management + Dashboard Enhancement
 
 **1A. Admin Access UX**
 - Access grant store (`udap_access_grants` Azure Table Storage table)
@@ -785,7 +785,7 @@ tables:
 **Infrastructure:** Uses existing Azure Table Storage, existing Flask routes,
 existing Redis sessions. Adds one new blueprint (`admin_bp`) and one new table.
 
-### Phase 2 — Multi-Domain Query Engine
+### Phase 2 - Multi-Domain Query Engine
 
 - Implement domain registry (`domain_registry/` YAML files)
 - Add domain classifier to chat pipeline (pre-SQL-generation step)
@@ -797,7 +797,7 @@ existing Redis sessions. Adds one new blueprint (`admin_bp`) and one new table.
 **Infrastructure:** No new services. Extends existing `chat.py` pipeline and
 `data_access.py` executor.
 
-### Phase 3 — HR Domain Onboarding
+### Phase 3 - HR Domain Onboarding
 
 - Confirm source system with OCHCO (NFC, USA Performance, or eOPF)
 - Write YAML mapping(s) for staff roster, performance ratings, org structure
@@ -808,21 +808,21 @@ existing Redis sessions. Adds one new blueprint (`admin_bp`) and one new table.
   get HR scoped to their region; OCH gets agency-wide
 - Validate end-to-end: NL query → domain classify → SQL → RLS → result
 
-### Phase 4 — Financial Domain Onboarding
+### Phase 4 - Financial Domain Onboarding
 
 - Same pattern as Phase 3 with CFO source system
 - Cross-domain queries now span Production + HR + Financial
 - Default grants: OCFO staff get Financial domain; directors get Financial scoped
   to their region; OCH gets agency-wide
 
-### Phase 5 — Remaining Domains (as source systems are confirmed)
+### Phase 5 - Remaining Domains (as source systems are confirmed)
 
 | Domain | Likely Owner | Blocked On |
 |---|---|---|
 | IT Operations | OCIO | Service metrics data source TBD |
 | Legislative | OCLA | Congressional inquiry tracking system TBD |
 | Training/CLEs | OCHCO | Learning Center integration TBD |
-| OIG | OIG | Separate authority — may require isolated instance |
+| OIG | OIG | Separate authority - may require isolated instance |
 
 ---
 
@@ -842,7 +842,7 @@ existing Redis sessions. Adds one new blueprint (`admin_bp`) and one new table.
 
 ---
 
-## 11. Data Flow — End to End
+## 11. Data Flow - End to End
 
 ```
 ┌────────────────┐
@@ -898,7 +898,7 @@ existing Redis sessions. Adds one new blueprint (`admin_bp`) and one new table.
 | 2 | Financial source system | Oracle Federal Financials, Pegasys, manual | Requires CFO confirmation |
 | 3 | Dashboard refresh model | Manual only, scheduled (>5min), webhook on data sync | Scheduled (15-min minimum) for stability |
 | 4 | Cross-domain JOIN limit | 2, 3, or unlimited with timeout | 3 JOINs max (prevents runaway queries) |
-| 5 | Share scope | Individual users only, or teams/groups | Both — individual + Entra group sharing |
+| 5 | Share scope | Individual users only, or teams/groups | Both - individual + Entra group sharing |
 | 6 | Dashboard panel limit | 8 (current), 12, 16 | 12 (accommodates leadership KPI views) |
 | 7 | Admin delegation depth | 1 level (directors only) or multi-level | 1 level initially, expand if needed |
 | 8 | Grant expiration default | No default, 90 days, fiscal year end | No default (permanent until revoked) with optional expiry |

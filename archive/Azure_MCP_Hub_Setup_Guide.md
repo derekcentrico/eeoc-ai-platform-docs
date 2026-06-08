@@ -1,6 +1,6 @@
 # Azure MCP Hub Setup Guide
 
-**Purpose:** Step-by-step instructions for configuring the EEOC MCP Hub using Azure's native services through the Azure Portal. No custom hub service to build — the hub functionality is assembled from Azure managed services.
+**Purpose:** Step-by-step instructions for configuring the EEOC MCP Hub using Azure's native services through the Azure Portal. No custom hub service to build - the hub functionality is assembled from Azure managed services.
 
 **Audience:** EEOC OCIO staff with Azure Portal access. Written as click-by-click instructions.
 
@@ -124,7 +124,7 @@ To add each secret:
 7. Retention period: `2555` days (7 years + 1 day)
 8. Click **Save**
 
-Verify: Try to delete a blob in this container — it should fail. The WORM policy prevents all deletions for 2555 days.
+Verify: Try to delete a blob in this container - it should fail. The WORM policy prevents all deletions for 2555 days.
 
 ---
 
@@ -156,7 +156,7 @@ Each spoke and the hub itself needs an app registration in Entra ID.
    - Copy the secret value immediately (shown only once)
    - Store in Key Vault as `HUB-CLIENT-SECRET`
 
-9. Copy the **Application (client) ID** and **Directory (tenant) ID** — you'll need these for APIM configuration.
+9. Copy the **Application (client) ID** and **Directory (tenant) ID** - you'll need these for APIM configuration.
 
 ### Spoke App Registrations:
 
@@ -461,7 +461,7 @@ Follow this exact order. Do not skip gates.
 - [ ] Key Vault accessible from APIM
 - [ ] Entra ID token validation working (test with Postman)
 - [ ] Audit logging writing to Table Storage and Blob
-- [ ] WORM policy verified (try to delete a blob — should fail)
+- [ ] WORM policy verified (try to delete a blob - should fail)
 
 ### Phase 2: ARC Integration API (first spoke)
 - [ ] Backend `arc-spoke` added to APIM
@@ -551,4 +551,4 @@ The aggregator function is the only custom code needed. It's ~200 lines of Pytho
 | Tool not found | Tool name doesn't match routing prefix | Check APIM choose/when conditions match spoke prefix |
 | High latency on UDAP queries | Connection pool exhaustion | Check UDAP's PgBouncer (Prompt 23) |
 | Events not routing | Event Grid subscription misconfigured | Check Event Grid subscription filters and endpoint URLs |
-| Audit blobs can't be deleted | WORM policy working correctly | This is expected — data is immutable for 7 years |
+| Audit blobs can't be deleted | WORM policy working correctly | This is expected - data is immutable for 7 years |

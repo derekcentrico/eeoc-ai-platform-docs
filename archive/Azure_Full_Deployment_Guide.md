@@ -1,4 +1,4 @@
-# Azure Deployment Guide — Full Platform (Excluding MCP Hub)
+# Azure Deployment Guide - Full Platform (Excluding MCP Hub)
 
 **Purpose:** Step-by-step Azure Portal instructions to deploy every component of the EEOC AI Integration Platform except the MCP Hub (covered separately in `Azure_MCP_Hub_Setup_Guide.md`).
 
@@ -9,7 +9,7 @@
 - Global Administrator for Entra ID app registrations
 - Access to ARC DBA team for WAL/CDC provisioning (2 SQL commands)
 
-**Deployment order matters.** Follow the sections in sequence — later sections depend on earlier ones.
+**Deployment order matters.** Follow the sections in sequence - later sections depend on earlier ones.
 
 ---
 
@@ -59,7 +59,7 @@
 6. **Access configuration**: `Azure role-based access control`
 7. **Review + create** → **Create**
 
-**After creation — add secrets:**
+**After creation - add secrets:**
 
 Navigate to Key Vault → **Secrets** → **Generate/Import** for each:
 
@@ -140,7 +140,7 @@ openssl rand -base64 40
     - Subnet: `snet-postgres`
 11. **Review + create** → **Create** (takes 5-10 minutes)
 
-**After creation — configure server parameters:**
+**After creation - configure server parameters:**
 
 1. Open the server → **Server parameters**
 2. Search and set:
@@ -317,7 +317,7 @@ For each application, the process is:
 | **MCP Hub Aggregator** | `ca-mcp-aggregator` | `eeoc-mcp-hub-functions:latest` | 0.5 | 512Mi | 1 | 2 | 70% |
 | **Superset Web** | `ca-superset-web` | `eeoc-superset:latest` | 2 | 4Gi | 2 | 4 | 70% |
 
-**ADR is public-facing** — it requires both internal ingress (for hub/spoke communication) and external ingress (for parties via Front Door). Set ingress to `Accepting traffic from anywhere` and configure Front Door in Section 5.
+**ADR is public-facing** - it requires both internal ingress (for hub/spoke communication) and external ingress (for parties via Front Door). Set ingress to `Accepting traffic from anywhere` and configure Front Door in Section 5.
 
 **Environment variables for each app:**
 
@@ -424,7 +424,7 @@ ADR is the only public-facing application. Azure Front Door provides edge securi
 
 3. Store the endpoint and key in Key Vault:
    - `OPENAI-ENDPOINT`: e.g., `https://oai-eeoc-ai-prod.openai.azure.us/`
-   - `OPENAI-API-KEY`: (or use managed identity — preferred)
+   - `OPENAI-API-KEY`: (or use managed identity - preferred)
 
 ### 6.3 Managed Identity Access (Preferred over API Key)
 

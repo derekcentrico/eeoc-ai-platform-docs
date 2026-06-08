@@ -1,10 +1,10 @@
-# EEOC UDAP — Authentication and Authorization
+# EEOC UDAP - Authentication and Authorization
 
 **Author:** Derek Gordon
 
 ## Authentication Flow
 
-UDAP uses a **consolidated gateway authentication** pattern. A single OIDC login occurs at the portal-nginx level via the AI Assistant's Entra ID integration. All downstream services (Superset, JupyterHub) receive pre-authenticated identity through `X-UDAP-*` HTTP headers — they do not perform their own OAuth flows.
+UDAP uses a **consolidated gateway authentication** pattern. A single OIDC login occurs at the portal-nginx level via the AI Assistant's Entra ID integration. All downstream services (Superset, JupyterHub) receive pre-authenticated identity through `X-UDAP-*` HTTP headers - they do not perform their own OAuth flows.
 
 **Code Reference:** `ai-assistant/app/auth.py`, `deploy/k8s/portal-nginx/nginx.conf`
 
@@ -21,20 +21,20 @@ Only **one Entra ID app registration** is required (the AI Assistant's `AZURE_CL
 1. **User visits UDAP** → portal-nginx invokes `auth_request` to `/auth/verify`
 2. `/auth/verify` checks for a valid Flask session in Redis
 3. If no valid session → nginx redirects to `/auth/login`
-4. `/auth/login` builds MSAL `ConfidentialClientApplication` with tenant ID, client ID, and client secret from Key Vault (`auth.py` — MSAL `ConfidentialClientApplication` setup)
-5. MSAL generates authorization URL with `openid`, `profile`, `email`, `offline_access` scopes and a random `state` parameter for CSRF protection (`auth.py` — authorization URL generation)
+4. `/auth/login` builds MSAL `ConfidentialClientApplication` with tenant ID, client ID, and client secret from Key Vault (`auth.py` - MSAL `ConfidentialClientApplication` setup)
+5. MSAL generates authorization URL with `openid`, `profile`, `email`, `offline_access` scopes and a random `state` parameter for CSRF protection (`auth.py` - authorization URL generation)
 6. **User authenticates** at `login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize`
 7. **Entra ID callback** → `/auth/callback` with authorization code
-8. UDAP validates `state` parameter to prevent CSRF (`auth.py` — `state` parameter CSRF validation)
-9. Exchanges authorization code for tokens via `acquire_token_by_authorization_code` (`auth.py` — `acquire_token_by_authorization_code`)
-10. Extracts user claims from ID token: `preferred_username`, `name`, `email`, `groups` (`auth.py` — ID token claim extraction)
+8. UDAP validates `state` parameter to prevent CSRF (`auth.py` - `state` parameter CSRF validation)
+9. Exchanges authorization code for tokens via `acquire_token_by_authorization_code` (`auth.py` - `acquire_token_by_authorization_code`)
+10. Extracts user claims from ID token: `preferred_username`, `name`, `email`, `groups` (`auth.py` - ID token claim extraction)
 11. Resolves user attributes from group memberships:
-    - Role via `_resolve_role()` — priority chain lookup
-    - Regions via `_resolve_regions()` — UDAP-Data-Region-* prefix matching
-    - Office via `_resolve_office()` — UDAP-Office-* prefix matching (EEOC office assignment)
-    - PII tier via `_resolve_pii_tier()` — tier group membership
-    - Permitted schemas via `_resolve_permitted_schemas()` — governed view catalog
-12. Creates `UDAPUser` object and stores in Redis server-side session (`auth.py` — `UDAPUser` object creation)
+    - Role via `_resolve_role()` - priority chain lookup
+    - Regions via `_resolve_regions()` - UDAP-Data-Region-* prefix matching
+    - Office via `_resolve_office()` - UDAP-Office-* prefix matching (EEOC office assignment)
+    - PII tier via `_resolve_pii_tier()` - tier group membership
+    - Permitted schemas via `_resolve_permitted_schemas()` - governed view catalog
+12. Creates `UDAPUser` object and stores in Redis server-side session (`auth.py` - `UDAPUser` object creation)
 13. Redirects to requested page or chat index
 14. **Subsequent requests:** `/auth/verify` returns `X-UDAP-*` headers from the session, and nginx forwards them to the target service
 
@@ -48,7 +48,7 @@ Only **one Entra ID app registration** is required (the AI Assistant's `AZURE_CL
 
 ### Logout
 
-`/auth/logout` clears the Redis session, calls Flask-Login `logout_user()`, and redirects to Entra ID's federated logout endpoint (`auth.py` — logout flow).
+`/auth/logout` clears the Redis session, calls Flask-Login `logout_user()`, and redirects to Entra ID's federated logout endpoint (`auth.py` - logout flow).
 
 ---
 
@@ -56,7 +56,7 @@ Only **one Entra ID app registration** is required (the AI Assistant's `AZURE_CL
 
 UDAP defines five roles with a strict priority chain. Users receive the highest-privilege role from their Entra ID group memberships.
 
-**Code Reference:** `ai-assistant/app/auth.py` — `_resolve_role()`
+**Code Reference:** `ai-assistant/app/auth.py` - `_resolve_role()`
 
 ### Priority Chain
 
@@ -80,10 +80,10 @@ The `_resolve_role()` function iterates the priority list and returns the first 
 
 When a user belongs to more than 200 Entra ID groups, the ID token omits inline `groups` claims and instead emits overage indicators:
 
-- `_claim_names: { "groups": "src1" }` — standard overage pattern
-- `hasgroups: true` — alternative boolean indicator
+- `_claim_names: { "groups": "src1" }` - standard overage pattern
+- `hasgroups: true` - alternative boolean indicator
 
-**Code Reference:** `ai-assistant/app/auth.py` — `_fetch_groups_from_graph()`
+**Code Reference:** `ai-assistant/app/auth.py` - `_fetch_groups_from_graph()`
 
 When overage is detected, the AI Assistant auth callback falls back to the Microsoft Graph API (`/v1.0/me/memberOf/microsoft.graph.group`) to retrieve the full group membership list. This keeps authorization decisions accurate regardless of group count.
 
@@ -111,7 +111,7 @@ GCC-High environments use `graph.microsoft.us` instead of `graph.microsoft.com` 
 
 UDAP restricts data access by EEOC region via Entra ID group membership.
 
-**Code Reference:** `ai-assistant/app/auth.py` — `_resolve_regions()`
+**Code Reference:** `ai-assistant/app/auth.py` - `_resolve_regions()`
 
 ### Group Naming Convention
 
@@ -138,7 +138,7 @@ Regions are passed to `SESSION_CONTEXT` as a comma-separated list and enforced b
 
 UDAP implements three PII access tiers.
 
-**Code Reference:** `ai-assistant/app/auth.py` — `_resolve_pii_tier()`
+**Code Reference:** `ai-assistant/app/auth.py` - `_resolve_pii_tier()`
 
 | Tier | Access Level | Entra ID Group | Views Available |
 |------|-------------|---------------|-----------------|
@@ -154,7 +154,7 @@ The `_resolve_pii_tier()` function checks Tier 3 first, then Tier 2. If neither 
 
 Every database connection sets SQL Server `SESSION_CONTEXT` with the authenticated user's attributes.
 
-**Code Reference:** `ai-assistant/app/data_access.py` — `set_session_context()`
+**Code Reference:** `ai-assistant/app/data_access.py` - `set_session_context()`
 
 ### Context Keys
 
@@ -166,7 +166,7 @@ Every database connection sets SQL Server `SESSION_CONTEXT` with the authenticat
 | `user_regions` | Comma-separated `current_user.user_regions` | Yes |
 | `user_office` | `current_user.user_office` | Yes |
 
-All values are set with `@read_only = 1` to prevent modification by application-layer SQL. This is enforced on every connection checkout via SQLAlchemy's `checkout` event listener (`data_access.py` — SQLAlchemy `checkout` event listener).
+All values are set with `@read_only = 1` to prevent modification by application-layer SQL. This is enforced on every connection checkout via SQLAlchemy's `checkout` event listener (`data_access.py` - SQLAlchemy `checkout` event listener).
 
 PostgreSQL equivalent session variables are also set via `set_config()` with `is_local=true`:
 
@@ -203,7 +203,7 @@ RLS predicate functions in `analytics-db/rls/predicate-functions.sql` read `SESS
 
 ## Authorization Decorators
 
-**Code Reference:** `ai-assistant/app/auth.py` — `@require_role`, `@require_min_tier`, `@require_analyst` decorators
+**Code Reference:** `ai-assistant/app/auth.py` - `@require_role`, `@require_min_tier`, `@require_analyst` decorators
 
 ### @require_role
 
@@ -237,16 +237,16 @@ Legacy decorator that requires any authenticated user with a valid role. Equival
 
 ## Session Management
 
-**Code Reference:** `ai-assistant/app/config.py:25-37`, `ai-assistant/app/auth.py` — session cookie configuration
+**Code Reference:** `ai-assistant/app/config.py:25-37`, `ai-assistant/app/auth.py` - session cookie configuration
 
 | Setting | Value | Code Reference |
 |---------|-------|---------------|
 | Session type | Redis (server-side) | `config.py:32` |
 | Redis connection | TLS on port 6380 (`rediss://`) | `config.py:37` |
-| Session lifetime | 30 minutes | `config.py:34` — `PERMANENT_SESSION_LIFETIME = 1800` |
+| Session lifetime | 30 minutes | `config.py:34` - `PERMANENT_SESSION_LIFETIME = 1800` |
 | Session permanent | True (enables lifetime enforcement) | `config.py:33` |
 | Key prefix | `udap:session:` | `config.py:35` |
-| Signed cookies | Yes | `config.py:36` — `SESSION_USE_SIGNER = True` |
+| Signed cookies | Yes | `config.py:36` - `SESSION_USE_SIGNER = True` |
 | Cookie secure | True (HTTPS only) | `config.py:26` |
 | Cookie HttpOnly | True (no JavaScript access) | `config.py:27` |
 | Cookie SameSite | Lax | `config.py:29` |
@@ -287,7 +287,7 @@ Flask-Limiter is initialized in the app factory with per-user keys:
 
 **Code Reference:** `deploy/docker/superset/superset_config.py`, `deploy/docker/superset/custom_security.py`
 
-Superset uses `AUTH_REMOTE_USER` mode with auto-registration. Authentication is handled at the portal gateway — Superset receives the authenticated user's identity via `X-UDAP-*` headers forwarded by nginx from the AI Assistant's `/auth/verify` endpoint.
+Superset uses `AUTH_REMOTE_USER` mode with auto-registration. Authentication is handled at the portal gateway - Superset receives the authenticated user's identity via `X-UDAP-*` headers forwarded by nginx from the AI Assistant's `/auth/verify` endpoint.
 
 | Setting | Value | Purpose |
 |---------|-------|---------|

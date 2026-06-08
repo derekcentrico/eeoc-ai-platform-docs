@@ -182,7 +182,7 @@ The MCP Hub Three-Application Integration document covers ADR, OFS Triage, and U
 
 **PrEPA's Service Bus is an untapped resource.** The `db-change-topic` is a ready-made event stream for case lifecycle changes. The document does not mention it.
 
-**SBI reference data now available.** The `shared_valid_sbi_comb` table (24,048 rows, 21,542 active combinations) was exported from ARC (Shakil Aryal, May 2026) along with `shared_basis` (117), `shared_issue` (89), and `shared_statute` (9). Loaded into the UDAP replica schema. Original gap: ADR imported statutes as freeform text, OFS Triage accepted basis/issue codes as unvalidated strings, and nobody consumed the canonical SBI combination tree — that tree is now available.
+**SBI reference data now available.** The `shared_valid_sbi_comb` table (24,048 rows, 21,542 active combinations) was exported from ARC (Shakil Aryal, May 2026) along with `shared_basis` (117), `shared_issue` (89), and `shared_statute` (9). Loaded into the UDAP replica schema. Original gap: ADR imported statutes as freeform text, OFS Triage accepted basis/issue codes as unvalidated strings, and nobody consumed the canonical SBI combination tree - that tree is now available.
 
 **ARC's authentication model is unaddressed.** The hub needs to call ARC, but the document only covers hub-to-spoke auth (Entra ID M2M). ARC uses its own OAuth2 token service with client credentials. Somebody has to bridge these.
 
@@ -203,9 +203,9 @@ The MCP Hub Three-Application Integration document covers ADR, OFS Triage, and U
 
 The integration architecture has three components:
 
-1. **WAL/CDC Pipeline** — streams case data from PrEPA's PostgreSQL to UDAP in real-time via logical replication (Debezium → Event Hub → UDAP Data Middleware). This is the primary data path.
-2. **ARC Integration API** — handles write-back (mediation outcomes, triage results → ARC) and targeted case pushes (mediation eligibility → ADR, charge metadata → Triage)
-3. **IDR Reconciliation** — twice-weekly verification of UDAP analytics tables against the IDR nightly snapshot
+1. **WAL/CDC Pipeline** - streams case data from PrEPA's PostgreSQL to UDAP in real-time via logical replication (Debezium → Event Hub → UDAP Data Middleware). This is the primary data path.
+2. **ARC Integration API** - handles write-back (mediation outcomes, triage results → ARC) and targeted case pushes (mediation eligibility → ADR, charge metadata → Triage)
+3. **IDR Reconciliation** - twice-weekly verification of UDAP analytics tables against the IDR nightly snapshot
 
 Apps that need case data for analytics, dashboards, or cross-system queries hit UDAP, which is kept current by the CDC pipeline.
 
@@ -243,7 +243,7 @@ Apps that need case data for analytics, dashboards, or cross-system queries hit 
 1. **Push case assignments** to downstream apps (e.g., new mediation case → ADR with charge number, mediator, party emails, creation date). Forward Service Bus event notifications through the MCP Hub.
 2. **Accept write-backs** from ADR and Triage and translate them into PrEPA's internal API calls
 
-**Targeted pushes vs. general queries:** When ARC assigns a mediation case, the integration API pushes that specific case to ADR (charge number, assigned mediator, party email addresses, case creation date). ADR does not need to query ARC for everything — it gets what it needs when it needs it. Same for Triage: charge metadata is looked up at upload time, not continuously queried.
+**Targeted pushes vs. general queries:** When ARC assigns a mediation case, the integration API pushes that specific case to ADR (charge number, assigned mediator, party email addresses, case creation date). ADR does not need to query ARC for everything - it gets what it needs when it needs it. Same for Triage: charge metadata is looked up at upload time, not continuously queried.
 
 ### 4.2 Why Python, Not Java
 
@@ -255,7 +255,7 @@ The alternative -- adding endpoints directly to FEPA Gateway -- avoids a new ser
 
 ### 4.3 Endpoints
 
-Organized by direction: targeted data out of ARC, data flowing back into ARC, and reference data. UDAP feed endpoints are no longer needed here — UDAP gets its data via the WAL/CDC pipeline (see Section 4.7).
+Organized by direction: targeted data out of ARC, data flowing back into ARC, and reference data. UDAP feed endpoints are no longer needed here - UDAP gets its data via the WAL/CDC pipeline (see Section 4.7).
 
 #### Service Bus Event Forwarding
 
@@ -383,7 +383,7 @@ GET  /arc/v1/reference/document-types      (cached 24h)
 GET  /arc/v1/reference/statuses            (cached 24h)
 ```
 
-#### Litigation (for OGC Trial Tool — targeted lookup, not general query)
+#### Litigation (for OGC Trial Tool - targeted lookup, not general query)
 
 ```
 GET  /arc/v1/litigation/cases/{charge_number}
@@ -407,7 +407,7 @@ The integration API bridges two auth worlds:
 
 **Outbound:** OAuth2 service credentials stored in Key Vault. The integration API acquires ARC tokens using the existing client_id/secret pattern (`/oauth/token` endpoint), caches them, and refreshes before expiry. No changes to ARC's auth system required.
 
-**UDAP RLS note:** When the MCP hub routes AI consumer queries to UDAP, it needs to preserve the original caller's regional identity. This is handled via OAuth 2.0 On-Behalf-Of (OBO) flow at the hub level, not at the ARC Integration API level. The ARC Integration API feeds UDAP's data pipeline using a service account with full access — RLS is enforced at query time when end users or AI consumers access the data through UDAP's own endpoints.
+**UDAP RLS note:** When the MCP hub routes AI consumer queries to UDAP, it needs to preserve the original caller's regional identity. This is handled via OAuth 2.0 On-Behalf-Of (OBO) flow at the hub level, not at the ARC Integration API level. The ARC Integration API feeds UDAP's data pipeline using a service account with full access - RLS is enforced at query time when end users or AI consumers access the data through UDAP's own endpoints.
 
 ### 4.5 Normalized Data Model
 
@@ -489,23 +489,23 @@ PrEPA PostgreSQL (9.x)
 
 **What we need from the ARC team:**
 - One logical replication slot (`SELECT pg_create_logical_replication_slot('udap_cdc', 'pgoutput')`)
-- A publication for all tables (`CREATE PUBLICATION udap_publication FOR ALL TABLES`). This streams every table in PrEPA — charges, allegations, staff, reference tables, mediation, closures, events. New tables auto-appear in the stream. Raw data lands in UDAP's `replica` schema; the middleware translates it into clean, AI-ready datasets in the `analytics` schema.
+- A publication for all tables (`CREATE PUBLICATION udap_publication FOR ALL TABLES`). This streams every table in PrEPA - charges, allegations, staff, reference tables, mediation, closures, events. New tables auto-appear in the stream. Raw data lands in UDAP's `replica` schema; the middleware translates it into clean, AI-ready datasets in the `analytics` schema.
 - `max_slot_wal_keep_size` configured to prevent disk exhaustion if the consumer falls behind
 
 **Fallback if ARC will not grant WAL access:**
 - Primary: Service Bus subscription on `db-change-topic` (application-level events, near-real-time for app-published changes)
 - Supplemental: REST API feed endpoints from the ARC Integration API (watermark-based polling for bulk data the Service Bus doesn't cover)
-- The middleware YAML configs work with either path — just a different source driver in the YAML
+- The middleware YAML configs work with either path - just a different source driver in the YAML
 
 ### 4.8 UDAP Data Middleware
 
 The UDAP Data Middleware is the central translation layer between any data source and UDAP's analytics schema. It is already in production and handles all data flowing into UDAP.
 
 **Components:**
-- **YAML mapping configs** (`source_mappings/*.yaml`) — declarative column mappings from source to target, with transform specifications
-- **MappingConfig / RowTransformer** (`mapping_engine.py`) — loads YAML, applies transforms per row
-- **MappingValidator** (`mapping_validator.py`) — validates all mappings at startup, blocks sync on failure
-- **SyncEngine** (`sync_engine.py`) — orchestrates incremental sync with watermarks, batch upserts, post-sync tasks (dbt, embeddings)
+- **YAML mapping configs** (`source_mappings/*.yaml`) - declarative column mappings from source to target, with transform specifications
+- **MappingConfig / RowTransformer** (`mapping_engine.py`) - loads YAML, applies transforms per row
+- **MappingValidator** (`mapping_validator.py`) - validates all mappings at startup, blocks sync on failure
+- **SyncEngine** (`sync_engine.py`) - orchestrates incremental sync with watermarks, batch upserts, post-sync tasks (dbt, embeddings)
 
 **Supported transforms:** value_map (inline dict), value_map_file (CSV lookup), parse_date, computed (DATEDIFF, NULL coalescing), redact_pii (SSN/email/phone regex), uppercase, lowercase, titlecase, trim, default
 
@@ -513,7 +513,7 @@ The UDAP Data Middleware is the central translation layer between any data sourc
 
 **Current source drivers:** pyodbc (SQL Server / IDR), psycopg2 (PostgreSQL / Angular app)
 
-**New driver needed:** Azure Event Hub consumer (Kafka protocol) for WAL/CDC events. Consumes Debezium JSON envelopes (before/after row images), yields rows as dicts matching SQL cursor format. Tracks consumer group offsets — only commits after successful upsert.
+**New driver needed:** Azure Event Hub consumer (Kafka protocol) for WAL/CDC events. Consumes Debezium JSON envelopes (before/after row images), yields rows as dicts matching SQL cursor format. Tracks consumer group offsets - only commits after successful upsert.
 
 **New YAML mapping configs needed:** PrEPA's PostgreSQL schema uses normalized FK integers (`shared_basis_id = 1`) where the IDR uses denormalized inline codes (`BAS_CD = 'R'`). New prepa_*.yaml files map FK integers through value_map transforms to human-readable names. Existing IDR mappings (`sqlserver_charges.yaml`, `sqlserver_adr.yaml`) remain for reconciliation.
 
@@ -568,7 +568,7 @@ The MCP Hub is a Container App that does five things:
                    consumers
 ```
 
-UDAP is the primary query target for AI consumers. When someone asks "what are the settlement rates by region," that goes to UDAP, which has the data locally (kept current via WAL/CDC) in governed, RLS-enforced views. The ARC Integration API is not a query layer — it handles write-backs and targeted case pushes. UDAP's data currency comes from the WAL/CDC pipeline independently of the hub.
+UDAP is the primary query target for AI consumers. When someone asks "what are the settlement rates by region," that goes to UDAP, which has the data locally (kept current via WAL/CDC) in governed, RLS-enforced views. The ARC Integration API is not a query layer - it handles write-backs and targeted case pushes. UDAP's data currency comes from the WAL/CDC pipeline independently of the hub.
 
 Each spoke registers at startup with its URL, capability categories, auth requirements, and protocol version. The hub refreshes tool catalogs every 5 minutes.
 
@@ -580,7 +580,7 @@ The ARC Integration API registers as a spoke, but its role is different from the
 
 | Tool | Category | What It Does |
 |------|----------|-------------|
-| `arc_get_mediation_eligible` | case_management | Cases eligible for mediation — ADR's sync uses this |
+| `arc_get_mediation_eligible` | case_management | Cases eligible for mediation - ADR's sync uses this |
 | `arc_get_charge_metadata` | case_management | Charge metadata at Triage upload time |
 | `arc_get_case_documents` | document_storage | Document metadata list (documents live in ECM, not UDAP) |
 **Write-back tools (for pushing results back to ARC):**
@@ -640,7 +640,7 @@ UDAP data feed (separate path, not through hub):
 PrEPA --WAL/CDC--> Debezium --> Event Hub --> UDAP Data Middleware --> UDAP PostgreSQL
 ```
 
-ADR also pushes events (case.created, case.closed, case.reassigned) to the hub, which can forward them to other interested spokes. UDAP does not subscribe to hub events — it gets its data via the WAL/CDC pipeline independently.
+ADR also pushes events (case.created, case.closed, case.reassigned) to the hub, which can forward them to other interested spokes. UDAP does not subscribe to hub events - it gets its data via the WAL/CDC pipeline independently.
 
 ### 5.6 Audit Standardization
 
@@ -672,7 +672,7 @@ Current state:
 
 ### Phase 1: ARC Integration API + WAL/CDC Pipeline + UDAP Middleware Updates (Weeks 1-6)
 
-Build the integration API (write-back + targeted reads), establish the WAL/CDC pipeline, update UDAP's middleware, and build the IDR reconciliation engine. These are the foundation — everything else depends on UDAP having current data and the write-back path being operational.
+Build the integration API (write-back + targeted reads), establish the WAL/CDC pipeline, update UDAP's middleware, and build the IDR reconciliation engine. These are the foundation - everything else depends on UDAP having current data and the write-back path being operational.
 
 | Week | What Gets Done |
 |------|---------------|
@@ -744,7 +744,7 @@ Test multi-spoke AI sessions. These queries should route primarily through UDAP 
 
 | Decision | Options | Recommendation | Owner | Deadline |
 |----------|---------|----------------|-------|----------|
-| ARC WAL/CDC access | Logical replication slot on PrEPA PostgreSQL (recommended) vs. Service Bus + REST API fallback | Grant read-only logical replication slot — zero write-path impact | ARC DBA team + Architecture team | Before Phase 1 |
+| ARC WAL/CDC access | Logical replication slot on PrEPA PostgreSQL (recommended) vs. Service Bus + REST API fallback | Grant read-only logical replication slot - zero write-path impact | ARC DBA team + Architecture team | Before Phase 1 |
 | UDAP RLS token delegation | Explicit region param, OBO flow, or hub-managed region table | OBO flow | Hub + UDAP team | Before Phase 5 |
 | Triage async polling | Document in tool description, or build hub-level polling wrapper | Document it; keep it simple | Hub + Triage team | Before Phase 4 |
 | Integration API tech stack | Python/FastAPI or add to FEPA Gateway (Java). Scope: write-back + targeted reads only (no UDAP feed) | Python/FastAPI | Architecture team | Before Phase 1 |

@@ -20,14 +20,14 @@ All three flows pass through the UDAP Data Middleware, which applies YAML-driven
 
 | Source | Data | Value | Mechanism Needed |
 |--------|------|-------|-----------------|
-| ARC (PrEPA PostgreSQL) | Full database replica — all tables including charges, allegations, staff, closures, mediation, reference data | Replaces IDR/SQL Server as primary source. UDAP becomes the full read replica. | WAL/CDC: PrEPA PostgreSQL → logical replication (FOR ALL TABLES) → Debezium → Azure Event Hub → UDAP replica schema (raw) → Data Middleware (YAML translation, PII redaction) → analytics schema (clean, AI-ready) |
+| ARC (PrEPA PostgreSQL) | Full database replica - all tables including charges, allegations, staff, closures, mediation, reference data | Replaces IDR/SQL Server as primary source. UDAP becomes the full read replica. | WAL/CDC: PrEPA PostgreSQL → logical replication (FOR ALL TABLES) → Debezium → Azure Event Hub → UDAP replica schema (raw) → Data Middleware (YAML translation, PII redaction) → analytics schema (clean, AI-ready) |
 | ADR | Daily metrics rollup (case counts by status, resolution rates, mediator utilization, avg case duration) | Agency-wide mediation performance | ADR pushes to UDAP ingest API on schedule |
 | ADR | AI reliance scores (per-mediator acceptance rates, feature diversity, fairness metrics) | AI governance and bias detection | ADR pushes to UDAP ingest API |
 | ADR | Model drift signals (token distribution drift, response time drift, success rate drift) | Early warning for AI degradation | ADR pushes to UDAP ingest API |
 | ADR | Scheduling analytics (booking success rates, provider distribution, session durations) | Operational efficiency | ADR pushes to UDAP ingest API |
 | Triage | Classification results (rank, merit score, subscores, citation count, word count) | Case prioritization analytics across agency | Triage pushes to UDAP ingest API |
 | Triage | Daily metrics (processing volume, AI acceptance rate, error rate, confidence distribution, latency percentiles) | AI pipeline health monitoring | Triage pushes to UDAP ingest API |
-| Triage | Correction flow matrices (A→B, B→C counts — model drift indicators) | Model governance | Triage pushes to UDAP ingest API |
+| Triage | Correction flow matrices (A→B, B→C counts - model drift indicators) | Model governance | Triage pushes to UDAP ingest API |
 | Triage | Reliance scores (system acceptance rate, correction time, feedback adoption) | AI reliability tracking | Triage pushes to UDAP ingest API |
 
 ### What flows OUT OF UDAP to apps
@@ -101,7 +101,7 @@ No custom integration code needed for any of these steps. The infrastructure han
 ## 4. What Is Missing from the Current Prompts
 
 ### Missing Prompt: UDAP Middleware Event Hub Consumer Driver
-UDAP's sync engine only supports SQL sources (pyodbc, psycopg2). To consume WAL/CDC events from Azure Event Hub (Debezium format — JSON envelope with before/after row images), it needs an Event Hub consumer driver that yields row dicts in the same format as SQL cursor results. The middleware's YAML mapping engine then handles column translation, value maps, PII redaction, and computed columns — same as it does for SQL sources. The driver must track consumer group offsets (only commit after successful upsert) and support both batch and continuous sync modes.
+UDAP's sync engine only supports SQL sources (pyodbc, psycopg2). To consume WAL/CDC events from Azure Event Hub (Debezium format - JSON envelope with before/after row images), it needs an Event Hub consumer driver that yields row dicts in the same format as SQL cursor results. The middleware's YAML mapping engine then handles column translation, value maps, PII redaction, and computed columns - same as it does for SQL sources. The driver must track consumer group offsets (only commit after successful upsert) and support both batch and continuous sync modes.
 
 ### Missing Prompt: PrEPA WAL/CDC YAML Mapping Configs
 New prepa_*.yaml mapping files for the middleware that translate PrEPA's PostgreSQL schema into analytics schema fields. PrEPA uses normalized FK integers (shared_basis_id, shared_issue_id, shared_statute_id) where the IDR uses denormalized inline codes (BAS_CD = 'R'). The value maps need to resolve FK integers to human-readable names. Tables: prepa_charges.yaml (charge_inquiry), prepa_allegations.yaml (charge_allegation), prepa_staff_assignments.yaml (charge_assignment), prepa_charging_party.yaml (charging_party, PII tier 3 → redact to tier 2), prepa_respondent.yaml (respondent).
@@ -134,12 +134,12 @@ Both new repositories (ARC Integration API and MCP Hub) need GitHub Actions work
 The UDAP Data Middleware is the central translation layer between any data source and UDAP's analytics schema. It is already in production and must be treated as a first-class architectural component, not an implementation detail.
 
 **What it does:**
-- **YAML-based declarative column mapping** — each source table has a .yaml config defining source→target column mappings, data types, and transforms. No code changes needed for new columns or sources.
-- **Value maps** — inline dictionaries for small code tables (BAS_CD "R" → "Race") and CSV lookup files for large ones (42 district offices, issue codes, region codes)
-- **PII redaction** — regex-based stripping of SSN, email, phone, ZIP on tier 2/3 fields. PII tier classification enforced by MappingValidator.
-- **Computed columns** — DATEDIFF, NULL coalescing, conditional expressions
-- **MappingValidator** — validates all mappings at startup: checks source connections, column definitions, lookup files, PII tier consistency, computed expressions. Blocks sync on validation failure.
-- **Watermark-based incremental sync** — only pulls rows changed since last sync
+- **YAML-based declarative column mapping** - each source table has a .yaml config defining source→target column mappings, data types, and transforms. No code changes needed for new columns or sources.
+- **Value maps** - inline dictionaries for small code tables (BAS_CD "R" → "Race") and CSV lookup files for large ones (42 district offices, issue codes, region codes)
+- **PII redaction** - regex-based stripping of SSN, email, phone, ZIP on tier 2/3 fields. PII tier classification enforced by MappingValidator.
+- **Computed columns** - DATEDIFF, NULL coalescing, conditional expressions
+- **MappingValidator** - validates all mappings at startup: checks source connections, column definitions, lookup files, PII tier consistency, computed expressions. Blocks sync on validation failure.
+- **Watermark-based incremental sync** - only pulls rows changed since last sync
 
 **Current source drivers:** pyodbc (SQL Server / IDR), psycopg2 (PostgreSQL / Angular)
 
@@ -149,7 +149,7 @@ The UDAP Data Middleware is the central translation layer between any data sourc
 - Reconciliation engine for twice-weekly IDR verification
 - Continuous sync mode (Kubernetes Deployment, always-on) in addition to existing batch mode (CronJob, daily)
 
-**Regardless of data source — WAL/CDC, REST API, IDR, Service Bus — all data flows through the middleware YAML layer before landing in analytics tables.** This is non-negotiable. The middleware handles label translation, PII governance, and data quality.
+**Regardless of data source - WAL/CDC, REST API, IDR, Service Bus - all data flows through the middleware YAML layer before landing in analytics tables.** This is non-negotiable. The middleware handles label translation, PII governance, and data quality.
 
 ---
 
@@ -159,17 +159,17 @@ The UDAP Data Middleware is the central translation layer between any data sourc
 
 Multi-pass security audit across UDAP, ADR, and Triage codebases. Findings organized by severity and mapped to NIST 800-53 controls. Each finding has a corresponding implementation prompt (Prompts 16-20).
 
-### Critical (5 findings — must fix before production)
+### Critical (5 findings - must fix before production)
 
 | # | Repo | Finding | NIST | Prompt |
 |---|------|---------|------|--------|
 | 1 | UDAP | 6 analytics tables referenced in YAML mappings do not exist in schema (allegations, charging_parties, respondents, staff_assignments, mediation_sessions, case_events) | N/A | 16 |
-| 2 | UDAP | No RLS policies on new tables — PII exposed to all roles | AC-3 | 16 |
+| 2 | UDAP | No RLS policies on new tables - PII exposed to all roles | AC-3 | 16 |
 | 3 | Triage | SEARCH_KEY (Azure Cognitive Search admin key) read from env var, not Key Vault | IA-2, SC-2 | 18 |
-| 4 | Triage | OData injection risk — sanitize_odata_value() not applied consistently to all partition/row keys | SI-10 | 18 |
+| 4 | Triage | OData injection risk - sanitize_odata_value() not applied consistently to all partition/row keys | SI-10 | 18 |
 | 5 | Triage | MCP_WEBHOOK_SECRET read from env var, not Key Vault | IA-2, SC-2 | 18 |
 
-### High (16 findings — fix within sprint)
+### High (16 findings - fix within sprint)
 
 **UDAP (3):**
 - 4 transform handlers not implemented in mapping engine (UUID_V5, lookup_table, lookup_then_redact, fiscal_year) → Prompt 17
@@ -195,7 +195,7 @@ Multi-pass security audit across UDAP, ADR, and Triage codebases. Findings organ
 - ARC Integration API: "3 read tools" in Architecture Plan vs "10 read tools" in Hub Build Guide (exposed vs implemented distinction unclear)
 - Decision tables have different column structures across docs
 
-### Medium (22 findings — plan for next iteration)
+### Medium (22 findings - plan for next iteration)
 
 **UDAP (4):** PII redaction missing EIN (12-3456789) and DOB (MM/DD/YYYY) patterns. No charge number format validation. Replica schema tables undocumented. Computed expression parser does not support CASE WHEN, NOT(), or CONCAT aggregate. → Prompt 17
 
@@ -211,34 +211,34 @@ Multi-pass security audit across UDAP, ADR, and Triage codebases. Findings organ
 
 Multi-pass scalability and distributed systems audit across ADR, Triage, and UDAP. Each application must support Azure horizontal scaling (multiple instances behind a load balancer). Findings mapped to remediation prompts.
 
-### Scaling Blockers (10 — prevents horizontal scaling)
+### Scaling Blockers (10 - prevents horizontal scaling)
 
 | # | Repo | Finding | Prompt |
 |---|------|---------|--------|
-| 1 | ADR | In-memory caches for rate limits, test mode, feature flags — each instance diverges | 21 |
+| 1 | ADR | In-memory caches for rate limits, test mode, feature flags - each instance diverges | 21 |
 | 2 | ADR | Stats API rate limiting falls back to in-memory dict when Redis unavailable | 21 |
-| 3 | ADR | No distributed locking on Azure Function timer triggers — all instances fire simultaneously | 21 |
-| 4 | Triage | Session state in cookie (MSAL token cache serialized client-side) — sticky sessions required | 22 |
-| 5 | Triage | In-memory token validation cache, JWKS cache, rate limit fallback — per-instance | 22 |
+| 3 | ADR | No distributed locking on Azure Function timer triggers - all instances fire simultaneously | 21 |
+| 4 | Triage | Session state in cookie (MSAL token cache serialized client-side) - sticky sessions required | 22 |
+| 5 | Triage | In-memory token validation cache, JWKS cache, rate limit fallback - per-instance | 22 |
 | 6 | Triage | No distributed locking on timer functions (MetricsRollupDaily, ModelDriftDetector) | 22 |
-| 7 | Triage | Azure Table Storage single partition "cases" — hot partition under load | 22 |
-| 8 | Triage | No OpenAI retry/backoff — 429 errors cascade at 50+ cases/sec | 22 |
-| 9 | UDAP | PostgreSQL connection pool at 15 per pod — 500 concurrent queries exhausts 5x over | 23 |
+| 7 | Triage | Azure Table Storage single partition "cases" - hot partition under load | 22 |
+| 8 | Triage | No OpenAI retry/backoff - 429 errors cascade at 50+ cases/sec | 22 |
+| 9 | UDAP | PostgreSQL connection pool at 15 per pod - 500 concurrent queries exhausts 5x over | 23 |
 | 10 | UDAP | In-memory rate limiting not Redis-backed | 23 |
 
-### Scaling Risks (12 — works but degrades at scale)
+### Scaling Risks (12 - works but degrades at scale)
 
 | # | Repo | Finding | Prompt |
 |---|------|---------|--------|
 | 1 | ADR | File uploads buffer entire 50MB file in memory before blob upload | 21 |
-| 2 | ADR | Mediation table uses single "activecases" partition — hot partition | 21 |
+| 2 | ADR | Mediation table uses single "activecases" partition - hot partition | 21 |
 | 3 | ADR | Event dispatcher HTTPS fallback uses blocking time.sleep() | 21 |
 | 4 | ADR | Feature flag caches propagate with 60s delay across instances | 21 |
-| 5 | ADR | Metrics table date-based partition — daily hot partition | 21 |
+| 5 | ADR | Metrics table date-based partition - daily hot partition | 21 |
 | 6 | Triage | ZIP extraction loads entire blob into memory (OOM on Consumption plan) | 22 |
-| 7 | Triage | Queue messages have no idempotency keys — duplicates on retry | 22 |
-| 8 | UDAP | dbt rebuilds hold exclusive table locks — concurrent queries block | 23 |
-| 9 | UDAP | Embedding generation synchronous sequential batches — no parallelism | 23 |
+| 7 | Triage | Queue messages have no idempotency keys - duplicates on retry | 22 |
+| 8 | UDAP | dbt rebuilds hold exclusive table locks - concurrent queries block | 23 |
+| 9 | UDAP | Embedding generation synchronous sequential batches - no parallelism | 23 |
 | 10 | UDAP | MCP DatasetRegistry not thread-safe (shared dict, no locks) | 23 |
 | 11 | UDAP | Query results fully buffered in memory (up to 10K rows) | 23 |
 | 12 | UDAP | Reconciliation dual-DB reads under production load | 23 |
