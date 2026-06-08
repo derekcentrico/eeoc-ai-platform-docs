@@ -411,7 +411,7 @@ Once the integration is live, we can do things that are currently impossible:
 
 ---
 
-## Next Steps
+## Immediate Actions
 
 1. **Review this document** and flag any concerns or questions.
 2. **Align on the six open decisions** above, particularly WAL/CDC access and the UDAP token delegation approach.
@@ -419,7 +419,7 @@ Once the integration is live, we can do things that are currently impossible:
 4. **Schedule a kickoff** for Phase 1 (ARC Integration API + WAL/CDC pipeline + UDAP middleware updates) and Phase 2 (MCP Hub infrastructure), which overlap and can start in parallel.
 5. **Engage the ARC application team** for Service Bus subscription access (for event notifications between apps) and to confirm PrEPA's event schema.
 
-The detailed architecture plan, endpoint mappings, security checklist, and implementation prompts are available in the workspace if you want to go deeper on any specific area.
+The detailed architecture plan, endpoint mappings, security checklist, and implementation prompts are in the workspace.
 
 ---
 

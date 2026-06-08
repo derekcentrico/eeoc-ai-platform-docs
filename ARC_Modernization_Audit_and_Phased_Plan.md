@@ -253,7 +253,7 @@ Secrets committed to dormant repos are still a risk. Anyone with repository
 access can read them. If any credential is shared with a live service, the
 exposure is real regardless of whether the repo that contains it is deployed.
 
-#### Summary
+#### Tier breakdown
 
 | Tier | Repos | In Audit | Unaudited Status | Recommendation |
 |---|---|---|---|---|

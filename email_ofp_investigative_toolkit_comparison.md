@@ -107,7 +107,7 @@ Extract the shared platform layer (model provider, audit logger, document proces
 
 ---
 
-## Summary Table
+## Feature Comparison
 
 | OFP Requested Tool | Closest Trial Tool Feature | What's Missing | Effort |
 |---|---|---|---|

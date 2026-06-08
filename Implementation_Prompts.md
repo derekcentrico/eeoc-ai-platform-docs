@@ -603,7 +603,7 @@ behind a feature flag; existing behavior must be preserved when the flag is off.
 
 ---
 
-## Summary: Which Prompt Goes Where
+## Which Prompt Goes Where
 
 | Prompt | Repository | Creates/Modifies | Phase |
 |--------|-----------|-----------------|-------|
