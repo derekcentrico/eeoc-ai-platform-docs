@@ -10,7 +10,7 @@
 
 UDAP is the agency's centralized analytics and AI platform. It serves as the governed data layer for all downstream applications, AI consumers, dashboards, and data mining. Before UDAP begins operations, the database engine selection must be confirmed.
 
-Both options under consideration are fully managed Azure services. This is not an open-source-vs-Microsoft decision — it is choosing the right Azure database service for the workload.
+Both options under consideration are fully managed Azure services. This is not an open-source-vs-Microsoft decision - it is choosing the right Azure database service for the workload.
 
 ---
 
@@ -126,7 +126,7 @@ The decision comes down to three factors:
 
 1. **ARC is PostgreSQL.** Native CDC between the same database engine eliminates an entire class of data type translation bugs and reduces operational complexity.
 
-2. **The AI workload requires vector search.** pgvector provides this natively at no additional cost. Azure SQL requires a separate Azure AI Search service — more cost, more latency, more infrastructure to secure and maintain.
+2. **The AI workload requires vector search.** pgvector provides this natively at no additional cost. Azure SQL requires a separate Azure AI Search service - more cost, more latency, more infrastructure to secure and maintain.
 
 3. **It is an Azure service.** Fully managed by Microsoft, FedRAMP High authorized, Entra ID integrated, visible in the Azure portal, covered by Azure support plans. Choosing PostgreSQL on Azure is choosing an Azure product.
 

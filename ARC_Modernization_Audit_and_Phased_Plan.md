@@ -78,8 +78,8 @@ audit, or a security incident.
 
 1. [Scope and Methodology](#1-scope-and-methodology)
 2. [Codebase Age Analysis](#2-codebase-age-analysis)
-3. [Security Findings - Tool-Verified](#3-security-findings--tool-verified)
-4. [Security Findings - Code-Level Analysis](#4-security-findings--code-level-analysis)
+3. [Security Findings - Tool-Verified](#3-security-findings---tool-verified)
+4. [Security Findings - Code-Level Analysis](#4-security-findings---code-level-analysis)
 5. [Section 508 / WCAG 2.1 AA Compliance](#5-section-508--wcag-21-aa-compliance)
 6. [Architecture Assessment](#6-architecture-assessment)
 7. [Federal Compliance Gap Analysis](#7-federal-compliance-gap-analysis)

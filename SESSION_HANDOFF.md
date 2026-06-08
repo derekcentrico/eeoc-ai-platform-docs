@@ -1,4 +1,4 @@
-# Session Handoff — EEOC AI Integration Platform
+# Session Handoff - EEOC AI Integration Platform
 
 **Date:** 2026-04-05 (updated from 2026-04-04 session)
 **Working Directory:** `/home/derek/ai-platform/workspace/`
@@ -8,7 +8,7 @@
 
 ## What This Project Is
 
-The EEOC (Equal Employment Opportunity Commission) is building an enterprise AI integration platform that connects 5 internal applications to a central data store (UDAP), enabling real-time case data access, AI-powered analytics, cross-system decision support, and bidirectional write-back to the ARC system of record — all on Azure Government (FedRAMP High).
+The EEOC (Equal Employment Opportunity Commission) is building an enterprise AI integration platform that connects 5 internal applications to a central data store (UDAP), enabling real-time case data access, AI-powered analytics, cross-system decision support, and bidirectional write-back to the ARC system of record - all on Azure Government (FedRAMP High).
 
 The platform replaces fragmented, siloed applications with a unified data backbone where every app feeds and every app queries the same governed data.
 
@@ -16,7 +16,7 @@ The platform replaces fragmented, siloed applications with a unified data backbo
 
 ## Architecture (One Paragraph)
 
-PrEPA (ARC's PostgreSQL system of record) streams all database changes via WAL/CDC (logical replication → Debezium → Azure Event Hub) into UDAP's PostgreSQL database, where the Data Middleware (YAML-driven column translation, PII redaction, validation) transforms raw ARC data into clean, AI-ready analytics tables. The MCP Hub (Azure API Management + lightweight aggregator function) routes tool calls from AI consumers to 5 spoke applications (ADR Mediation, OFS Triage, UDAP Analytics, OGC Trial Tool, ARC Integration API). ADR and Triage push operational analytics to UDAP daily and write mediation/classification results back to ARC through the Integration API. The AI Assistant in UDAP provides multi-turn conversations, SQL generation, interactive chart/dashboard creation, all governed by row-level security. ARC requires only 2 SQL commands (replication slot + publication) and read-only DB credentials — zero code changes on their side.
+PrEPA (ARC's PostgreSQL system of record) streams all database changes via WAL/CDC (logical replication → Debezium → Azure Event Hub) into UDAP's PostgreSQL database, where the Data Middleware (YAML-driven column translation, PII redaction, validation) transforms raw ARC data into clean, AI-ready analytics tables. The MCP Hub (Azure API Management + lightweight aggregator function) routes tool calls from AI consumers to 5 spoke applications (ADR Mediation, OFS Triage, UDAP Analytics, OGC Trial Tool, ARC Integration API). ADR and Triage push operational analytics to UDAP daily and write mediation/classification results back to ARC through the Integration API. The AI Assistant in UDAP provides multi-turn conversations, SQL generation, interactive chart/dashboard creation, all governed by row-level security. ARC requires only 2 SQL commands (replication slot + publication) and read-only DB credentials - zero code changes on their side.
 
 ---
 
@@ -38,7 +38,7 @@ PrEPA (ARC's PostgreSQL system of record) streams all database changes via WAL/C
 
 | File | What | Lines |
 |------|------|-------|
-| `Implementation_Prompts.md` | **51 implementation prompts** — the master plan. Each prompt targets a specific repo with exact code changes. | ~4500 |
+| `Implementation_Prompts.md` | **51 implementation prompts** - the master plan. Each prompt targets a specific repo with exact code changes. | ~4500 |
 | `ARC_API_and_MCP_Architecture_Plan.md` | Full technical architecture: endpoints, auth, data flows, roadmap | ~800 |
 | `Architecture_Gap_Analysis.md` | Every gap found: security audit, scalability audit, FOIA/NARA, M-21-31 EL3 | ~400 |
 | `Azure_MCP_Hub_Setup_Guide.md` | Portal step-by-step for APIM-based MCP Hub | ~554 |
@@ -71,15 +71,15 @@ PrEPA (ARC's PostgreSQL system of record) streams all database changes via WAL/C
 
 All prompts executed in the following order:
 
-- **Batch 1** (FOIA/NARA): Prompts 39-41 — 2026-04-06
-- **Batch 2** (M-21-31): Prompts 42-44 — 2026-04-06
-- **Batch 3** (OGC remediation): Prompts 46, 48 — 2026-04-06
-- **Batch 4** (Supply chain + Triage): Prompts 47, 49 — 2026-04-06
-- **Batch 5** (Infrastructure + deployment): Prompts 45, 50, 51 — 2026-04-06
-- **Batch 6** (Automation): Prompt 52 — 2026-04-06
-- **Batch 7** (Triage OFP): Prompts 53, 57, 58, 54, 55, 56 — 2026-04-06
-- **Batch 8** (Audit remediation): Prompts 59-64 — 2026-04-07
-- **Batch 9** (Final hardening): Prompt 65 — 2026-04-07 (in progress)
+- **Batch 1** (FOIA/NARA): Prompts 39-41 - 2026-04-06
+- **Batch 2** (M-21-31): Prompts 42-44 - 2026-04-06
+- **Batch 3** (OGC remediation): Prompts 46, 48 - 2026-04-06
+- **Batch 4** (Supply chain + Triage): Prompts 47, 49 - 2026-04-06
+- **Batch 5** (Infrastructure + deployment): Prompts 45, 50, 51 - 2026-04-06
+- **Batch 6** (Automation): Prompt 52 - 2026-04-06
+- **Batch 7** (Triage OFP): Prompts 53, 57, 58, 54, 55, 56 - 2026-04-06
+- **Batch 8** (Audit remediation): Prompts 59-64 - 2026-04-07
+- **Batch 9** (Final hardening): Prompt 65 - 2026-04-07 (in progress)
 
 ### How to Run Prompts
 
@@ -114,9 +114,9 @@ Prompts targeting multiple repos (27, 40, 41, 47) should be run once per repo.
 | `call_openai_with_retry()` not wired to actual calls | Triage | **FIXED** (Prompt 31 ran) | 31 |
 | Cases table `PartitionKey = "cases"` hot partition | Triage | **FIXED** (Prompt 31 ran) | 31 |
 | CaseFileProcessor ZIP `io.BytesIO(myblob.read())` OOM risk | Triage | **FIXED** (Prompt 31 ran) | 31 |
-| `case_partition_key` missing from ADR constants.py | ADR | **FIXED** (direct push) | — |
-| MCP Hub protocol version 2024-11-05 | Hub | **FIXED** (direct push) | — |
-| Triage UDAP ingest payload key `target_table` | Triage | **FIXED** (direct push) | — |
+| `case_partition_key` missing from ADR constants.py | ADR | **FIXED** (direct push) | - |
+| MCP Hub protocol version 2024-11-05 | Hub | **FIXED** (direct push) | - |
+| Triage UDAP ingest payload key `target_table` | Triage | **FIXED** (direct push) | - |
 
 **All known bugs fixed.** Conversation 90-day TTL resolved by Prompt 39.
 
@@ -125,8 +125,8 @@ Prompts targeting multiple repos (27, 40, 41, 47) should be run once per repo.
 ## Work Done Since 2026-04-04 (Latest Session)
 
 ### New Documents Created
-- `EEOC_AI_Platform_Azure_Overview.md` — 3-page CIO briefing with cost comparison (in-house $1.8M vs commercial $18-33M over 5 years)
-- `Azure_Full_Deployment_Guide.md` — Portal step-by-step for all Azure resources (580 lines)
+- `EEOC_AI_Platform_Azure_Overview.md` - 3-page CIO briefing with cost comparison (in-house $1.8M vs commercial $18-33M over 5 years)
+- `Azure_Full_Deployment_Guide.md` - Portal step-by-step for all Azure resources (580 lines)
 - Updated `SESSION_HANDOFF.md` (this file)
 
 ### New Prompts Added (42-52)
@@ -141,10 +141,10 @@ Prompts targeting multiple repos (27, 40, 41, 47) should be run once per repo.
 - **52**: Auto-schema detection with column registry, dbt model generation, AI discovery
 
 ### Key Decisions Made
-- Azure OpenAI (GA) is the default AI provider for ALL apps — Foundry wired but NOT enabled (beta packages fail SCA)
-- OGC Trial Tool must replace Ollama entirely — not FedRAMP authorized, no managed identity, no audit
-- poppler-utils (GPL-2.0) in OGC Docker container is a license violation — must be removed (Prompt 46)
-- python-jose in OGC is deprecated — replace with PyJWT (Prompt 46)
+- Azure OpenAI (GA) is the default AI provider for ALL apps - Foundry wired but NOT enabled (beta packages fail SCA)
+- OGC Trial Tool must replace Ollama entirely - not FedRAMP authorized, no managed identity, no audit
+- poppler-utils (GPL-2.0) in OGC Docker container is a license violation - must be removed (Prompt 46)
+- python-jose in OGC is deprecated - replace with PyJWT (Prompt 46)
 - M-21-31 EL3 requires Azure Sentinel, SOAR playbooks, UBA, NSG flow logs, DNS Analytics (Prompt 45)
 - FedRAMP Rev5 SR (Supply Chain) family requires Trivy container scanning, Dependabot, system dep SBOM (Prompt 47)
 - OSCAL format required for authorization packages by September 2026
@@ -192,16 +192,16 @@ Prompts targeting multiple repos (27, 40, 41, 47) should be run once per repo.
 
 ## Key Architectural Decisions
 
-1. **WAL/CDC over REST API polling** — reads PostgreSQL transaction log, zero impact on ARC
-2. **`FOR ALL TABLES`** — full replica of PrEPA, not just 5 tables
-3. **Two-schema architecture** — `replica` (raw ARC data) → middleware → `analytics` (clean, AI-ready)
-4. **YAML mappings with lookup_table transforms** — JOINs against replicated reference tables instead of hardcoded value maps
-5. **Azure OpenAI (GA) as default, AI Foundry wired but not enabled** — Foundry packages are beta, won't pass SCA audit
-6. **MCP Hub is APIM + aggregator function, not a custom service** — portal-configured routing with one ~200-line Azure Function
-7. **ADR must work standalone** — all integration feature-flagged, defaults to disabled
-8. **Conversation history tied to case lifecycle** — 7-year retention from closure, not 90-day TTL
-9. **IDR as twice-weekly reconciliation** — not primary source, safety net while CDC proves itself
-10. **PostgreSQL over Azure SQL** — pgvector, native CDC from PrEPA, dbt-postgres, lower cost
+1. **WAL/CDC over REST API polling** - reads PostgreSQL transaction log, zero impact on ARC
+2. **`FOR ALL TABLES`** - full replica of PrEPA, not just 5 tables
+3. **Two-schema architecture** - `replica` (raw ARC data) → middleware → `analytics` (clean, AI-ready)
+4. **YAML mappings with lookup_table transforms** - JOINs against replicated reference tables instead of hardcoded value maps
+5. **Azure OpenAI (GA) as default, AI Foundry wired but not enabled** - Foundry packages are beta, won't pass SCA audit
+6. **MCP Hub is APIM + aggregator function, not a custom service** - portal-configured routing with one ~200-line Azure Function
+7. **ADR must work standalone** - all integration feature-flagged, defaults to disabled
+8. **Conversation history tied to case lifecycle** - 7-year retention from closure, not 90-day TTL
+9. **IDR as twice-weekly reconciliation** - not primary source, safety net while CDC proves itself
+10. **PostgreSQL over Azure SQL** - pgvector, native CDC from PrEPA, dbt-postgres, lower cost
 
 ---
 
@@ -214,7 +214,7 @@ Prompts targeting multiple repos (27, 40, 41, 47) should be run once per repo.
 - **Litigation hold mechanism** preventing deletion of held records
 - **OSCAL format** required for authorization packages by September 2026
 - **Supply chain (SR family)**: SBOM, Trivy scanning, Dependabot, vendor assessment
-- **License compliance**: No GPL in production containers (poppler flagged in OGC — Prompt 46 fixes)
+- **License compliance**: No GPL in production containers (poppler flagged in OGC - Prompt 46 fixes)
 
 ---
 
@@ -223,7 +223,7 @@ Prompts targeting multiple repos (27, 40, 41, 47) should be run once per repo.
 The file is ~4500 lines with 51 prompts. Each prompt has:
 - Header: `## Prompt N: Title`
 - Metadata: Repository, Owner, Phase
-- Body inside triple-backtick code block — this is what you paste into a working session
+- Body inside triple-backtick code block - this is what you paste into a working session
 - Some prompts have multiple sub-prompts (e.g., Prompt 27 has 4 sub-prompts, one per repo)
 
 The summary table near line 610 shows all prompts with status (DONE/PENDING).
@@ -234,18 +234,18 @@ The execution order section near line 640 shows dependencies.
 ## Memory Files
 
 Saved to the workspace memory directory:
-- `project_arc_integration.md` — Architecture decisions and context
-- `user_derek.md` — Derek's role and preferences
+- `project_arc_integration.md` - Architecture decisions and context
+- `user_derek.md` - Derek's role and preferences
 
 ---
 
 ## What NOT to Do
 
-- **Do NOT modify ARC code** (eeoc-arc-payloads/) — their code, their responsibility
-- **Do NOT enable AI Foundry in production** — azure-ai-inference is beta, use Azure OpenAI GA
-- **Do NOT remove the YAML middleware** — it's the translation layer between ARC's internal labels and human-readable data
+- **Do NOT modify ARC code** (eeoc-arc-payloads/) - their code, their responsibility
+- **Do NOT enable AI Foundry in production** - azure-ai-inference is beta, use Azure OpenAI GA
+- **Do NOT remove the YAML middleware** - it's the translation layer between ARC's internal labels and human-readable data
 - **Do NOT set conversation retention below 7 years** for case-linked conversations (FOIA requirement)
-- **Do NOT connect spokes out of sequence** — ARC Integration API first, then ADR, Triage, UDAP, OGC
-- **Do NOT deploy without PgBouncer** — direct PostgreSQL connections will exhaust at scale
-- **Do NOT use Ollama in production** — replace with Azure OpenAI via FoundryModelProvider (Prompt 48)
-- **Do NOT assume Table Storage partition keys are correct** — ADR was fixed, Triage still needs Prompt 31
+- **Do NOT connect spokes out of sequence** - ARC Integration API first, then ADR, Triage, UDAP, OGC
+- **Do NOT deploy without PgBouncer** - direct PostgreSQL connections will exhaust at scale
+- **Do NOT use Ollama in production** - replace with Azure OpenAI via FoundryModelProvider (Prompt 48)
+- **Do NOT assume Table Storage partition keys are correct** - ADR was fixed, Triage still needs Prompt 31

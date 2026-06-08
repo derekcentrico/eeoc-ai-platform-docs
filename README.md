@@ -52,21 +52,21 @@ eeoc-ai-platform-docs/
 ## Key Platform-Wide Documents
 
 ### Architecture
-- [Leadership AI Assistant Architecture](platform-docs/Leadership_AI_Assistant_Architecture.md) — Multi-domain query engine, RBAC, dashboard system, data onboarding pipeline
-- [DAES Azure Overview](EEOC_AI_Platform_Azure_Overview.md) — Infrastructure topology and service map
-- [ARC Gap Analysis](platform-docs/ARC_Gap_Analysis.md) — Integration gaps with legacy ARC systems
+- [Leadership AI Assistant Architecture](platform-docs/Leadership_AI_Assistant_Architecture.md) - Multi-domain query engine, RBAC, dashboard system, data onboarding pipeline
+- [DAES Azure Overview](EEOC_AI_Platform_Azure_Overview.md) - Infrastructure topology and service map
+- [ARC Gap Analysis](platform-docs/ARC_Gap_Analysis.md) - Integration gaps with legacy ARC systems
 
 ### Authentication and Access Control
-- [UDAP Authentication and Authorization](platform-docs/UDAP_Authentication_and_Authorization.md) — Gateway auth, RBAC, RLS, unified access control
+- [UDAP Authentication and Authorization](platform-docs/UDAP_Authentication_and_Authorization.md) - Gateway auth, RBAC, RLS, unified access control
 - Unified access control is integrated across all user-facing apps (ADR, Triage, Trial Tool, Benefits) via feature flag `UNIFIED_ACCESS_ENABLED`
 
 ### Deployment and Infrastructure
-- [Complete Deployment Guide](EEOC_AI_Platform_Complete_Deployment_Guide.md) — Full provisioning and deployment sequence
-- [Azure M-21-31 EL3 Infrastructure Guide](Azure_M2131_EL3_Infrastructure_Guide.md) — FedRAMP High logging and compliance
+- [Complete Deployment Guide](EEOC_AI_Platform_Complete_Deployment_Guide.md) - Full provisioning and deployment sequence
+- [Azure M-21-31 EL3 Infrastructure Guide](Azure_M2131_EL3_Infrastructure_Guide.md) - FedRAMP High logging and compliance
 
 ### Governance
-- [OCIO Leadership Briefing](OCIO_Leadership_Briefing.md) — Executive summary for leadership
-- [OCHCO Benefits Validation Integration Plan](OCHCO_Benefits_Validation_Integration_Plan.md) — Benefits coding validation design
+- [OCIO Leadership Briefing](OCIO_Leadership_Briefing.md) - Executive summary for leadership
+- [OCHCO Benefits Validation Integration Plan](OCHCO_Benefits_Validation_Integration_Plan.md) - Benefits coding validation design
 
 ### Architecture Decisions (Email Format)
 - [ADR Demo Walkthrough](email_adr_demo_walkthrough.md)

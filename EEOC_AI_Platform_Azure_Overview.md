@@ -1,4 +1,4 @@
-# EEOC AI Integration Platform — How It Works in Azure
+# EEOC AI Integration Platform - How It Works in Azure
 
 **From:** Derek, OCIO AI Platform Lead
 **Date:** 2026-04-03
@@ -11,7 +11,7 @@
 
 ### What This Platform Does
 
-The EEOC AI Integration Platform connects five internal applications to a central data store, enabling real-time case data access, AI-powered analytics, and cross-system decision support — without modifying the existing ARC system of record.
+The EEOC AI Integration Platform connects five internal applications to a central data store, enabling real-time case data access, AI-powered analytics, and cross-system decision support - without modifying the existing ARC system of record.
 
 Every discrimination charge filed with EEOC flows through this platform: from intake through investigation, mediation, enforcement, and closure. The platform serves investigators, mediators, attorneys, analysts, and external parties (charging parties and respondents).
 
@@ -51,7 +51,7 @@ The entire platform runs on Azure Government (FedRAMP High authorized), using ma
 
 ### Real-Time Data Pipeline
 
-ARC's system of record (PrEPA) runs PostgreSQL. Rather than building API polling or batch ETL, the platform reads directly from PostgreSQL's write-ahead log (WAL) — a transaction log that the database already writes for crash recovery. This streams every data change to UDAP within seconds, with zero impact on ARC's production workload.
+ARC's system of record (PrEPA) runs PostgreSQL. Rather than building API polling or batch ETL, the platform reads directly from PostgreSQL's write-ahead log (WAL) - a transaction log that the database already writes for crash recovery. This streams every data change to UDAP within seconds, with zero impact on ARC's production workload.
 
 ```
 PrEPA PostgreSQL (ARC system of record)
@@ -69,7 +69,7 @@ PrEPA PostgreSQL (ARC system of record)
     AI Assistant + Dashboards + MCP Tools
 ```
 
-**Why this approach:** ARC has ~800 GB across 350 tables. Traditional API polling would hit ARC's application layer with thousands of queries. WAL-based CDC reads from a log file — no queries, no locks, no load. The ARC team runs two SQL commands to enable it; nothing else changes on their side.
+**Why this approach:** ARC has ~800 GB across 350 tables. Traditional API polling would hit ARC's application layer with thousands of queries. WAL-based CDC reads from a log file - no queries, no locks, no load. The ARC team runs two SQL commands to enable it; nothing else changes on their side.
 
 ---
 
@@ -86,11 +86,11 @@ Every Azure service used is FedRAMP High authorized in Azure Government. The pla
 | **SC (System Communications)** | TLS 1.2+ on all connections. VNet isolation with private endpoints. No public internet exposure except ADR (behind Azure Front Door WAF). |
 | **SI (System Integrity)** | SQL injection prevention via AST-level validation (sqlglot). PII redaction (SSN, DOB, email, phone, EIN) via regex before data enters analytics schema. Prompt injection detection on AI inputs. |
 | **IA (Identification/Auth)** | Entra ID Government OIDC for staff. Login.gov OIDC+PKCE for external parties. OAuth 2.0 On-Behalf-Of for preserving caller identity through the hub to UDAP. |
-| **SA (System Acquisition)** | CycloneDX SBOM generation, Bandit SAST, Semgrep, pip-audit SCA, OWASP Dependency-Check, license compliance scanning — all in CI/CD on every push. |
+| **SA (System Acquisition)** | CycloneDX SBOM generation, Bandit SAST, Semgrep, pip-audit SCA, OWASP Dependency-Check, license compliance scanning - all in CI/CD on every push. |
 
 ### Data Governance
 
-**Two-schema architecture:** Raw ARC data lands in a `replica` schema (original column names, pre-translation). The Data Middleware transforms it into the `analytics` schema (clean labels, PII redacted, AI-ready). Nobody queries replica directly — all access goes through the analytics schema with row-level security enforced.
+**Two-schema architecture:** Raw ARC data lands in a `replica` schema (original column names, pre-translation). The Data Middleware transforms it into the `analytics` schema (clean labels, PII redacted, AI-ready). Nobody queries replica directly - all access goes through the analytics schema with row-level security enforced.
 
 **Data lifecycle management:** Every record tracks when it entered UDAP, when the source case closed, and when NARA 7-year retention expires. FOIA/litigation holds block deletion regardless of age. A Data Steward CLI manages holds and approves purges. Partition-level access tracking identifies cold data for archival.
 
@@ -109,7 +109,7 @@ The AI Assistant uses Azure OpenAI GPT-4o with guardrails:
 
 ## Page 3: What It Costs and What It Enables
 
-### Azure Infrastructure — Monthly Estimated Cost
+### Azure Infrastructure - Monthly Estimated Cost
 
 | Resource | Tier | Monthly Cost |
 |----------|------|-------------|
@@ -131,8 +131,8 @@ The AI Assistant uses Azure OpenAI GPT-4o with guardrails:
 
 Once deployed, the platform provides capabilities that do not exist today:
 
-- **Real-time cross-system visibility.** An analyst asks "what are settlement rates by region this quarter" and gets an answer in seconds, drawing from ARC charge data, ADR mediation outcomes, and Triage classification results — all in one query.
-- **AI-powered case analysis.** The AI Assistant has multi-turn conversations, generates SQL, produces interactive charts, and builds dashboards — all governed by row-level security.
+- **Real-time cross-system visibility.** An analyst asks "what are settlement rates by region this quarter" and gets an answer in seconds, drawing from ARC charge data, ADR mediation outcomes, and Triage classification results - all in one query.
+- **AI-powered case analysis.** The AI Assistant has multi-turn conversations, generates SQL, produces interactive charts, and builds dashboards - all governed by row-level security.
 - **Bidirectional ARC integration.** ADR closes a mediation case and the settlement amount, signed agreement, and action dates flow back to ARC within seconds. Triage classifies a charge and the result appears in ARC's event log.
 - **Operational intelligence.** Model drift detection, AI reliance scoring, and correction flow analysis give leadership visibility into how AI tools are performing and whether analysts are over-relying on or ignoring AI recommendations.
 - **Self-service analytics.** Superset dashboards, JupyterHub notebooks, and the AI Assistant replace the dependency on manual SAS/Excel reporting.
@@ -142,7 +142,7 @@ Once deployed, the platform provides capabilities that do not exist today:
 
 **Context on commercial costs:** Federal IT contracting carries overhead rates of 80-150% on top of direct labor. Managed service providers mark up Azure infrastructure 15-30%. Procurement cycles add 6-12 months before development begins. Change orders and SOW amendments for post-deployment modifications typically carry 4-8 week lead times and premium rates.
 
-**What a vendor would be building:** This platform consists of a public-facing mediation application (17,900 lines, dual auth, AI chat, e-signatures, 12 Azure Functions), an AI classification pipeline (GPT-4o, Document Intelligence OCR, malware scanning, model drift detection, RAG), a complete enterprise analytics platform (CDC pipeline, dbt semantic layer, pgvector, conversational AI assistant with visualization and dashboard generation, data lifecycle management), an ARC integration service, and an MCP hub — all FedRAMP-compliant on Azure Government.
+**What a vendor would be building:** This platform consists of a public-facing mediation application (17,900 lines, dual auth, AI chat, e-signatures, 12 Azure Functions), an AI classification pipeline (GPT-4o, Document Intelligence OCR, malware scanning, model drift detection, RAG), a complete enterprise analytics platform (CDC pipeline, dbt semantic layer, pgvector, conversational AI assistant with visualization and dashboard generation, data lifecycle management), an ARC integration service, and an MCP hub - all FedRAMP-compliant on Azure Government.
 
 | Factor | In-House (EEOC OCIO) | Commercial Vendor |
 |--------|----------------------|-------------------|

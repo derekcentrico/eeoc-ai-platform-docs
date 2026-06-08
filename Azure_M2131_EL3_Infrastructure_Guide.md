@@ -9,7 +9,7 @@
 
 ## Purpose
 
-This guide covers the Azure-level infrastructure required to satisfy OMB M-21-31 Event Logging Maturity Level 3 (EL3 — Advanced) for the EEOC AI Integration Platform. EL3 requires centralized SIEM with behavioral analytics, automated response, full network telemetry, extended retention, and compliance reporting.
+This guide covers the Azure-level infrastructure required to satisfy OMB M-21-31 Event Logging Maturity Level 3 (EL3 - Advanced) for the EEOC AI Integration Platform. EL3 requires centralized SIEM with behavioral analytics, automated response, full network telemetry, extended retention, and compliance reporting.
 
 This document is standalone. It assumes the platform resources from the `EEOC_AI_Platform_Complete_Deployment_Guide.md` are already provisioned (resource group, VNet, Log Analytics workspace, Container Apps, etc.).
 
@@ -55,11 +55,11 @@ This document is standalone. It assumes the platform resources from the `EEOC_AI
 - [7. TLS Inspection](#7-tls-inspection)
   - [7.1 Application Gateway End-to-End TLS](#71-application-gateway-end-to-end-tls)
   - [7.2 Traffic Inspection Matrix](#72-traffic-inspection-matrix)
-- [8. M-21-31 Compliance Dashboard (Azure Monitor Workbook)](#8-m-2131-compliance-dashboard-azure-monitor-workbook)
+- [8. M-21-31 Compliance Dashboard (Azure Monitor Workbook)](#8-m-21-31-compliance-dashboard-azure-monitor-workbook)
   - [8.1 Create the Workbook](#81-create-the-workbook)
   - [8.2 Dashboard Sections](#82-dashboard-sections)
 - [Appendix A: Resource Summary](#appendix-a-resource-summary)
-- [Appendix B: M-21-31 EL3 Control Mapping](#appendix-b-m-2131-el3-control-mapping)
+- [Appendix B: M-21-31 EL3 Control Mapping](#appendix-b-m-21-31-el3-control-mapping)
 
 ---
 
@@ -75,7 +75,7 @@ This document is standalone. It assumes the platform resources from the `EEOC_AI
 
 **Verify:** The Sentinel overview blade loads and shows the workspace name `log-eeoc-ai-prod` at the top.
 
-> Sentinel is a layer on top of Log Analytics. Enabling it does not move or duplicate data — it adds analytics, hunting, and automation capabilities to the existing workspace.
+> Sentinel is a layer on top of Log Analytics. Enabling it does not move or duplicate data - it adds analytics, hunting, and automation capabilities to the existing workspace.
 
 ### 1.2 Connect Data Sources
 
@@ -119,7 +119,7 @@ AzureActivity
 
 #### 1.2.3 Application Insights (All 6 Apps)
 
-Application Insights data flows to the same `log-eeoc-ai-prod` workspace. No additional connector is needed — the data is already available in Sentinel via the shared workspace. Confirm by querying:
+Application Insights data flows to the same `log-eeoc-ai-prod` workspace. No additional connector is needed - the data is already available in Sentinel via the shared workspace. Confirm by querying:
 
 ```kql
 AppRequests
@@ -186,7 +186,7 @@ Navigate to **Sentinel** > **Analytics** > **+ Create** > **Scheduled query rule
 |---------|-------|
 | Name | `EEOC-AUTH-001: Failed authentication > 10/hour per user` |
 | Severity | High |
-| MITRE ATT&CK | Credential Access — Brute Force |
+| MITRE ATT&CK | Credential Access - Brute Force |
 | Status | Enabled |
 | Run query every | 1 hour |
 | Lookup data from the last | 1 hour |
@@ -214,7 +214,7 @@ Click **Next: Automated response** > attach `playbook-notify-security` (Section 
 |---------|-------|
 | Name | `EEOC-AUDIT-001: Audit write failures > 5/hour` |
 | Severity | Critical |
-| MITRE ATT&CK | Defense Evasion — Impair Defenses |
+| MITRE ATT&CK | Defense Evasion - Impair Defenses |
 | Status | Enabled |
 | Run query every | 15 minutes |
 | Lookup data from the last | 1 hour |
@@ -239,7 +239,7 @@ Click **Next: Automated response** > attach `playbook-notify-security` > **Creat
 |---------|-------|
 | Name | `EEOC-AI-001: Unusual query volume > 100/hour per user` |
 | Severity | Medium |
-| MITRE ATT&CK | Collection — Data from Information Repositories |
+| MITRE ATT&CK | Collection - Data from Information Repositories |
 | Status | Enabled |
 | Run query every | 1 hour |
 | Lookup data from the last | 1 hour |
@@ -266,7 +266,7 @@ Click **Create**.
 |---------|-------|
 | Name | `EEOC-PII-001: After-hours access to PII tier 3 data` |
 | Severity | High |
-| MITRE ATT&CK | Collection — Data from Information Repositories |
+| MITRE ATT&CK | Collection - Data from Information Repositories |
 | Status | Enabled |
 | Run query every | 1 hour |
 | Lookup data from the last | 1 hour |
@@ -298,7 +298,7 @@ Click **Next: Automated response** > attach `playbook-notify-security` > **Creat
 |---------|-------|
 | Name | `EEOC-FOIA-001: FOIA export activity detected` |
 | Severity | Informational |
-| MITRE ATT&CK | Exfiltration — Exfiltration Over Web Service |
+| MITRE ATT&CK | Exfiltration - Exfiltration Over Web Service |
 | Status | Enabled |
 | Run query every | 15 minutes |
 | Lookup data from the last | 15 minutes |
@@ -343,7 +343,7 @@ Playbooks are Logic Apps triggered by Sentinel incidents. Create each one below.
 7. In the **If true** branch:
    a. **+ New step** > search **Send an email (V2)** (Office 365 Outlook connector)
    b. To: `security-ops@eeoc.gov`
-   c. Subject: `[Sentinel] @{triggerBody()?['properties']?['severity']} — @{triggerBody()?['properties']?['title']}`
+   c. Subject: `[Sentinel] @{triggerBody()?['properties']?['severity']} - @{triggerBody()?['properties']?['title']}`
    d. Body:
       ```
       Incident: @{triggerBody()?['properties']?['title']}
@@ -379,7 +379,7 @@ Playbooks are Logic Apps triggered by Sentinel incidents. Create each one below.
 4. Trigger: **Microsoft Sentinel incident**
 5. **+ New step** > **Send an email (V2)**
    - To: `adr-team-leads@eeoc.gov; triage-team-leads@eeoc.gov`
-   - Subject: `[Circuit Breaker] AI service degraded — @{triggerBody()?['properties']?['title']}`
+   - Subject: `[Circuit Breaker] AI service degraded - @{triggerBody()?['properties']?['title']}`
    - Body:
      ```
      An AI circuit breaker has been triggered.
@@ -717,7 +717,7 @@ Apply this to the following tables:
 
 | Table | Justification |
 |-------|---------------|
-| `SigninLogs` | Authentication events — M-21-31 core requirement |
+| `SigninLogs` | Authentication events - M-21-31 core requirement |
 | `AADNonInteractiveUserSignInLogs` | Service account activity |
 | `AuditLogs` | Entra ID configuration changes |
 | `AzureActivity` | Control plane operations |
@@ -813,7 +813,7 @@ Restrict access to tables containing sensitive query data:
 5. Assignable scope: Table level
 6. Assign to: `EEOC-Security-Ops` and `EEOC-Security-Admins` only
 
-Repeat for `SigninLogs` if needed — developers should not have direct access to sign-in telemetry.
+Repeat for `SigninLogs` if needed - developers should not have direct access to sign-in telemetry.
 
 #### 5.5.3 Access Mode
 
@@ -858,7 +858,7 @@ This means users with Reader access on a specific Azure resource (e.g., a Contai
 
 3. Click **Save**
 
-#### 6.1.3 Conditional Access — Impossible Travel
+#### 6.1.3 Conditional Access - Impossible Travel
 
 1. Navigate to **Entra ID** > **Security** > **Conditional Access** > **+ New policy**
 2. Name: `Block impossible travel sign-ins`
@@ -870,7 +870,7 @@ This means users with Reader access on a specific Azure resource (e.g., a Contai
 5. Enable policy: `On`
 6. Click **Create**
 
-#### 6.1.4 Conditional Access — Anonymous IP and Malware-Linked IP
+#### 6.1.4 Conditional Access - Anonymous IP and Malware-Linked IP
 
 1. **Conditional Access** > **+ New policy**
 2. Name: `MFA for risky IP sign-ins`
@@ -928,15 +928,15 @@ Attach `playbook-notify-security` in the automated response tab.
 
 The platform uses Azure Front Door for public ingress (ADR only) and internal Container Apps for service-to-service communication. TLS inspection is handled at two levels:
 
-**Level 1 — Front Door to Backend (ADR):**
+**Level 1 - Front Door to Backend (ADR):**
 
 Azure Front Door terminates the external TLS connection and re-encrypts traffic to the Container App backend. This is already configured in the deployment guide (Section 2.18). Front Door WAF inspects HTTP payloads between TLS termination and re-encryption.
 
-**Level 2 — Internal Service-to-Service:**
+**Level 2 - Internal Service-to-Service:**
 
 All Container Apps communicate over the internal VNet. Container Apps Environment enforces TLS 1.2 on all ingress endpoints. Service-to-service calls within the environment use internal HTTPS.
 
-**Azure Firewall Premium TLS Inspection (Optional — if network-level inspection is required):**
+**Azure Firewall Premium TLS Inspection (Optional - if network-level inspection is required):**
 
 If the agency requires network-level TLS inspection beyond WAF:
 

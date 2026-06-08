@@ -1,4 +1,4 @@
-# OCHCO Benefits Coding Validation — Integration Plan
+# OCHCO Benefits Coding Validation - Integration Plan
 
 ## Purpose
 
@@ -60,8 +60,8 @@ have been answered and data access is confirmed.
 Plugs into the existing data-middleware pattern from
 `eeoc-data-analytics-and-dashboard`.
 
-**Source mapping file** — A new YAML mapping in `source_mappings/` defines:
-- Source connection (SQL Server, file drop, or API — depends on OCHCO answers)
+**Source mapping file** - A new YAML mapping in `source_mappings/` defines:
+- Source connection (SQL Server, file drop, or API - depends on OCHCO answers)
 - Column-level transforms (OPM action codes to readable labels, PII redaction)
 - Watermark column for incremental sync
 - PII tier classification (employee names and SSNs never leave this layer unhashed)
@@ -97,9 +97,9 @@ tables:
         format: "%Y%m%d"
 ```
 
-**Sync schedule** — Daily at 2 AM UTC via CronJob (offset from the 1 AM
+**Sync schedule** - Daily at 2 AM UTC via CronJob (offset from the 1 AM
 analytics reconciliation run). Real-time CDC via Event Hub if the source
-system supports it — but daily batch is the realistic starting point for
+system supports it - but daily batch is the realistic starting point for
 NFC data.
 
 ### 2. Validation Engine
@@ -120,7 +120,7 @@ engine runs validation rules before the action is sent to NFC:
 | Effective date | Effective date falls within the correct pay period for the action type |
 | Dependent eligibility | Dependent coverage changes match documented eligible dependents |
 
-Rules are implemented as a pluggable rule engine — each rule is a Python
+Rules are implemented as a pluggable rule engine - each rule is a Python
 class with a `validate(action: PersonnelAction) -> list[Finding]` interface.
 New rules can be added without modifying the engine.
 
@@ -184,7 +184,7 @@ case_id). Follows the same pattern as other platform entities.
 
 The application exposes an MCP endpoint so its tools are automatically
 available through the MCP Hub. Once registered, the benefits tools appear
-in the platform's AI Assistant — HR staff can query benefits data, validate
+in the platform's AI Assistant - HR staff can query benefits data, validate
 actions, and search overpayment cases using natural language, without leaving
 the assistant interface they already use for other EEOC work.
 
@@ -202,7 +202,7 @@ the assistant interface they already use for other EEOC work.
 | `benefits.search` | Natural-language search across benefits data (elections, actions, errors) |
 | `benefits.explain_code` | Look up OPM action/benefit code and return plain-English explanation |
 
-**Registration** — Add entry to the `mcpspokes` table in MCP Hub:
+**Registration** - Add entry to the `mcpspokes` table in MCP Hub:
 
 ```json
 {
@@ -223,13 +223,13 @@ benefits spoke enforces access at the tool level:
 
 | Role | Permitted tools |
 |---|---|
-| `benefits_specialist` | All tools — validate, search, case CRUD, code lookup |
+| `benefits_specialist` | All tools - validate, search, case CRUD, code lookup |
 | `benefits_manager` | All specialist tools + `get_error_summary` aggregate views |
-| `benefits_readonly` | Read-only tools only — `get_case`, `list_cases`, `search`, `explain_code` |
+| `benefits_readonly` | Read-only tools only - `get_case`, `list_cases`, `search`, `explain_code` |
 | No benefits role | No benefits tools appear in the assistant's available tool list |
 
 This means when an ADR mediator or OGC attorney uses the AI Assistant,
-they do not see benefits tools at all — the Hub only surfaces tools the
+they do not see benefits tools at all - the Hub only surfaces tools the
 user's roles permit. An HR specialist asking "show me overpayment cases
 from Q2" gets results; a user without an OCHCO role gets nothing.
 
@@ -256,15 +256,15 @@ Flask application with the standard platform patterns:
 
 - **Entra ID authentication** for EEOC staff (HR specialists, managers)
 - **Role-based access:**
-  - `benefits_specialist` — validate actions, review flagged items, confirm overpayments
-  - `benefits_manager` — all specialist permissions plus dashboard access and case resolution
-  - `benefits_readonly` — view-only access for audit and oversight
+  - `benefits_specialist` - validate actions, review flagged items, confirm overpayments
+  - `benefits_manager` - all specialist permissions plus dashboard access and case resolution
+  - `benefits_readonly` - view-only access for audit and oversight
 - **Pages:**
   - Action validation form (paste or upload SF-52 data, get validation results)
   - Flagged items queue (batch review findings awaiting human confirmation)
   - Overpayment case list and detail views
   - Dashboard (error rates, trends, dollar impact)
-- **508 compliance** — all WCAG 2.1 AA requirements per the platform accessibility standard.
+- **508 compliance** - all WCAG 2.1 AA requirements per the platform accessibility standard.
   Bootstrap 5.3.3 with EEOC contrast overrides. Charts require accessible
   data tables.
 
@@ -278,7 +278,7 @@ reporting:
 - Time-to-detection and time-to-resolution metrics
 - Trend lines for coding accuracy improvement
 
-Uses the same data-middleware ingestion pattern — the benefits app is a
+Uses the same data-middleware ingestion pattern - the benefits app is a
 source, the analytics dashboard is the consumer.
 
 ---
@@ -305,7 +305,7 @@ credentials in application code.
 
 | Requirement | Implementation |
 |---|---|
-| PII protection | Employee SSNs hashed with SHA-256 + Key Vault salt before storage. Names never stored — referenced by hash only. `_mask_pii()` applied to all log output. |
+| PII protection | Employee SSNs hashed with SHA-256 + Key Vault salt before storage. Names never stored - referenced by hash only. `_mask_pii()` applied to all log output. |
 | AI audit trail | HMAC-SHA256 signed audit records on every AI call. 7-year WORM retention in immutable blob storage. |
 | Data at rest | Azure Storage Service Encryption (SSE) with customer-managed keys in Key Vault |
 | Data in transit | TLS 1.2+ on all connections. HTTPS only. |
@@ -339,10 +339,10 @@ These must be resolved before development begins:
 ### Technical assumptions to confirm
 
 7. Existing Azure OpenAI quota has capacity for additional workload (estimate:
-   low volume — hundreds of actions per month, not thousands).
+   low volume - hundreds of actions per month, not thousands).
 8. Network path exists from Azure App Service to NFC data source (may require
    VPN or private endpoint configuration).
-9. OCHCO is willing to define and maintain validation rules with OCIO — this
+9. OCHCO is willing to define and maintain validation rules with OCIO - this
    is not a "set and forget" tool.
 
 ---
@@ -397,18 +397,18 @@ eeoc-ochco-benefits-validation/
 
 ## Implementation Sequence
 
-1. **Repo setup and scaffolding** — Flask app factory, auth, config, health
+1. **Repo setup and scaffolding** - Flask app factory, auth, config, health
    endpoint, MCP spoke skeleton. Register in MCP Hub.
-2. **Data ingestion** — Source mapping, sync job, sample data validation.
+2. **Data ingestion** - Source mapping, sync job, sample data validation.
    Requires answers to questions 1-2.
-3. **Validation engine** — Rule interface, initial rule set (top 5 error
+3. **Validation engine** - Rule interface, initial rule set (top 5 error
    types). Requires answers to questions 3-4.
-4. **Overpayment case tracker** — Table Storage entities, CRUD routes, case
+4. **Overpayment case tracker** - Table Storage entities, CRUD routes, case
    list and detail UI.
-5. **AI anomaly detection** — Batch job for historical analysis, audit logging
+5. **AI anomaly detection** - Batch job for historical analysis, audit logging
    integration.
-6. **Dashboard and reporting** — Analytics feed, leadership dashboard views.
-7. **508 audit and security review** — Full accessibility audit, pre-pen-test
+6. **Dashboard and reporting** - Analytics feed, leadership dashboard views.
+7. **508 audit and security review** - Full accessibility audit, pre-pen-test
    hardening, post-impl verification.
 
 Each phase produces a working increment that can be demonstrated to OCHCO

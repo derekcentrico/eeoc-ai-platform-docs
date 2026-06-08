@@ -1,7 +1,7 @@
 # Authentication Integration Reference
 **Author:** Derek Gordon
 
-## EEOC ADR Portal — Dual Identity Provider Architecture
+## EEOC ADR Portal - Dual Identity Provider Architecture
 
 This document describes how the EEOC ADR Portal authenticates two distinct user populations through separate identity providers. It is intended as a technical reference for teams evaluating similar patterns for EEOC applications.
 
@@ -20,9 +20,9 @@ The following decisions govern the authentication architecture. They are documen
 
 **Access restrictions.** Entra ID access is restricted at three layers, applied in sequence:
 
-1. **Tenant** — The authority URL (`AAD_AUTHORITY`) is bound to the EEOC tenant ID. Users from other Entra tenants cannot authenticate.
-2. **Domain** — The application routes only `@eeoc.gov` email addresses to Entra ID. All other domains route to Login.gov. The domain allowlist is a code-level constant, not a runtime configuration.
-3. **Group membership** — After authentication, the application checks the user's membership in specific Entra ID security groups (via Graph API) to assign a role. Users who authenticate but belong to neither the admin nor mediator group receive the default `party` role.
+1. **Tenant** - The authority URL (`AAD_AUTHORITY`) is bound to the EEOC tenant ID. Users from other Entra tenants cannot authenticate.
+2. **Domain** - The application routes only `@eeoc.gov` email addresses to Entra ID. All other domains route to Login.gov. The domain allowlist is a code-level constant, not a runtime configuration.
+3. **Group membership** - After authentication, the application checks the user's membership in specific Entra ID security groups (via Graph API) to assign a role. Users who authenticate but belong to neither the admin nor mediator group receive the default `party` role.
 
 **Callback architecture.** The application uses separate callback endpoints per provider (`/signin-oidc` for Entra ID, `/signin-oidc-logingov` for Login.gov). After each callback completes session population, both paths redirect to a single route (`index()`) that resolves the user's role and directs them to the appropriate dashboard. The callback endpoints are separate because the two providers return different token formats and require different validation logic, but the post-authentication experience is uniform.
 

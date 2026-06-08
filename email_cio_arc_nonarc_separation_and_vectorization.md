@@ -26,15 +26,15 @@ piece and where the controls sit.
 ARC charge data and the non-ARC office data now live in separate PostgreSQL
 databases on the same Flexible Server instance:
 
-- `arc_analytics` — charge-centric data: charges, ADR outcomes, investigations,
+- `arc_analytics` - charge-centric data: charges, ADR outcomes, investigations,
   charge-scoped documents and their embeddings.
-- `enterprise` — OCHCO, CFO, and HR data, plus documents that have no parent
+- `enterprise` - OCHCO, CFO, and HR data, plus documents that have no parent
   charge.
 
 One server keeps the cost and operational footprint flat; two databases mean ARC
 charge data and office data never share a schema or a connection. Backups run at
 the Flexible Server level and cover both databases, so backup isolation is not
-part of this separation — the boundary is the schema and connection, with access
+part of this separation - the boundary is the schema and connection, with access
 within each database enforced by the row-level access rules in section 3. The AI
 layer holds a connection to each and queries both when a question spans sources,
 but every query runs under the access rules of the database it touches.
@@ -73,7 +73,7 @@ sensitive parts only after seeing what they produce.
 
 | Phase | What is vectorized | PII exposure | RBAC enforcement | Status |
 |---|---|---|---|---|
-| 1 | Document metadata only (title, type, office, region, charge number, dates) | None — no document body | Row-level security on the document registry: region, office, domain, PII tier | **Live** |
+| 1 | Document metadata only (title, type, office, region, charge number, dates) | None - no document body | Row-level security on the document registry: region, office, domain, PII tier | **Live** |
 | 2 | Body text of documents with no PII after redaction | None after redaction | Same row-level security, plus the federated intersection guard | Built, gated off (`ALFRESCO_PHASE2_NONPII_ENABLED=false`) |
 | 3 | Body text of PII-bearing documents, stored **redacted only** | Redacted before any text is stored | Same controls; raw text never enters the store | Built, gated off (`ALFRESCO_PHASE3_PII_ENABLED=false`) |
 
@@ -81,7 +81,7 @@ A fourth control sits over Phases 2 and 3: review mode
 (`ALFRESCO_REDACTION_REVIEW_MODE=true`, the default). While it is on, the
 redaction stage writes its output to a review table and writes **nothing** to the
 chunk store or the vector index. This is the control that lets OGC see exactly
-what de-identification produces before any document text — redacted or not —
+what de-identification produces before any document text - redacted or not -
 enters the search system. With the shipped defaults, the entire body-text path is
 inert; only Phase 1 metadata flows.
 
@@ -89,7 +89,7 @@ inert; only Phase 1 metadata flows.
 
 ## 3. Intersection Access: A Result Must Clear Both Gates
 
-ARC enforces access at the case level — if you cannot see charge
+ARC enforces access at the case level - if you cannot see charge
 `2024-CHI-00413`, you cannot see it at all. The platform adds an enterprise-wide
 layer: domain and application grants that say which data domains (for example
 `ochco`, `cfo`) and PII tiers a user may reach. A document search can cross both
@@ -113,7 +113,7 @@ intersection guard, so the filtering is provable after the fact.
 
 A subtle failure mode drove one design choice. Earlier, the row-level policies on
 the charge and document tables were written as separate rules that PostgreSQL
-combines with OR — so a non-PII charge in the wrong region was visible to
+combines with OR - so a non-PII charge in the wrong region was visible to
 everyone, because the "non-PII" rule passed on its own. The policies are now a
 single combined rule that requires region AND office AND domain AND PII tier
 together. Privileged reviewers (the Director, Legal Counsel, and Admin roles)
@@ -121,20 +121,20 @@ bypass the region and office gates but never the PII-tier gate.
 
 ---
 
-## 4. What De-Identification Strips — For OGC
+## 4. What De-Identification Strips - For OGC
 
 This is the part OGC asked to rule on. Before any document body is chunked or
 embedded, it passes through a redaction stage. Two layers run:
 
-1. Pattern matching for structured identifiers — Social Security numbers, email
+1. Pattern matching for structured identifiers - Social Security numbers, email
    addresses, phone numbers, employer identification numbers, ZIP codes, and
    dates of birth. These use the same rules already applied to the charge
    narratives OGC reviews today, so a document is de-identified the same way a
    narrative is.
-2. Named-entity recognition for free-text identifiers — person names and
+2. Named-entity recognition for free-text identifiers - person names and
    locations. Each name is replaced with a stable token derived from the
-   platform's salted one-way hash — the same keyed PII hash used across the
-   platform, with the salt held in Key Vault — so the same person reads as the
+   platform's salted one-way hash - the same keyed PII hash used across the
+   platform, with the salt held in Key Vault - so the same person reads as the
    same token throughout a document and an analyst can still follow who did what
    without seeing the name. The salt is what stops someone from reversing a token
    back to a name by precomputing hashes of common names.
@@ -154,7 +154,7 @@ mgonzalez@example.com or (312) 555-0148. Respondent Acme Logistics (EIN
 36-4099210) is located at 200 W Adams St, Chicago, IL 60606.
 ```
 
-After redaction, this is what enters the review table — and, only with OGC
+After redaction, this is what enters the review table - and, only with OGC
 approval and Phase 3 turned on, the vector store:
 
 ```
@@ -177,8 +177,8 @@ De-identification manifest for this excerpt:
 | Address | 2 |
 | ZIP | 1 |
 
-The same person reads as the same token across the document — Maria Gonzalez is
-`[NAME_8f3a1c0d]` wherever she appears — so the text stays usable for analysis
+The same person reads as the same token across the document - Maria Gonzalez is
+`[NAME_8f3a1c0d]` wherever she appears - so the text stays usable for analysis
 while the identity is gone. The manifest above is the evidence OGC reviews to
 decide whether the output is de-identified enough to approve Phase 2, Phase 3, or
 neither.

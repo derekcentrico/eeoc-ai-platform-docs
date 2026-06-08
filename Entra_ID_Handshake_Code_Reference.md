@@ -1,4 +1,4 @@
-# Entra ID Authentication Handshake — Code Reference
+# Entra ID Authentication Handshake - Code Reference
 **Author:** Derek Gordon
 
 This document contains the exact code from the EEOC ADR Portal that implements the Entra ID (Azure AD) OIDC authentication flow. Each section includes the source code and an explanation of what it does and why.
@@ -36,7 +36,7 @@ def get_auth_provider_for_email(email: Optional[str]) -> AuthProvider:
     return AuthProvider.LOGINGOV
 ```
 
-The `ENTRA_DOMAINS` frozenset is a code-level constant, not a runtime configuration. Adding a new agency requires a code change and redeployment, which is intentional — it forces a review step before granting Entra-based access.
+The `ENTRA_DOMAINS` frozenset is a code-level constant, not a runtime configuration. Adding a new agency requires a code change and redeployment, which is intentional - it forces a review step before granting Entra-based access.
 
 ---
 
@@ -90,7 +90,7 @@ def build_msal_app(cache=None):
     )
 ```
 
-This is a confidential client (server-side application with a client secret). The `authority` parameter locks the application to the EEOC Entra tenant — users from other tenants cannot authenticate.
+This is a confidential client (server-side application with a client secret). The `authority` parameter locks the application to the EEOC Entra tenant - users from other tenants cannot authenticate.
 
 ---
 
@@ -123,7 +123,7 @@ def get_auth_url():
 
 Three things happen here:
 
-1. A random `state` parameter is generated and stored in the session. This prevents CSRF — the callback will reject any response whose `state` doesn't match.
+1. A random `state` parameter is generated and stored in the session. This prevents CSRF - the callback will reject any response whose `state` doesn't match.
 
 2. `response_mode=form_post` tells Entra ID to return the authorization code via a self-submitting HTML form POST, not as a URL query parameter. This is necessary because the authorization code from Entra ID is approximately 2,000 characters, which exceeds the URL length limit imposed by the Azure Application Gateway WAF (resulting in a 403 if sent via query string).
 
@@ -218,19 +218,19 @@ def authorized():
 
 The callback proceeds through these stages:
 
-1. **SameSite relay** — Because `SameSite=Lax` cookies are not sent on cross-site POSTs, the browser omits the session cookie when Entra ID POSTs the authorization code back. The handler stashes the POST payload in Redis (keyed by a random relay ID with 120-second TTL), sets a first-party relay cookie, and redirects as GET. The browser sends both cookies on the GET redirect, and the handler retrieves the stashed payload from Redis.
+1. **SameSite relay** - Because `SameSite=Lax` cookies are not sent on cross-site POSTs, the browser omits the session cookie when Entra ID POSTs the authorization code back. The handler stashes the POST payload in Redis (keyed by a random relay ID with 120-second TTL), sets a first-party relay cookie, and redirects as GET. The browser sends both cookies on the GET redirect, and the handler retrieves the stashed payload from Redis.
 
-2. **State validation** — The `state` parameter from Entra ID must match the value stored in the session before the redirect. A mismatch indicates a CSRF attack or session expiry.
+2. **State validation** - The `state` parameter from Entra ID must match the value stored in the session before the redirect. A mismatch indicates a CSRF attack or session expiry.
 
-3. **Token exchange** — The authorization code is exchanged for an access token and ID token via MSAL's `acquire_token_by_authorization_code()`. The `redirect_uri` must exactly match the one used in the authorization request or Entra will reject it.
+3. **Token exchange** - The authorization code is exchanged for an access token and ID token via MSAL's `acquire_token_by_authorization_code()`. The `redirect_uri` must exactly match the one used in the authorization request or Entra will reject it.
 
-4. **Session fixation protection** — The session is cleared and rebuilt to prevent session fixation attacks. Only the `_permanent` flag and `token_cache` are preserved.
+4. **Session fixation protection** - The session is cleared and rebuilt to prevent session fixation attacks. Only the `_permanent` flag and `token_cache` are preserved.
 
-5. **CSRF token regeneration** — A fresh CSRF token is generated and the session is force-written to Redis.
+5. **CSRF token regeneration** - A fresh CSRF token is generated and the session is force-written to Redis.
 
 ---
 
-## 6. Role Resolution (Step 3 — After the Handshake)
+## 6. Role Resolution (Step 3 - After the Handshake)
 
 After the token exchange, the application determines the user's role by checking Entra ID security group memberships via the Microsoft Graph API.
 

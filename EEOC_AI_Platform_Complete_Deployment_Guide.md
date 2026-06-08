@@ -1,4 +1,4 @@
-# EEOC AI Integration Platform — Complete Deployment Guide
+# EEOC AI Integration Platform - Complete Deployment Guide
 
 **Classification:** CUI // FOUO
 **Version:** 1.0
@@ -69,7 +69,7 @@
           │       │             │               │            │
           │  ┌────▼─────────────▼───────────────▼────────┐   │
           │  │         Azure API Management               │   │
-          │  │         (MCP Hub — tool routing)            │   │
+          │  │         (MCP Hub - tool routing)            │   │
           │  └────┬─────────────┬───────────────┬────────┘   │
           │       │             │               │            │
           │  ┌────▼─────┐ ┌────▼──────┐  ┌─────▼───────┐   │
@@ -116,7 +116,7 @@
 | **OGC Trial Tool** | Litigation support for the Office of General Counsel. Case analysis, document indexing, trial preparation. Internal-only. |
 | **ARC Integration API** | Bridge to ARC. Pushes case data to ADR/Triage, accepts write-backs (mediation outcomes, classifications), forwards Service Bus events. |
 | **MCP Hub** | Azure API Management routes AI tool calls to the right spoke. A thin aggregator function merges tool catalogs from all 5 spokes. |
-| **WAL/CDC Pipeline** | Streams every database change from PrEPA's PostgreSQL (ARC's system of record) into UDAP via Debezium and Event Hub. No impact on ARC — reads the existing transaction log. |
+| **WAL/CDC Pipeline** | Streams every database change from PrEPA's PostgreSQL (ARC's system of record) into UDAP via Debezium and Event Hub. No impact on ARC - reads the existing transaction log. |
 | **Data Middleware** | YAML-driven translation layer. Renames ARC's internal column labels to clear names, redacts PII per tier, validates data types. |
 
 ### Expected Outcome
@@ -134,7 +134,7 @@ Complete every item before touching Azure. Missing any of these will block you m
 | Prerequisite | Description | Status |
 |-------------|-------------|--------|
 | Azure Commercial subscription | Active subscription with Contributor role assigned to your account | [ ] |
-| Global Administrator access | Entra ID Global Admin or Application Administrator — needed for app registrations (Section 2.12) | [ ] |
+| Global Administrator access | Entra ID Global Admin or Application Administrator - needed for app registrations (Section 2.12) | [ ] |
 | GitHub access | Read access to all 6 repositories (eeoc-ofs-adr, eeoc-ofs-triage, eeoc-data-analytics-and-dashboard, eeoc-ogc-trialtool, eeoc-arc-integration-api, eeoc-mcp-hub-functions) | [ ] |
 
 ### External Dependencies
@@ -191,7 +191,7 @@ Collect these values now. You will enter them repeatedly during deployment.
 
 Every step below follows the same pattern: what to search for, what to click, what to type, and what to verify after creation.
 
-> All resources are deployed to **Azure Commercial** region **East US** (`eastus`) unless otherwise noted. Substitute your approved Azure Commercial region if East US is not available to your subscription — use a single region consistently throughout.
+> All resources are deployed to **Azure Commercial** region **East US** (`eastus`) unless otherwise noted. Substitute your approved Azure Commercial region if East US is not available to your subscription - use a single region consistently throughout.
 
 ### 2.1 Resource Group
 
@@ -245,12 +245,12 @@ Create the following 7 subnets:
 | Subnet Name | Address Range | Service Endpoints | Delegation | Notes |
 |-------------|--------------|-------------------|------------|-------|
 | `snet-apps` | `10.100.1.0/24` | Microsoft.KeyVault, Microsoft.Storage | Microsoft.App/environments | Container Apps |
-| `snet-postgres` | `10.100.2.0/24` | — | Microsoft.DBforPostgreSQL/flexibleServers | Database |
-| `snet-redis` | `10.100.3.0/24` | — | — | Redis private endpoint |
-| `snet-storage` | `10.100.4.0/24` | — | — | Storage private endpoint |
-| `snet-keyvault` | `10.100.5.0/24` | — | — | Key Vault private endpoint |
-| `snet-eventhub` | `10.100.6.0/24` | — | — | Event Hub private endpoint |
-| `snet-frontdoor` | `10.100.7.0/24` | — | — | Front Door backend |
+| `snet-postgres` | `10.100.2.0/24` | - | Microsoft.DBforPostgreSQL/flexibleServers | Database |
+| `snet-redis` | `10.100.3.0/24` | - | - | Redis private endpoint |
+| `snet-storage` | `10.100.4.0/24` | - | - | Storage private endpoint |
+| `snet-keyvault` | `10.100.5.0/24` | - | - | Key Vault private endpoint |
+| `snet-eventhub` | `10.100.6.0/24` | - | - | Event Hub private endpoint |
+| `snet-frontdoor` | `10.100.7.0/24` | - | - | Front Door backend |
 
 To add each subnet: Click **+ Add a subnet**, fill in the name, address range, service endpoints, and delegation, then click **Add**.
 
@@ -284,7 +284,7 @@ After creation, add these inbound rules:
 | 110 | AllowVnetInternal | VirtualNetwork | VirtualNetwork | 443,8000,8088,5000 | TCP | Allow |
 | 4096 | DenyAllInbound | Any | Any | * | Any | Deny |
 
-> NSG is stateful — outbound connections from apps to Redis (6380) and PgBouncer (6432) automatically allow return traffic. No inbound rules needed for those flows on this NSG.
+> NSG is stateful - outbound connections from apps to Redis (6380) and PgBouncer (6432) automatically allow return traffic. No inbound rules needed for those flows on this NSG.
 
 Associate `nsg-eeoc-apps-prod` with `snet-apps`: Go to NSG > Settings > Subnets > + Associate > select VNet and subnet.
 
@@ -377,7 +377,7 @@ openssl rand -hex 32      # → SUPERSET-SECRET-KEY
 
 Store each generated value in Key Vault. Full secret list in [Appendix C](#appendix-c-all-key-vault-secrets).
 
-> Record each generated value before storing — Key Vault will not show it again unless you have Get permission. Use the "Show Secret Value" button to verify immediately after creation.
+> Record each generated value before storing - Key Vault will not show it again unless you have Get permission. Use the "Show Secret Value" button to verify immediately after creation.
 
 ---
 
@@ -461,9 +461,9 @@ Navigate to Storage account > Tables > + Table for each:
 
 | Table Name | Used By |
 |-----------|---------|
-| `hubauditlog` | MCP Hub — request audit log |
-| `mcpspokes` | MCP Hub — spoke registry |
-| `arcintegrationaudit` | ARC Integration API — audit log |
+| `hubauditlog` | MCP Hub - request audit log |
+| `mcpspokes` | MCP Hub - spoke registry |
+| `arcintegrationaudit` | ARC Integration API - audit log |
 
 **Verify:** Navigate to Containers and Tables tabs. All entries listed with correct access levels.
 
@@ -561,7 +561,7 @@ docker push acreeocaiprod.azurecr.io/arc/integration-api:v1.0.0
 | Admin username | `udap_admin` |
 | Password | Use value from Key Vault secret `PG-ADMIN-PASSWORD` |
 
-**Compute + storage — Configure server:**
+**Compute + storage - Configure server:**
 
 | Setting | Value |
 |---------|-------|
@@ -927,7 +927,7 @@ Repeat for: UDAP AI Assistant, ADR webapp, ADR functionapp, Triage webapp, Triag
 
 ### 2.11 Azure Cognitive Search
 
-Triage uses this for retrieval-augmented generation (RAG) — fetches reference documents during charge classification to ground the model's output.
+Triage uses this for retrieval-augmented generation (RAG) - fetches reference documents during charge classification to ground the model's output.
 
 **Portal Navigation:** Home > Azure AI Search > + Create
 
@@ -946,7 +946,7 @@ Triage uses this for retrieval-augmented generation (RAG) — fetches reference 
 | Setting | Value |
 |---------|-------|
 | Public access | `Disabled` |
-| Private endpoint | Create new — use `snet-apps` subnet |
+| Private endpoint | Create new - use `snet-apps` subnet |
 
 After creation, navigate to Settings > Keys. Copy the **Primary admin key** and store in Key Vault as `SEARCH-ADMIN-KEY`.
 
@@ -974,8 +974,8 @@ After creation:
 1. Go to **Expose an API** > Set Application ID URI: `api://{client-id}`
 2. **Add a scope**: `Hub.Read` (Admin consent required), `Hub.Write` (Admin consent required)
 3. Go to **App roles** > Create:
-   - `Hub.Read` — allowed member types: Applications — value: `Hub.Read`
-   - `Hub.Write` — allowed member types: Applications — value: `Hub.Write`
+   - `Hub.Read` - allowed member types: Applications - value: `Hub.Read`
+   - `Hub.Write` - allowed member types: Applications - value: `Hub.Write`
 4. Go to **Certificates & secrets** > + New client secret > description: `hub-m2m` > expires: 24 months
 5. Store secret in Key Vault as `HUB-CLIENT-SECRET`
 
@@ -1044,7 +1044,7 @@ After creation:
 |---------|-------|
 | Name | `EEOC-ARC-Integration` |
 | Supported account types | `Accounts in this organizational directory only` |
-| Redirect URI | (leave blank — M2M only) |
+| Redirect URI | (leave blank - M2M only) |
 
 After creation:
 1. **App roles**: `ARC.Read`, `ARC.Write` (Applications)
@@ -1124,7 +1124,7 @@ Deploy each application as a Container App within the `cae-eeoc-ai-prod` environ
 | CPU | `2` |
 | Memory | `2 Gi` |
 
-Environment variables — see [Appendix B](#appendix-b-all-environment-variables-by-application) for the full list. Key settings:
+Environment variables - see [Appendix B](#appendix-b-all-environment-variables-by-application) for the full list. Key settings:
 
 | Name | Source | Value |
 |------|--------|-------|
@@ -1397,12 +1397,12 @@ APIM acts as the MCP Hub router. It receives tool calls from the AI Assistant, i
 
 | Setting | Value |
 |---------|-------|
-| Connectivity type | `Virtual network — Internal` |
+| Connectivity type | `Virtual network - Internal` |
 | Virtual network | `vnet-eeoc-ai-prod` |
 
 After creation (takes 30-45 minutes):
 
-1. **Configure backends** — one per spoke:
+1. **Configure backends** - one per spoke:
 
 | Backend ID | URL | Description |
 |-----------|-----|-------------|
@@ -1413,10 +1413,10 @@ After creation (takes 30-45 minutes):
 | `ogc-spoke` | `https://app-ogctrialtool-web.azurewebsites.net/api/mcp` | OGC MCP endpoint |
 | `hub-aggregator` | `https://ca-mcp-hub-func-prod.internal.{env}/api` | Hub aggregator function |
 
-2. **Create API** — POST `/mcp` with tool-prefix routing policies
-3. **Create API** — GET `/mcp/tools` routed to hub-aggregator
-4. **Add inbound policies** — validate Entra ID JWT, set X-Request-ID header, route by tool prefix
-5. **Add outbound policies** — log to Application Insights, write audit record
+2. **Create API** - POST `/mcp` with tool-prefix routing policies
+3. **Create API** - GET `/mcp/tools` routed to hub-aggregator
+4. **Add inbound policies** - validate Entra ID JWT, set X-Request-ID header, route by tool prefix
+5. **Add outbound policies** - log to Application Insights, write audit record
 
 Tool routing prefixes:
 
@@ -1428,7 +1428,7 @@ Tool routing prefixes:
 | `arc.*` | `arc-spoke` |
 | `trial.*` | `ogc-spoke` |
 
-**Verify:** Call `GET /mcp/tools` — should return the merged tool catalog from all registered spokes.
+**Verify:** Call `GET /mcp/tools` - should return the merged tool catalog from all registered spokes.
 
 ---
 
@@ -1560,7 +1560,7 @@ This prevents another Azure tenant's Front Door from reaching your backend.
 4. Upload TLS certificate or use Front Door managed certificate
 5. Associate domain with the route
 
-**Verify:** Browse to `https://adr-eeoc.azurefd.net/healthz` — should return 200 OK.
+**Verify:** Browse to `https://adr-eeoc.azurefd.net/healthz` - should return 200 OK.
 
 ---
 
@@ -1584,13 +1584,13 @@ After enabling Sentinel on the workspace:
 
 Navigate to Sentinel > Configuration > Data connectors:
 
-1. **Azure Active Directory** — sign-in logs, audit logs, provisioning logs
-2. **Azure Activity** — subscription-level operations
-3. **Microsoft Defender for Cloud** — security alerts
-4. **Azure Key Vault** — vault diagnostics
-5. **Azure Storage Account** — blob read/write audit
-6. **Azure PostgreSQL** — database diagnostics (configure in PostgreSQL > Diagnostic settings)
-7. **Azure Container Apps** — application logs (already flowing via Log Analytics)
+1. **Azure Active Directory** - sign-in logs, audit logs, provisioning logs
+2. **Azure Activity** - subscription-level operations
+3. **Microsoft Defender for Cloud** - security alerts
+4. **Azure Key Vault** - vault diagnostics
+5. **Azure Storage Account** - blob read/write audit
+6. **Azure PostgreSQL** - database diagnostics (configure in PostgreSQL > Diagnostic settings)
+7. **Azure Container Apps** - application logs (already flowing via Log Analytics)
 
 #### Enable UEBA (User and Entity Behavior Analytics)
 
@@ -1658,7 +1658,7 @@ Navigate to each resource > Monitoring > Diagnostic settings > + Add diagnostic 
 | Front Door | FrontDoorAccessLog, FrontDoorHealthProbeLog, FrontDoorWebApplicationFirewallLog | `log-eeoc-ai-prod` |
 | Storage Account | StorageRead, StorageWrite, StorageDelete | `log-eeoc-ai-prod` |
 
-**Verify:** Navigate to Log Analytics workspace > Logs. Run a query: `Heartbeat | take 10` — should return results.
+**Verify:** Navigate to Log Analytics workspace > Logs. Run a query: `Heartbeat | take 10` - should return results.
 
 ---
 
@@ -1700,17 +1700,17 @@ Now create these alert rules:
 
 ## Part 3: ARC DBA Coordination
 
-The WAL/CDC pipeline requires 2 SQL commands on ARC's PrEPA PostgreSQL server. ARC runs these — we do not have write access to their database.
+The WAL/CDC pipeline requires 2 SQL commands on ARC's PrEPA PostgreSQL server. ARC runs these - we do not have write access to their database.
 
 ### Email Template
 
 Send this to the ARC DBA contact:
 
-> Subject: WAL/CDC Configuration Request — EEOC AI Integration Platform
+> Subject: WAL/CDC Configuration Request - EEOC AI Integration Platform
 >
 > Hi {DBA name},
 >
-> We need two SQL commands run on the PrEPA production PostgreSQL server to enable Change Data Capture (CDC) for the EEOC AI Integration Platform. This lets us replicate data to UDAP with no load on PrEPA — it reads the existing write-ahead log.
+> We need two SQL commands run on the PrEPA production PostgreSQL server to enable Change Data Capture (CDC) for the EEOC AI Integration Platform. This lets us replicate data to UDAP with no load on PrEPA - it reads the existing write-ahead log.
 >
 > **What we need:**
 >
@@ -1794,7 +1794,7 @@ curl -X POST http://ca-debezium-connect-prod:8083/connectors \
 # check connector status
 curl http://ca-debezium-connect-prod:8083/connectors/prepa-postgresql-connector/status
 
-# check Event Hub metrics in portal — Incoming Messages should be > 0
+# check Event Hub metrics in portal - Incoming Messages should be > 0
 ```
 
 ---
@@ -1918,7 +1918,7 @@ curl -X POST "$HUB_URL/api/tools/refresh"
 
 ### 4.3 Connection Sequence
 
-Connect spokes in this order. Each phase has a gate — do not proceed until the gate passes.
+Connect spokes in this order. Each phase has a gate - do not proceed until the gate passes.
 
 **Phase 1: Hub Infrastructure**
 - Gate: APIM healthy, VNet routing works, Key Vault accessible, token validation passes, WORM blob verified
@@ -1938,7 +1938,7 @@ Connect spokes in this order. Each phase has a gate — do not proceed until the
 
 **Phase 5: UDAP + OBO**
 - Gate: AI queries return regionally scoped data, dynamic tool catalog reconciled
-- Test: Ask the AI "How many open cases are there?" — should return a number
+- Test: Ask the AI "How many open cases are there?" - should return a number
 
 **Phase 6: OGC Trial Tool**
 - Gate: 3 tools callable, document indexing works
@@ -2040,19 +2040,19 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 |---|-------|------------------------|--------|
 | 1 | All health endpoints return 200 | `curl /healthz` on each app | [ ] |
 | 2 | All spokes in hub tool catalog | `GET /mcp/tools` returns tools from all 5 spokes | [ ] |
-| 3 | AI query returns data | Ask "How many open cases?" — get a number back | [ ] |
+| 3 | AI query returns data | Ask "How many open cases?" - get a number back | [ ] |
 | 4 | ADR Login.gov works | External test party can sign in via Login.gov and see their cases | [ ] |
 | 5 | Triage classification completes | Upload a test charge document, observe classification output | [ ] |
-| 6 | Audit records in all audit tables | Query `hubauditlog`, `arcintegrationaudit` — rows exist | [ ] |
-| 7 | WORM blob immutable | Try to delete a blob in `hub-audit-archive` — should fail with 403 | [ ] |
+| 6 | Audit records in all audit tables | Query `hubauditlog`, `arcintegrationaudit` - rows exist | [ ] |
+| 7 | WORM blob immutable | Try to delete a blob in `hub-audit-archive` - should fail with 403 | [ ] |
 | 8 | Alerts fire on threshold breach | Temporarily lower a threshold (e.g., CPU > 1%) and verify email | [ ] |
 | 9 | Backup/restore tested | Trigger a PostgreSQL point-in-time restore to a test server, verify data | [ ] |
-| 10 | CDC lag under 30 seconds | Check Event Hub consumer lag metric — steady state should be < 5 seconds | [ ] |
+| 10 | CDC lag under 30 seconds | Check Event Hub consumer lag metric - steady state should be < 5 seconds | [ ] |
 | 11 | RLS enforced | Two users from different regions see different data | [ ] |
 | 12 | PgBouncer connection pooling | `SHOW pools;` on PgBouncer shows active connections | [ ] |
 | 13 | Redis caching active | `redis-cli INFO stats` shows `keyspace_hits` > 0 | [ ] |
 | 14 | Sentinel receiving logs | Sentinel overview shows data volume > 0 | [ ] |
-| 15 | WAF blocking attacks | Send a test SQLi payload to ADR — should return 403 | [ ] |
+| 15 | WAF blocking attacks | Send a test SQLi payload to ADR - should return 403 | [ ] |
 | 16 | TLS on all endpoints | `openssl s_client -connect {endpoint}:443` shows valid cert | [ ] |
 | 17 | DR failover documented | DR runbook exists, failover steps tested in staging | [ ] |
 
@@ -2067,8 +2067,8 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 **Check:**
 1. Is the OBO token configured? The AI Assistant uses On-Behalf-Of flow to preserve the caller's regional identity for RLS. If OBO fails, the query runs with no region context and RLS blocks everything.
    - Verify `UDAP_CLIENT_SECRET` is set and the Entra app has `user_impersonation` scope exposed.
-2. Is the user in a region group? Check Entra ID — the user must be in a group matching `UDAP-Data-Region-{region}`.
-3. Does the analytics schema have data? Run `SELECT count(*) FROM analytics.charges;` — if 0, the CDC pipeline is not populating data.
+2. Is the user in a region group? Check Entra ID - the user must be in a group matching `UDAP-Data-Region-{region}`.
+3. Does the analytics schema have data? Run `SELECT count(*) FROM analytics.charges;` - if 0, the CDC pipeline is not populating data.
 
 ### ADR login fails
 
@@ -2076,7 +2076,7 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 
 **Check:**
 1. Is the redirect URI correct in Entra ID? It must match exactly: `https://{adr-domain}/auth/callback`
-2. Is the Front Door forwarding the Host header? Check Front Door route — "Forwarding protocol" must preserve the original host.
+2. Is the Front Door forwarding the Host header? Check Front Door route - "Forwarding protocol" must preserve the original host.
 3. Is Login.gov configured? Verify `LOGINGOV-CLIENT-ID` and `LOGINGOV-PRIVATE-KEY` secrets in Key Vault.
 
 ### CDC consumer not processing
@@ -2084,17 +2084,17 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 **Symptoms:** Event Hub shows incoming messages but analytics tables are not updating.
 
 **Check:**
-1. Is the Debezium connector running? `curl /connectors/prepa-postgresql-connector/status` — look for `"state": "RUNNING"`.
+1. Is the Debezium connector running? `curl /connectors/prepa-postgresql-connector/status` - look for `"state": "RUNNING"`.
 2. Is the Event Hub connection string correct? Check `CDC-EVENTHUB-LISTEN-CONNECTION` in Key Vault.
 3. Is the consumer group correct? Must be `udap-middleware`.
-4. Is the replication slot active? On PrEPA: `SELECT * FROM pg_replication_slots WHERE slot_name = 'udap_cdc';` — `active` should be `t`.
+4. Is the replication slot active? On PrEPA: `SELECT * FROM pg_replication_slots WHERE slot_name = 'udap_cdc';` - `active` should be `t`.
 
 ### Tool not found in hub
 
 **Symptoms:** AI query fails with "tool not found" or "no matching tool".
 
 **Check:**
-1. Is the spoke registered? `GET /api/spokes` — the spoke must appear in the list.
+1. Is the spoke registered? `GET /api/spokes` - the spoke must appear in the list.
 2. Is the spoke healthy? Hit the spoke's health endpoint directly.
 3. Is APIM routing configured? Check the APIM policy for the tool prefix.
 4. Is the catalog stale? `POST /api/tools/refresh` to force a refresh.
@@ -2105,7 +2105,7 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 
 **Check:**
 1. Is the JWT audience correct? The token's `aud` claim must match the app registration's Application ID URI.
-2. Is the token expired? Decode the JWT at jwt.ms — check `exp` claim.
+2. Is the token expired? Decode the JWT at jwt.ms - check `exp` claim.
 3. Is the tenant correct? The token's `tid` claim must match `AZURE_TENANT_ID`.
 4. Are app roles assigned? The calling app must have the required role (e.g., `Hub.Read`) granted via admin consent.
 
@@ -2134,7 +2134,7 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 
 **Check:**
 1. Is Redis accessible from the VNet? The private endpoint must be in `snet-redis` and DNS resolution must work.
-2. Is TLS configured? Redis requires TLS 1.2 — connection strings must use `rediss://` (note double-s) not `redis://`.
+2. Is TLS configured? Redis requires TLS 1.2 - connection strings must use `rediss://` (note double-s) not `redis://`.
 3. Is the access key current? If Redis keys were regenerated, update Key Vault secret `REDIS-CONNECTION-STRING`.
 
 ---
@@ -2143,10 +2143,10 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 
 | Resource Type | Name | SKU/Tier |
 |--------------|------|----------|
-| Resource Group | `rg-eeoc-ai-platform-prod` | — |
-| Virtual Network | `vnet-eeoc-ai-prod` | — |
-| NSG (Apps) | `nsg-eeoc-apps-prod` | — |
-| NSG (Postgres) | `nsg-eeoc-postgres-prod` | — |
+| Resource Group | `rg-eeoc-ai-platform-prod` | - |
+| Virtual Network | `vnet-eeoc-ai-prod` | - |
+| NSG (Apps) | `nsg-eeoc-apps-prod` | - |
+| NSG (Postgres) | `nsg-eeoc-postgres-prod` | - |
 | Key Vault | `kv-eeoc-ai-prod` | Standard |
 | Storage Account | `steeocaiprod` | Standard GRS |
 | Container Registry | `acreeocaiprod` | Premium |
@@ -2159,12 +2159,12 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 | Cognitive Search | `srch-eeoc-triage-prod` | Standard S1 |
 | Container Apps Env | `cae-eeoc-ai-prod` | Workload profiles |
 | Log Analytics | `log-eeoc-ai-prod` | Per GB |
-| Application Insights | `appi-eeoc-ai-prod` | — |
+| Application Insights | `appi-eeoc-ai-prod` | - |
 | API Management | `apim-eeoc-mcp-hub-prod` | Standard v2 |
 | Front Door | `afd-eeoc-adr-prod` | Standard |
 | WAF Policy | `waf-eeoc-adr-prod` | Standard |
-| Event Grid Topic | `evgt-eeoc-ai-prod` | — |
-| Action Group | `ag-eeoc-ai-platform-prod` | — |
+| Event Grid Topic | `evgt-eeoc-ai-prod` | - |
+| Action Group | `ag-eeoc-ai-platform-prod` | - |
 
 ### Container Apps
 
@@ -2383,7 +2383,7 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 
 | App Registration | Client ID Env Var | App Roles | API Permissions | Redirect URI |
 |-----------------|-------------------|-----------|-----------------|-------------|
-| `EEOC-MCP-Hub` | `HUB_CLIENT_ID` | Hub.Read, Hub.Write | — (exposes APIs) | None (M2M) |
+| `EEOC-MCP-Hub` | `HUB_CLIENT_ID` | Hub.Read, Hub.Write | - (exposes APIs) | None (M2M) |
 | `EEOC-ADR-Mediation` | `ADR_CLIENT_ID` | MCP.Read, MCP.Write | EEOC-MCP-Hub: Hub.Read, Hub.Write | `https://{adr-domain}/auth/callback` |
 | `EEOC-OFS-Triage` | `TRIAGE_CLIENT_ID` | MCP.Read, MCP.Write | EEOC-MCP-Hub: Hub.Read, Hub.Write | `https://triage.internal.eeoc.gov/auth/callback` |
 | `EEOC-UDAP-Analytics` | `UDAP_CLIENT_ID` | Analytics.Read, Analytics.Write | EEOC-MCP-Hub: Hub.Read, Hub.Write | `https://udap.eeoc.gov/auth/callback` |
@@ -2483,4 +2483,4 @@ External Dependencies (outside VNet):
 
 ---
 
-*Document version 1.0 — 2026-04-06*
+*Document version 1.0 - 2026-04-06*

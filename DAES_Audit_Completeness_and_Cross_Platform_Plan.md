@@ -60,7 +60,7 @@ ADR's own gaps (the "missing wiring" expected):
 
 ## 3. Coverage Gap Matrix
 
-Legend: ✓ complete · ◐ partial · ✗ missing · — N/A
+Legend: ✓ complete · ◐ partial · ✗ missing · - N/A
 
 | App | FOIA/AI-gen WORM | NARA retention | Security events → audit store | Access/authz audit | Audit UI | Audit query/export |
 |---|---|---|---|---|---|---|
@@ -69,9 +69,9 @@ Legend: ✓ complete · ◐ partial · ✗ missing · — N/A
 | **MCP Hub** | ✓ `hubauditlog` | ✓ | ✗ | ◐ (caller hash only) | ✗ (backend) | ✗ |
 | **ARC Integration API** | ✓ `arcintegrationaudit` | ✓ | ◐ | ✓ (grant lifecycle, fail-closed) | ✗ (backend) | ✗ |
 | **Triage** | ✓ `aigenerationaudit` | ✓ | ◐ (export + admin only) | ✗ | ✓ (2 dashboards) | ◐ (no REST) |
-| **OGC Trial Tool** | ✓ `aigenerationaudit` | ✓ | ◐ | — (grants live in ARC) | ◐ (FOIA export only) | ✓ FOIA export |
+| **OGC Trial Tool** | ✓ `aigenerationaudit` | ✓ | ◐ | - (grants live in ARC) | ◐ (FOIA export only) | ✓ FOIA export |
 | **OCHCO** | ✓ (WORM blob added via #45/#46) | ✓ (post #45/#46) | ✗ | ✗ | ✗ | ✗ |
-| **Access Admin** | — | — | ◐ (logs only) | ✗ (grant audit lives in ARC, not viewable here) | ✗ | ✗ |
+| **Access Admin** | - | - | ◐ (logs only) | ✗ (grant audit lives in ARC, not viewable here) | ✗ | ✗ |
 
 ---
 

@@ -48,7 +48,7 @@ flowchart TB
         MCP_Spoke["MCP Spoke<br/>POST /mcp"]
     end
 
-    subgraph Central["UDAP — Central Data Store"]
+    subgraph Central["UDAP - Central Data Store"]
         MW["Data Middleware<br/>YAML mappings, value translation,<br/>PII redaction, validation"]
         PG["PostgreSQL<br/>analytics schema<br/>RLS-enforced views"]
         dbt["dbt Semantic Layer<br/>Governed metrics"]
@@ -246,12 +246,12 @@ flowchart TB
     end
 
     subgraph Consumers["Every App Queries UDAP"]
-        C1["ADR — case context,<br/>settlement trends"]
-        C2["Triage — historical<br/>patterns"]
-        C3["OGC — case history,<br/>litigation context"]
-        C4["MCP Hub — AI consumer<br/>queries"]
-        C5["Superset — dashboards"]
-        C6["JupyterHub — notebooks"]
+        C1["ADR - case context,<br/>settlement trends"]
+        C2["Triage - historical<br/>patterns"]
+        C3["OGC - case history,<br/>litigation context"]
+        C4["MCP Hub - AI consumer<br/>queries"]
+        C5["Superset - dashboards"]
+        C6["JupyterHub - notebooks"]
     end
 
     ARC -->|"WAL/CDC<br/>(real-time)"| MW
@@ -267,7 +267,7 @@ flowchart TB
 
 We are recommending two infrastructure additions alongside the new service:
 
-**1. WAL/CDC Pipeline (primary UDAP data path).** Streams all data from PrEPA's PostgreSQL database to UDAP in real-time via PostgreSQL logical replication (Debezium → Event Hub → UDAP Data Middleware). The publication covers every table in PrEPA — charges, allegations, staff, reference tables, mediation, closures, events — creating a full read replica. Raw data lands in UDAP's `replica` schema with original column names; the Data Middleware translates it into clean, AI-ready datasets in the `analytics` schema. Captures every row-level change including batch jobs and direct SQL. Zero impact on ARC's production write path.
+**1. WAL/CDC Pipeline (primary UDAP data path).** Streams all data from PrEPA's PostgreSQL database to UDAP in real-time via PostgreSQL logical replication (Debezium → Event Hub → UDAP Data Middleware). The publication covers every table in PrEPA - charges, allegations, staff, reference tables, mediation, closures, events - creating a full read replica. Raw data lands in UDAP's `replica` schema with original column names; the Data Middleware translates it into clean, AI-ready datasets in the `analytics` schema. Captures every row-level change including batch jobs and direct SQL. Zero impact on ARC's production write path.
 
 **2. ARC Integration API (write-back + targeted case distribution).** A new Python/FastAPI service that:
 - **Pushes targeted case data** to ADR (mediation-eligible cases with charge numbers, mediator assignments, party emails) and Triage (charge metadata at upload time). These are the only direct reads from ARC.
@@ -276,7 +276,7 @@ We are recommending two infrastructure additions alongside the new service:
 - **Registers** as an MCP spoke alongside the four apps.
 - **Forwards Service Bus events** as notifications to the MCP Hub for inter-app routing (e.g., notifying ADR when a case status changes).
 
-**3. IDR reconciliation.** The IDR (nightly SQL Server snapshot) transitions from UDAP's primary data source to a twice-weekly reconciliation target. The UDAP Data Middleware — already in production with YAML-driven column translation, value mapping, and PII redaction — compares analytics tables against IDR every Tuesday and Friday to verify the CDC pipeline hasn't missed records. As confidence grows, IDR dependency shrinks.
+**3. IDR reconciliation.** The IDR (nightly SQL Server snapshot) transitions from UDAP's primary data source to a twice-weekly reconciliation target. The UDAP Data Middleware - already in production with YAML-driven column translation, value mapping, and PII redaction - compares analytics tables against IDR every Tuesday and Friday to verify the CDC pipeline hasn't missed records. As confidence grows, IDR dependency shrinks.
 
 All data flowing into UDAP passes through the existing Data Middleware, which converts ARC's internal codes into clean, human-readable datasets. This middleware is already proven in production.
 
@@ -307,7 +307,7 @@ flowchart TB
     Hub <--> Triage["Triage<br/>9 tools"]
     Hub <-->|"primary query<br/>path"| UDAP["UDAP<br/>3+N tools"]
     Hub <--> OGC["OGC Trial Tool<br/>3 tools"]
-    Hub <-->|"write-back<br/>+ targeted reads"| ARC_API["ARC Integration<br/>API — 11 tools"]
+    Hub <-->|"write-back<br/>+ targeted reads"| ARC_API["ARC Integration<br/>API - 11 tools"]
 
     ARC_API <--> ARC["ARC Backbone<br/>(PrEPA + Gateway)"]
 
@@ -402,7 +402,7 @@ Once the integration is live, we can do things that are currently impossible:
 
 | Risk | Impact | Mitigation |
 |------|--------|-----------|
-| ARC team does not grant WAL/CDC access | No real-time CDC; falls back to Service Bus events + REST API feed endpoints (works but misses batch job changes, higher latency) | Engage ARC DBA early — this is a read-only logical replication slot with zero write-path impact. Frame as reading from the transaction log PostgreSQL already writes for crash recovery |
+| ARC team does not grant WAL/CDC access | No real-time CDC; falls back to Service Bus events + REST API feed endpoints (works but misses batch job changes, higher latency) | Engage ARC DBA early - this is a read-only logical replication slot with zero write-path impact. Frame as reading from the transaction log PostgreSQL already writes for crash recovery |
 | UDAP OBO flow is more complex than expected | UDAP connection delayed | Start OBO investigation in Phase 1 so there is runway before Phase 3 |
 | OGC Trial Tool auth replacement takes longer | Pushed to a later phase | Trial Tool can connect after the other three; does not block the hub |
 | CDC pipeline falls behind or misses records | UDAP has stale or incomplete data | IDR reconciliation engine runs twice weekly (Tue + Fri) comparing analytics tables against the nightly snapshot. Auto-backfills missing records. Alerts if discrepancy exceeds 0.1% |

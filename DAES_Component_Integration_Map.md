@@ -34,7 +34,7 @@ Deployment topology and per-component environment variables are in
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                    DAES — Runtime Integration Map                             │
+│                    DAES - Runtime Integration Map                             │
 │                    Azure Commercial · AKS / Container Apps                   │
 └──────────────────────────────────────────────────────────────────────────────┘
 
@@ -62,7 +62,7 @@ Deployment topology and per-component environment variables are in
   └─────────────┘  │  · Reconciles spoke catalog every 5 min       │
                    │  · Logs every call to hubauditlog + WORM blob │
                    │  · Uses DefaultAzureCredential (MI) to call   │
-                   │    spokes — no client secret                   │
+                   │    spokes - no client secret                   │
                    └─────────────────┬────────────────────────────┘
                                      │
               ┌──────────────────────┼───────────────────────────────┐
@@ -148,7 +148,7 @@ call time. Scope: `api://<spoke-client-id>/.default`.
 Source: `eeoc-mcp-hub-functions/hub_functions/auth.py`;
 `eeoc-mcp-hub-functions/hub_functions/config.py:25`.
 
-### 3.3 ARC constraint — only ARC Integration API calls ARC directly
+### 3.3 ARC constraint - only ARC Integration API calls ARC directly
 
 No component other than `eeoc-arc-integration-api` may call ARC backbone services
 (PrEPA, FEPA Gateway, Service Bus). All write-back and targeted lookup operations
@@ -160,7 +160,7 @@ The ARC Integration API is the only service that holds ARC backbone credentials
 
 Source: `eeoc-arc-integration-api/app/config/__init__.py:16-20`.
 
-### 3.4 UDAP data path — CDC pipeline, not the MCP Hub
+### 3.4 UDAP data path - CDC pipeline, not the MCP Hub
 
 UDAP receives ARC data via a separate WAL/CDC pipeline that does not go through the
 Hub:
@@ -212,7 +212,7 @@ logs are routed through the Hub to ARC Integration API tools:
 
 ADR also calls the ARC Integration API directly (bypassing the Hub) for pre-case
 operations:
-- `ARC_INTEGRATION_API_URL` (env var, ConfigMap) — charge lookup and mediation
+- `ARC_INTEGRATION_API_URL` (env var, ConfigMap) - charge lookup and mediation
   eligibility checks via `ARC.Read`-gated endpoints.
 
 Source: `eeoc-ofs-adr/deploy/k8s/adr-webapp/configmap.yaml:14`;
@@ -306,4 +306,4 @@ Components start and pass health checks with all integrations disabled.
 
 | Version | Date | Author | Changes |
 |---|---|---|---|
-| 1.0 | June 2026 | Derek Gordon / OIT | Initial release — expands §4 of DAES_Test_Environment_Static_Import_Playbook.md |
+| 1.0 | June 2026 | Derek Gordon / OIT | Initial release - expands §4 of DAES_Test_Environment_Static_Import_Playbook.md |

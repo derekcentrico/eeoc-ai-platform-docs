@@ -18,7 +18,7 @@ Cross-references:
 
 ## Table of Contents
 
-1. [App Registrations — one per component](#1-app-registrations--one-per-component)
+1. [App Registrations - one per component](#1-app-registrations---one-per-component)
 2. [App-Role Catalog](#2-app-role-catalog)
 3. [MCP Hub managed-identity grants](#3-mcp-hub-managed-identity-grants)
 4. [Tenant, domain, and security-group restriction layers](#4-tenant-domain-and-security-group-restriction-layers)
@@ -26,7 +26,7 @@ Cross-references:
 
 ---
 
-## 1. App Registrations — one per component
+## 1. App Registrations - one per component
 
 Each DAES component has exactly one Entra ID app registration. Registrations are
 **single-tenant** (the EEOC tenant). Machine-to-machine (M2M) registrations have no
@@ -47,7 +47,7 @@ redirect URI.
 
 The EEOC tenant ID is injected at deploy time via the `AZURE_TENANT_ID` environment
 variable. It must never be hardcoded. The `.gov` GCC-High authority
-(`login.microsoftonline.us`) must not appear in any DAES configuration — the platform
+(`login.microsoftonline.us`) must not appear in any DAES configuration - the platform
 runs on Azure Commercial.
 
 ---
@@ -98,7 +98,7 @@ Source: `eeoc-ogc-trialtool/tests/test_mcp_server.py:182,324`.
 
 Source: `eeoc-ochco-benefits-validation/app/routes/mcp.py:121`.
 
-#### UDAP — AI Assistant (`EEOC-UDAP-Analytics`)
+#### UDAP - AI Assistant (`EEOC-UDAP-Analytics`)
 
 | Role value | Type | Purpose |
 |---|---|---|
@@ -152,8 +152,8 @@ a delegated permission.
 **Steps (Azure Portal):**
 
 1. Open the spoke's app registration.
-2. **Expose an API** — confirm the `api://<spoke-client-id>` scope URI is set.
-3. **App roles** — confirm the relevant roles are defined and enabled.
+2. **Expose an API** - confirm the `api://<spoke-client-id>` scope URI is set.
+3. **App roles** - confirm the relevant roles are defined and enabled.
 4. Navigate to **Enterprise Applications** → find the Hub's managed identity
    (`EEOC-MCP-Hub` managed identity or the identity backing `ca-mcp-hub-func`).
 5. **Permissions** → **Add a permission** → **My APIs** → select the spoke →
@@ -172,7 +172,7 @@ Required grants for the Hub managed identity:
 | `EEOC-ARC-Integration` | `ARC.Read`, `ARC.Write` |
 
 > `MCP.ReadConfidential` and `MCP.WriteConfidential` (ADR caucus channels) are not
-> granted to the Hub by default. Grant them only after an explicit policy review —
+> granted to the Hub by default. Grant them only after an explicit policy review -
 > caucus content is attorney-client-privileged.
 
 The Hub's `get_m2m_token(scope)` function in
@@ -193,7 +193,7 @@ registration is re-created.
 Entra ID access is enforced at three sequential layers for every component that serves
 interactive (browser) users.
 
-### Layer 1 — Tenant
+### Layer 1 - Tenant
 
 The MSAL `authority` URL is bound to the EEOC tenant ID:
 
@@ -205,7 +205,7 @@ Users from any other Entra tenant cannot authenticate against this authority. Th
 tenant ID is injected via `AAD_AUTHORITY` (ADR, Triage) or `AZURE_TENANT_ID`
 (Access Admin, ARC Integration API).
 
-### Layer 2 — Domain routing
+### Layer 2 - Domain routing
 
 Components that serve both EEOC staff and external parties (ADR, Triage) route only
 `@eeoc.gov` email addresses to Entra ID. All other domains route to Login.gov.
@@ -221,7 +221,7 @@ a code change and redeployment (intentional review gate).
 Components that serve only EEOC staff (Access Admin, OGC Trial Tool) do not implement
 Login.gov and skip this layer.
 
-### Layer 3 — Security group membership
+### Layer 3 - Security group membership
 
 After token exchange, the application calls the Graph API `checkMemberGroups` endpoint
 to confirm the user belongs to an authorized security group. Users who authenticate
@@ -233,7 +233,7 @@ successfully but are in neither group receive the lowest-privilege role or are d
 | Triage | Admin group, Triage users group | `ADMIN-USERS-GROUP-ID`, `TRIAGE-USERS-GROUP-ID` |
 | Access Admin | Access Admin group(s) | `ACCESS_ADMIN_GROUP_IDS` (env var, comma-separated OIDs) |
 
-Graph endpoint: `https://graph.microsoft.com/v1.0` (Azure Commercial — never `.us`).
+Graph endpoint: `https://graph.microsoft.com/v1.0` (Azure Commercial - never `.us`).
 
 ### Dual-IdP split
 
@@ -243,7 +243,7 @@ Graph endpoint: `https://graph.microsoft.com/v1.0` (Azure Commercial — never `
 | External parties (complainants, attorneys, agency reps) | Login.gov | OIDC + PKCE + `private_key_jwt` |
 
 Components that are MCP spokes only (OCHCO, ARC Integration API) serve no browser
-users. They accept only Entra ID M2M bearer tokens — no interactive OIDC flow is
+users. They accept only Entra ID M2M bearer tokens - no interactive OIDC flow is
 implemented.
 
 ---
@@ -302,7 +302,7 @@ Source: `eeoc-ofs-triage/triage_webapp/triage_app.py:132-164`.
 MCP webhook secret (loaded only when `MCP_ENABLED=true`): loaded from Key Vault at
 `triage_webapp/triage_app.py:246`.
 
-### 5.3 UDAP — AI Assistant
+### 5.3 UDAP - AI Assistant
 
 **SecretProviderClass:** `eeoc-data-analytics-and-dashboard/deploy/k8s/ai-assistant/secret-provider.yaml`
 **SecretProviderClass name:** `ai-assistant-secrets-provider` (namespace: `udap`)
@@ -391,7 +391,7 @@ Source: `eeoc-access-admin/deploy/k8s/access-admin/secretproviderclass.yaml` and
 
 | Env var | Purpose |
 |---|---|
-| `HUB_AUDIT_HMAC_KEY` | HMAC key for audit record signing — Hub fails closed without this |
+| `HUB_AUDIT_HMAC_KEY` | HMAC key for audit record signing - Hub fails closed without this |
 | `AZURE_STORAGE_CONNECTION_STRING` | Audit table storage |
 | `REDIS_URL` | Redis for tool catalog caching |
 | `KEY_VAULT_URI` | Key Vault URI for runtime secret access |
@@ -399,7 +399,7 @@ Source: `eeoc-access-admin/deploy/k8s/access-admin/secretproviderclass.yaml` and
 Source: `eeoc-mcp-hub-functions/hub_functions/config.py`.
 
 The Hub does not hold a client secret for spoke calls. It uses `DefaultAzureCredential`
-(managed identity) — see Section 3.
+(managed identity) - see Section 3.
 
 ---
 
@@ -421,5 +421,5 @@ The Hub does not hold a client secret for spoke calls. It uses `DefaultAzureCred
 
 | Version | Date | Author | Changes |
 |---|---|---|---|
-| 1.0 | June 2026 | Derek Gordon / OIT | Initial release — consolidates Entra config from three prior docs |
+| 1.0 | June 2026 | Derek Gordon / OIT | Initial release - consolidates Entra config from three prior docs |
 | 1.1 | June 2026 | Derek Gordon / OIT | Add `Analytics.Write` to UDAP Hub grant (ingest tools require it per `mcp_api.py:385`); remove Access Admin from `ARC.Read` consumers (calls only `/arc/v1/access/` endpoints); correct Client-ID env var column for OCHCO and Access Admin (both use `AZURE_CLIENT_ID`, not a KV secret name) |
