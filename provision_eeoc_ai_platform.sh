@@ -487,6 +487,9 @@ log_ok "Storage private endpoint created"
 # Create blob containers
 CONTAINERS=(
     "hub-audit-archive"
+    "ai-generation-archive"
+    "arc-integration-archive"
+    "security-audit-archive"
     "adr-case-files"
     "adr-quarantine"
     "triage-processing"
@@ -514,14 +517,24 @@ az storage table create \
     -o none 2>/dev/null || true
 log_ok "Storage table: hubauditlog"
 
-# WORM immutability policy on audit archive (2555 days = 7 years / NARA)
-az storage container immutability-policy create \
-    --account-name "$EEOC_STORAGE" \
-    --container-name "hub-audit-archive" \
-    --period 2555 \
-    --allow-protected-append-writes true \
-    -o none 2>/dev/null || log_skip "Immutability policy may already exist"
-log_ok "WORM policy: hub-audit-archive (2555 days)"
+# WORM immutability policy on every audit archive (2555 days = 7 years / NARA).
+# immutability-policy create is a management-plane (ARM) call; it does not take
+# the data-plane --auth-mode flag.
+WORM_CONTAINERS=(
+    "hub-audit-archive"
+    "ai-generation-archive"
+    "arc-integration-archive"
+    "security-audit-archive"
+)
+for worm in "${WORM_CONTAINERS[@]}"; do
+    az storage container immutability-policy create \
+        --account-name "$EEOC_STORAGE" \
+        --container-name "$worm" \
+        --period 2555 \
+        --allow-protected-append-writes true \
+        -o none 2>/dev/null || log_skip "Immutability policy on $worm may already exist"
+    log_ok "WORM policy: $worm (2555 days)"
+done
 
 ################################################################################
 # SECTION 8: Azure Database for PostgreSQL Flexible Server

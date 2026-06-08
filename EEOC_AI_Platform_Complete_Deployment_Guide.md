@@ -2319,6 +2319,9 @@ curl -X POST https://ca-udap-ai-assistant-prod.internal.{env}/api/chat \
 | `RECONCILIATION_INTERVAL_SECONDS` | `300` | Manual |
 | `MAX_TOOLS_PER_CONTEXT` | `15` | Manual |
 | `SPOKE_REQUEST_TIMEOUT_SECONDS` | `30` | Manual |
+| `HUB_AUDIT_HMAC_KEY` | Key Vault | Secret (>= 32 chars; the hub fails closed on audit without it) |
+| `HUB_AUDIT_HASH_SALT` | Key Vault | Secret (distinct PII salt, not the HMAC key) |
+| `ALLOWED_SPOKE_PRIVATE_CIDRS` | Spoke subnet CIDR | Manual (SSRF allowlist; keep in sync with the NetworkPolicy egress CIDR) |
 
 ---
 

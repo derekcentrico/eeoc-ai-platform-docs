@@ -233,7 +233,10 @@ matching lifecycle cleanup rule; it never creates them at app runtime.
 
 **Manual steps before first run** (the script validates the second one and exits if missing):
 
-1. Import the TLS certificate into Key Vault (`az keyvault certificate import ... --name eeoc-adr-cert`).
+1. Import the TLS certificate into Key Vault under the name `provision_adr_system.sh` expects
+   (`az keyvault certificate import ... --name eeoc-adr-cert`). The all-in-one
+   `provision_eeoc_ai_platform.sh` path names the same cert `adr-tls-cert`; use the name matching
+   the script you run.
 2. Upload the settlement boilerplate document to the Triage/shared storage `priority-docs`
    container (`ADR_Settlement_Boilerplate.docx`).
 3. Register the ADR Entra app (web OIDC) and grant admin consent; provision Azure Communication
