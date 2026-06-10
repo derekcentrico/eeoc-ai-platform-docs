@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Dashboard — EEOC AI Triage System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="css/demo.css" rel="stylesheet">
+  <style>
+    /* =========================================================================
+       EEOC AI Triage System — Page overrides
+       Mirrors eeoc-ofs-triage/triage_webapp/static/css/eeoc-ai-triage-custom.css
+       Section 508 / WCAG 2.1 AA verified 2026-05-21
+       ========================================================================= */
+
+    /* CSS custom property overrides — EEOC 508-safe values */
+    :root {
+      --bs-danger-rgb:    176, 42, 55;
+      --bs-danger:        #b02a37;
+      --bs-success-rgb:   20, 108, 67;
+      --bs-success:       #146c43;
+      --bs-secondary-rgb: 90, 100, 114;
+      --bs-secondary:     #5a6472;
+      --bs-info-rgb:      8, 121, 144;
+      --bs-info:          #087990;
+      --bs-warning-rgb:   127, 101, 0;
+      --bs-warning:       #7f6500;
+      --bs-border-color:  #737373;
+    }
+
+    /* Text utility overrides — all pass 4.5:1 on white and #f8f9fa */
+    .text-muted   { color: #5a6472 !important; }
+    .text-danger  { color: #b02a37 !important; }
+    .text-success { color: #146c43 !important; }
+    .text-info    { color: #087990 !important; }
+    .text-warning { color: #7f6500 !important; }
+    .text-primary { color: #0a58ca !important; }
+
+    /* Navbar text — override Bootstrap rgba(255,255,255,0.55) default (3.2:1) */
+    .navbar-dark .navbar-text,
+    .navbar-dark .navbar-text a { color: #fff !important; }
+
+    /* Skip link — WCAG 2.4.1 */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      text-decoration: none;
+      z-index: 1100;
+      border-radius: 0 0 4px 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* Focus indicators — solid 2px, no box-shadow (WCAG 2.4.7 + 1.4.11) */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    [tabindex]:focus-visible,
+    .btn:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible,
+    .nav-link:focus-visible,
+    .btn-close:focus-visible,
+    .dropdown-item:focus-visible,
+    .page-link:focus-visible {
+      outline: 2px solid #0a58ca !important;
+      outline-offset: 2px !important;
+      box-shadow: none !important;
+    }
+
+    /* Suppress Bootstrap :focus box-shadow globally */
+    .btn:focus, a:focus, button:focus, input:focus, select:focus, textarea:focus,
+    [tabindex]:focus, .form-control:focus, .form-select:focus,
+    .form-check-input:focus, .nav-link:focus, .btn-close:focus,
+    .dropdown-item:focus, .page-link:focus {
+      box-shadow: none !important;
+    }
+
+    body {
+      background-color: #f8f9fa;
+      color: #212529;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+                   "Noto Sans", "Liberation Sans", Arial, sans-serif;
+    }
+
+    .container { max-width: 1140px; }
+
+    /* Active nav button indicator */
+    .navbar .btn-outline-light[aria-current="page"] {
+      background-color: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+
+    /* btn-outline-light custom properties — prevent Bootstrap hover flash */
+    .btn-outline-light {
+      --bs-btn-color:               #f8f9fa;
+      --bs-btn-border-color:        #f8f9fa;
+      --bs-btn-hover-color:         #212529;
+      --bs-btn-hover-bg:            #f8f9fa;
+      --bs-btn-hover-border-color:  #f8f9fa;
+      --bs-btn-active-color:        #212529;
+      --bs-btn-active-bg:           #f8f9fa;
+      --bs-btn-active-border-color: #f8f9fa;
+    }
+
+    /* btn-outline-warning in the navbar (admin tools) */
+    .btn-outline-warning {
+      --bs-btn-color:               #7f6500;
+      --bs-btn-border-color:        #7f6500;
+      --bs-btn-hover-color:         #fff;
+      --bs-btn-hover-bg:            #7f6500;
+      --bs-btn-hover-border-color:  #7f6500;
+      --bs-btn-active-color:        #fff;
+      --bs-btn-active-bg:           #7f6500;
+      --bs-btn-active-border-color: #7f6500;
+      color: #7f6500 !important;
+      border-color: #7f6500 !important;
+    }
+    .btn-outline-warning:hover,
+    .btn-outline-warning:active,
+    .btn-outline-warning.active {
+      background-color: #7f6500 !important;
+      border-color:     #7f6500 !important;
+      color:            #fff !important;
+    }
+
+    /* Metric cards — reuse demo.css .metric-card pattern */
+    .metric-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+    }
+    .metric-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #5a6472;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+    .metric-card .value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a2744;
+      line-height: 1.1;
+    }
+    .metric-card .sub {
+      font-size: 12px;
+      color: #5a6472;
+      margin-top: 0.25rem;
+    }
+
+    /* Footer text override */
+    footer .text-muted { color: #5a6472 !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Skip navigation — WCAG 2.4.1 -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ===== Navbar ===== -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">EEOC AI Triage System</a>
+      <div class="d-flex align-items-center flex-wrap gap-1">
+        <a href="triage-upload.html" class="btn btn-outline-light btn-sm me-1">Upload</a>
+        <a href="triage.html" class="btn btn-outline-light btn-sm me-1">Dashboard</a>
+        <a href="triage-analytics.html" class="btn btn-outline-light btn-sm me-1" aria-current="page">Analytics</a>
+        <a href="triage-reports.html" class="btn btn-outline-light btn-sm me-1">Reports</a>
+        <a href="triage-library.html" class="btn btn-outline-light btn-sm me-1">Manage Library</a>
+        <a href="triage-admin.html" class="btn btn-outline-warning btn-sm me-2" title="Admin Tools" aria-label="Admin Tools">Admin Tools</a>
+        <span class="navbar-text me-2">Welcome, S. Rodriguez</span>
+        <a href="index.html" class="btn btn-light btn-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Main Content ===== -->
+  <main id="main-content" class="container mt-4" role="main" tabindex="-1">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+      <h1 class="mb-2 mb-md-0">Analytics Dashboard</h1>
+      <span class="text-muted" style="font-size:13px;">FY2025 — Data as of May 21, 2026</span>
+    </div>
+
+    <!-- Flash / alert region -->
+    <div role="alert" aria-live="assertive"></div>
+
+    <!-- ===== Metric Cards ===== -->
+    <div class="row g-3 mb-4" role="list" aria-label="Analytics summary metrics">
+
+      <div class="col-sm-6 col-lg-3" role="listitem">
+        <div class="metric-card">
+          <div class="label">Charges Processed</div>
+          <div class="value">1,247</div>
+          <div class="sub">FY2025 year-to-date</div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-lg-3" role="listitem">
+        <div class="metric-card">
+          <div class="label">Avg Classification Time</div>
+          <div class="value">4.2 min</div>
+          <div class="sub">Down 0.8 min from target</div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-lg-3" role="listitem">
+        <div class="metric-card">
+          <div class="label">AI Accuracy Rate</div>
+          <div class="value">94.7%</div>
+          <div class="sub">Human-confirmed classifications</div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-lg-3" role="listitem">
+        <div class="metric-card">
+          <div class="label">Cases Routed to Mediation</div>
+          <div class="value">412</div>
+          <div class="sub">33.0% of processed charges</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== Charts Row ===== -->
+    <div class="row g-4 mb-4">
+
+      <!-- Bar chart: Charges by Protected Basis -->
+      <div class="col-lg-7">
+        <div class="card h-100">
+          <div class="card-header">
+            <h2 class="h5 mb-0">Charges by Protected Basis — FY2025</h2>
+          </div>
+          <div class="card-body">
+            <div style="position:relative; height:320px;">
+              <canvas id="basisChart"
+                      role="img"
+                      aria-label="Bar chart showing FY2025 charges filed by protected basis. Race leads with 4,891 charges, followed by Disability 3,172, Sex 2,684, Age 1,782, Retaliation 1,193, and National Origin 876."></canvas>
+            </div>
+            <details class="mt-3">
+              <summary>Chart data is available in the table below.</summary>
+              <table class="table table-sm mt-2">
+                <caption class="visually-hidden">FY2025 charges filed by protected basis</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Protected Basis</th>
+                    <th scope="col">Charges Filed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">Race</th><td>4,891</td></tr>
+                  <tr><th scope="row">Disability</th><td>3,172</td></tr>
+                  <tr><th scope="row">Sex</th><td>2,684</td></tr>
+                  <tr><th scope="row">Age</th><td>1,782</td></tr>
+                  <tr><th scope="row">Retaliation</th><td>1,193</td></tr>
+                  <tr><th scope="row">National Origin</th><td>876</td></tr>
+                </tbody>
+              </table>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <!-- Line chart: Weekly Charge Volume -->
+      <div class="col-lg-5">
+        <div class="card h-100">
+          <div class="card-header">
+            <h2 class="h5 mb-0">Weekly Charge Volume — Last 12 Weeks</h2>
+          </div>
+          <div class="card-body">
+            <div style="position:relative; height:320px;">
+              <canvas id="weeklyChart"
+                      role="img"
+                      aria-label="Line chart showing weekly charge volume over the last 12 weeks. Values range between 180 and 240 charges per week with a slight upward trend."></canvas>
+            </div>
+            <details class="mt-3">
+              <summary>Chart data is available in the table below.</summary>
+              <table class="table table-sm mt-2">
+                <caption class="visually-hidden">Weekly charge volume for the last 12 weeks</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Week</th>
+                    <th scope="col">Charges</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">Week 10</th><td>183</td></tr>
+                  <tr><th scope="row">Week 11</th><td>196</td></tr>
+                  <tr><th scope="row">Week 12</th><td>188</td></tr>
+                  <tr><th scope="row">Week 13</th><td>205</td></tr>
+                  <tr><th scope="row">Week 14</th><td>212</td></tr>
+                  <tr><th scope="row">Week 15</th><td>198</td></tr>
+                  <tr><th scope="row">Week 16</th><td>221</td></tr>
+                  <tr><th scope="row">Week 17</th><td>215</td></tr>
+                  <tr><th scope="row">Week 18</th><td>230</td></tr>
+                  <tr><th scope="row">Week 19</th><td>218</td></tr>
+                  <tr><th scope="row">Week 20</th><td>237</td></tr>
+                  <tr><th scope="row">Week 21</th><td>242</td></tr>
+                </tbody>
+              </table>
+            </details>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="py-4 mt-5 bg-light" role="contentinfo">
+    <div class="container text-center text-muted" style="font-size:0.8rem;">
+      <p class="mb-1">This U.S. government system is to be used by authorized users only. Information from this system resides on computer systems funded by the government.</p>
+      <p class="mb-1">The data and documents on this system include Federal records that contain sensitive information protected by various Federal statutes, including the Privacy Act, 5 U.S.C. &sect; 552a.</p>
+      <p class="mb-1">All access or use of this system constitutes user understanding and acceptance of these terms and constitutes unconditional consent to review, monitor, record, audit and take action by all authorized government and law enforcement personnel.</p>
+      <p class="mb-0">Unauthorized user attempts or acts to (1) access, view, upload, change, or delete information on this system, (2) modify this system, (3) deny access to this system, (4) accrue resources for unauthorized use or (5) otherwise misuse this system are strictly prohibited. Such attempts or acts are subject to action that may result in criminal, civil, or administrative penalties.</p>
+    </div>
+  </footer>
+
+  <!-- ===== Toast Container ===== -->
+  <div id="toast-container"
+       class="toast-container"
+       role="status"
+       aria-live="polite"
+       aria-atomic="false"
+       data-toasts='[
+         {"type":"data","title":"Analytics Source","text":"Charge volume data is pulled from ARC via the Integration API and rolled up nightly. Numbers reflect confirmed charges only — pending intake is excluded.","delay":3000,"duration":10000},
+         {"type":"mcp","title":"AI Accuracy Measurement","text":"The 94.7% accuracy rate reflects human reviewer agreement with AI-recommended classifications. Each override is logged with HMAC-SHA256 audit integrity.","delay":5000,"duration":10000}
+       ]'>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmY19UFhFBKhxtuQFBTzAIiL5FsDq" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+  <script src="js/demo.js"></script>
+  <script>
+    /* -----------------------------------------------------------------------
+       Analytics charts — pinned Chart.js 4.4.9
+       All colors verified >= 3:1 against white canvas (WCAG 1.4.11)
+       All rgb() values — no rgba() with reduced opacity
+       ----------------------------------------------------------------------- */
+    document.addEventListener('DOMContentLoaded', function () {
+      'use strict';
+
+      Chart.defaults.font.family = "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+      Chart.defaults.color = '#212529';
+
+      /* Bar chart — Charges by Protected Basis
+         Colors verified >= 3:1 on white:
+           #0a58ca  6.44:1  (race)
+           #146c43  6.45:1  (disability)
+           #087990  5.06:1  (sex)
+           #b02a37  6.50:1  (age)
+           #7f6500  5.58:1  (retaliation)
+           #5a6472  6.00:1  (national origin)
+      */
+      var basisCtx = document.getElementById('basisChart').getContext('2d');
+      new Chart(basisCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Race', 'Disability', 'Sex', 'Age', 'Retaliation', 'National Origin'],
+          datasets: [{
+            label: 'Charges Filed',
+            data: [4891, 3172, 2684, 1782, 1193, 876],
+            backgroundColor: [
+              'rgb(10, 88, 202)',   /* #0a58ca — 6.44:1 */
+              'rgb(20, 108, 67)',   /* #146c43 — 6.45:1 */
+              'rgb(8, 121, 144)',   /* #087990 — 5.06:1 */
+              'rgb(176, 42, 55)',   /* #b02a37 — 6.50:1 */
+              'rgb(127, 101, 0)',   /* #7f6500 — 5.58:1 */
+              'rgb(90, 100, 114)'  /* #5a6472 — 6.00:1 */
+            ],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Charges Filed' }
+            },
+            x: {
+              title: { display: false }
+            }
+          }
+        }
+      });
+
+      /* Line chart — Weekly Charge Volume (Last 12 Weeks)
+         Border color #0a58ca — 6.44:1 on white
+         Fill: solid rgb, not rgba
+      */
+      var weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+      new Chart(weeklyCtx, {
+        type: 'line',
+        data: {
+          labels: ['Wk 10','Wk 11','Wk 12','Wk 13','Wk 14','Wk 15','Wk 16','Wk 17','Wk 18','Wk 19','Wk 20','Wk 21'],
+          datasets: [{
+            label: 'Charges',
+            data: [183, 196, 188, 205, 212, 198, 221, 215, 230, 218, 237, 242],
+            borderColor: 'rgb(10, 88, 202)',         /* #0a58ca — 6.44:1 */
+            backgroundColor: 'rgb(219, 234, 254)',   /* light blue fill — solid */
+            tension: 0.3,
+            fill: true,
+            pointBackgroundColor: 'rgb(10, 88, 202)',
+            pointRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              min: 160,
+              max: 260,
+              title: { display: true, text: 'Charges' }
+            },
+            x: {
+              title: { display: false }
+            }
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

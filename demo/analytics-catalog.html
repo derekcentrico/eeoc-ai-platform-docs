@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<!--
+  analytics-catalog.html — Data Catalog dataset registry (demo mockup).
+  Mirrors the analytics.html custom CSS framework: government banner,
+  horizontal navbar, no Bootstrap.
+  Section 508 / WCAG 2.1 AA compliant.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <title>Data Catalog — Available Datasets — EEOC Analytics Assistant</title>
+
+  <style>
+/* ============================================================
+   CSS Custom Properties — matches ai-assistant/static/css/app.css
+   ============================================================ */
+:root {
+  --navy:        #003366;
+  --blue:        #0066CC;
+  --gold:        #996600;
+  --light-blue:  #E8F1FB;
+  --white:       #FFFFFF;
+  --gray-100:    #F5F7FA;
+  --gray-200:    #E2E8F0;
+  --gray-700:    #4A5568;
+  --gray-900:    #1A1A1A;
+  --success:     #006400;
+  --error:       #B22222;
+  --focus-ring:  3px solid #005FCC;
+
+  --font-sans:   "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+  --font-mono:   "Source Code Pro", "Courier New", monospace;
+
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.12);
+  --shadow-md:   0 4px 12px rgba(0,0,0,0.15);
+
+  --nav-height:  56px;
+}
+
+/* ============================================================
+   Reset / base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  color: var(--gray-900);
+  background: var(--gray-100);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+*:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.btn:focus, a:focus, input:focus, button:focus, select:focus, textarea:focus {
+  box-shadow: none !important;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
+}
+
+.skip-nav {
+  position: absolute; top: -100%; left: 0;
+  background: var(--navy); color: var(--white);
+  padding: 8px 16px; z-index: 9999;
+  font-weight: 600; text-decoration: none;
+  border-radius: 0 0 var(--radius-sm) 0;
+}
+.skip-nav:focus { top: 0; }
+
+/* ============================================================
+   Government banner
+   ============================================================ */
+.gov-banner {
+  background: var(--gray-200);
+  font-size: 0.8rem;
+  padding: 4px 0;
+  border-bottom: 1px solid #C5D0DC;
+}
+.gov-banner__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--gray-700);
+}
+
+.gov-flag {
+  display: inline-block;
+  width: 16px; height: 11px;
+  background: linear-gradient(
+    to bottom,
+    #B22234 0%, #B22234 14.3%,
+    #fff 14.3%, #fff 28.6%,
+    #B22234 28.6%, #B22234 42.9%,
+    #fff 42.9%, #fff 57.1%,
+    #B22234 57.1%, #B22234 71.4%,
+    #fff 71.4%, #fff 85.7%,
+    #B22234 85.7%, #B22234 100%
+  );
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Navigation
+   ============================================================ */
+.navbar {
+  background: var(--navy);
+  border-bottom: 3px solid var(--gold);
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar__brand { display: flex; align-items: center; gap: 0.75rem; }
+
+.navbar__logo-placeholder {
+  height: 36px; width: 120px;
+  background: rgba(255,255,255,0.15);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700; color: var(--white);
+  letter-spacing: 0.05em;
+}
+
+.navbar__title {
+  color: var(--white);
+  font-size: 1.1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.navbar__links {
+  display: flex; list-style: none; gap: 0.25rem;
+  flex: 1; justify-content: center;
+}
+.navbar__link {
+  color: #D6E4F7; text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  transition: background 0.15s, color 0.15s;
+}
+.navbar__link:hover,
+.navbar__link:focus { color: var(--white); background: rgba(255,255,255,0.12); }
+.navbar__link--active {
+  color: var(--white);
+  border-bottom: 2px solid var(--gold);
+  padding-bottom: calc(0.5rem - 2px);
+}
+
+.navbar__user { display: flex; align-items: center; gap: 0.75rem; white-space: nowrap; }
+.navbar__username { color: #D6E4F7; font-size: 0.9rem; }
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 0.4rem;
+  font-family: var(--font-sans); font-size: 0.95rem; font-weight: 600;
+  line-height: 1;
+  min-height: 44px; min-width: 44px;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.btn--primary   { background: var(--navy); color: var(--white); }
+.btn--primary:hover, .btn--primary:focus { background: #002244; }
+.btn--secondary { background: var(--white); border-color: var(--navy); color: var(--navy); }
+.btn--secondary:hover, .btn--secondary:focus { background: var(--light-blue); }
+.btn--ghost     { background: transparent; color: var(--gray-700); border-color: var(--gray-200); }
+.btn--ghost:hover, .btn--ghost:focus { background: var(--gray-200); }
+.btn--sm        { min-height: 36px; padding: 0.3rem 0.875rem; font-size: 0.875rem; }
+
+/* ============================================================
+   Main content area
+   ============================================================ */
+main {
+  flex: 1;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.page-header h1 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+.breadcrumb {
+  font-size: 0.8rem;
+  color: var(--gray-700);
+  margin-bottom: 0.25rem;
+}
+.breadcrumb a { color: var(--blue); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+/* ============================================================
+   Content cards
+   ============================================================ */
+.content-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+.content-card h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 1rem;
+}
+
+/* ============================================================
+   Catalog table
+   ============================================================ */
+.catalog-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.catalog-table thead th {
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 700;
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  white-space: nowrap;
+}
+.catalog-table tbody tr:hover { background: var(--light-blue); }
+.catalog-table td,
+.catalog-table tbody th {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--gray-200);
+  vertical-align: middle;
+}
+.catalog-table tbody tr:last-child td,
+.catalog-table tbody tr:last-child th { border-bottom: none; }
+
+/* Dataset name monospace */
+.ds-name {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+/* PII tier badges */
+.tier-1 {
+  display: inline-block;
+  background: #d1fae5;
+  color: #006400;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.tier-2 {
+  display: inline-block;
+  background: #fef3c7;
+  color: #7f6500;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.tier-3 {
+  display: inline-block;
+  background: #fde8ea;
+  color: #B22222;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+/* pending badge */
+.badge-pending {
+  display: inline-block;
+  background: #F1F5F9;
+  color: #4A5568;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* ============================================================
+   Detail panel
+   ============================================================ */
+.detail-panel {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+.detail-panel h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.75rem;
+  font-family: var(--font-mono);
+}
+
+.column-list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.column-list li {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 2px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--navy);
+}
+
+.sql-block {
+  background: #1e2533;
+  color: #d4e0f0;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+  padding: 0.875rem 1rem;
+  overflow-x: auto;
+  white-space: pre;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   Two-column layout
+   ============================================================ */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1rem;
+  align-items: start;
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.footer {
+  background: var(--navy);
+  color: #D6E4F7;
+  text-align: center;
+  padding: 0.875rem 1rem;
+  font-size: 0.8rem;
+  margin-top: auto;
+}
+.footer p + p { margin-top: 0.25rem; }
+.footer a { color: #A8C8EE; }
+.footer a:hover { color: var(--white); }
+.footer__notice { color: #8AAFD4; font-size: 0.75rem; }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1000px) {
+  .two-col { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .navbar__links { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+@media (forced-colors: active) {
+  .btn--primary { border: 2px solid ButtonText; }
+  .catalog-table thead th { border: 1px solid ButtonText; }
+}
+  </style>
+</head>
+<body>
+
+<!-- Skip navigation — WCAG 2.4.1 -->
+<a class="skip-nav" href="#main-content">Skip to main content</a>
+
+<!-- Toast container -->
+<div class="toast-container"
+     id="toast-container"
+     aria-live="polite"
+     aria-atomic="false"
+     data-toasts='[
+       {"type":"data","title":"dbt Auto-Generated Catalog","text":"The Data Catalog is auto-generated from dbt schema definitions. New datasets appear automatically when dbt models are deployed.","delay":3000,"duration":12000}
+     ]'>
+</div>
+
+<!-- Government banner -->
+<div class="gov-banner">
+  <div class="gov-banner__inner">
+    <span class="gov-flag" aria-hidden="true"></span>
+    <span>An official website of the United States government</span>
+  </div>
+</div>
+
+<!-- Primary navigation -->
+<header role="banner">
+  <nav class="navbar" aria-label="Primary navigation">
+    <div class="navbar__brand">
+      <a href="index.html" class="navbar__logo-link" aria-label="EEOC Analytics Portal home">
+        <div class="navbar__logo-placeholder" aria-hidden="true">EEOC</div>
+      </a>
+      <span class="navbar__title">Analytics Assistant</span>
+    </div>
+
+    <ul class="navbar__links" role="list">
+      <li>
+        <a href="analytics.html" class="navbar__link">
+          Dashboards
+        </a>
+      </li>
+      <li>
+        <a href="analytics-chat.html" class="navbar__link">AI Assistant</a>
+      </li>
+      <li>
+        <a href="analytics-search.html" class="navbar__link">Narrative Search</a>
+      </li>
+      <li>
+        <a href="analytics-notebooks.html" class="navbar__link">Notebooks</a>
+      </li>
+      <li>
+        <a href="analytics-catalog.html" class="navbar__link navbar__link--active" aria-current="page">Data Catalog</a>
+      </li>
+      <li>
+        <a href="analytics-admin.html" class="navbar__link">Access Mgmt</a>
+      </li>
+    </ul>
+
+    <div class="navbar__user" aria-label="User menu">
+      <span class="navbar__username"
+            aria-label="Signed in as D. Gordon">
+        D. Gordon
+      </span>
+      <a href="index.html" class="btn btn--secondary btn--sm">Sign out</a>
+    </div>
+  </nav>
+</header>
+
+<!-- Main content -->
+<main id="main-content" role="main" tabindex="-1">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <p class="breadcrumb">
+        <a href="analytics.html">Analytics</a> &rsaquo; Data Catalog
+      </p>
+      <h1>Data Catalog &mdash; Available Datasets</h1>
+    </div>
+  </div>
+
+  <div class="two-col">
+
+    <!-- Dataset registry table -->
+    <section class="content-card" aria-labelledby="registry-heading">
+      <h2 id="registry-heading">Dataset Registry</h2>
+      <div style="overflow-x:auto;">
+        <table class="catalog-table">
+          <caption class="sr-only">Available datasets: name, source system, record count, update frequency, PII classification tier, and access level</caption>
+          <thead>
+            <tr>
+              <th scope="col">Dataset</th>
+              <th scope="col">Source</th>
+              <th scope="col" style="text-align:right;">Records</th>
+              <th scope="col">Updated</th>
+              <th scope="col">PII Tier</th>
+              <th scope="col">Access</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" class="ds-name">fct_charge_filings</th>
+              <td>ARC</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;">142,847</td>
+              <td>Daily</td>
+              <td><span class="tier-2">Tier 2</span></td>
+              <td>Data Stewards + Admins</td>
+            </tr>
+            <tr>
+              <th scope="row" class="ds-name">fct_mediation_outcomes</th>
+              <td>ADR Portal</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;">12,431</td>
+              <td>Daily</td>
+              <td><span class="tier-2">Tier 2</span></td>
+              <td>Data Stewards + Admins</td>
+            </tr>
+            <tr>
+              <th scope="row" class="ds-name">dim_offices</th>
+              <td>ARC</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;">53</td>
+              <td>Weekly</td>
+              <td><span class="tier-1">Tier 1</span></td>
+              <td>All Analysts</td>
+            </tr>
+            <tr>
+              <th scope="row" class="ds-name">dim_statutes</th>
+              <td>Reference</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;">28</td>
+              <td>Static</td>
+              <td><span class="tier-1">Tier 1</span></td>
+              <td>All Analysts</td>
+            </tr>
+            <tr>
+              <th scope="row" class="ds-name">stg_case_narratives</th>
+              <td>ARC</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;">89,234</td>
+              <td>Daily</td>
+              <td><span class="tier-2">Tier 2</span></td>
+              <td>Data Stewards + Admins</td>
+            </tr>
+            <tr>
+              <th scope="row" class="ds-name">fct_investigation_actions</th>
+              <td>ARC</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;">67,892</td>
+              <td>Daily</td>
+              <td><span class="tier-2">Tier 2</span></td>
+              <td>Data Stewards + Admins</td>
+            </tr>
+            <tr>
+              <th scope="row" class="ds-name">dim_respondents</th>
+              <td>ARC</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;">34,567</td>
+              <td>Weekly</td>
+              <td><span class="tier-1">Tier 1</span></td>
+              <td>All Analysts</td>
+            </tr>
+            <tr>
+              <th scope="row" class="ds-name">fct_settlement_amounts</th>
+              <td>ADR Portal</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;">8,234</td>
+              <td>Daily</td>
+              <td><span class="tier-2">Tier 2</span></td>
+              <td>Data Stewards + Admins</td>
+            </tr>
+            <tr>
+              <th scope="row" class="ds-name">stg_personnel_actions</th>
+              <td>NFC</td>
+              <td style="text-align:right;">
+                <span class="badge-pending">0 &mdash; Pending</span>
+              </td>
+              <td>Pending</td>
+              <td><span class="tier-3">Tier 3</span></td>
+              <td>OCHCO Only</td>
+            </tr>
+            <tr>
+              <th scope="row" class="ds-name">fct_trial_outcomes</th>
+              <td>OGC Trial Tool</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;">1,247</td>
+              <td>Weekly</td>
+              <td><span class="tier-2">Tier 2</span></td>
+              <td>Legal + Admins</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Detail panel for fct_charge_filings -->
+    <aside aria-labelledby="detail-heading">
+      <div class="content-card">
+        <h2 id="detail-heading">Dataset Detail</h2>
+
+        <div class="detail-panel">
+          <h3>fct_charge_filings</h3>
+
+          <p style="font-size:0.82rem;color:var(--gray-700);margin-bottom:0.75rem;">
+            Source: ARC &nbsp;|&nbsp; Updated: Daily &nbsp;|&nbsp; 142,847 records
+          </p>
+
+          <p style="font-size:0.82rem;font-weight:700;color:var(--navy);margin-bottom:0.4rem;">Columns</p>
+          <ul class="column-list" aria-label="Columns in fct_charge_filings">
+            <li>charge_number</li>
+            <li>filing_date</li>
+            <li>basis_code</li>
+            <li>office_id</li>
+            <li>respondent_name_hash</li>
+            <li>status</li>
+          </ul>
+
+          <p style="font-size:0.82rem;font-weight:700;color:var(--navy);margin-bottom:0.4rem;">Sample Query</p>
+          <pre class="sql-block" aria-label="Sample SQL query for fct_charge_filings" tabindex="0">SELECT
+  office_id,
+  basis_code,
+  COUNT(*) AS charge_count,
+  MIN(filing_date) AS earliest,
+  MAX(filing_date) AS latest
+FROM analytics.fct_charge_filings
+WHERE
+  filing_date &gt;= '2025-10-01'
+  AND status != 'withdrawn'
+GROUP BY
+  office_id,
+  basis_code
+ORDER BY
+  charge_count DESC
+LIMIT 50;</pre>
+
+          <p style="font-size:0.75rem;color:var(--gray-700);margin-top:0.75rem;">
+            <strong>Note:</strong> <code>respondent_name_hash</code> is a SHA-256 + Key Vault salt hash.
+            The original respondent name is not stored in the analytics layer.
+          </p>
+        </div>
+      </div>
+
+      <!-- PII tier legend -->
+      <div class="content-card">
+        <h2>PII Tier Reference</h2>
+        <table style="width:100%;font-size:0.82rem;border-collapse:collapse;">
+          <caption class="sr-only">PII tier definitions: tier number and access restrictions</caption>
+          <thead>
+            <tr>
+              <th scope="col" style="padding:4px 8px;text-align:left;border-bottom:2px solid var(--gray-200);">Tier</th>
+              <th scope="col" style="padding:4px 8px;text-align:left;border-bottom:2px solid var(--gray-200);">Definition</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" style="padding:6px 8px;"><span class="tier-1">Tier 1</span></th>
+              <td style="padding:6px 8px;color:var(--gray-700);">Reference / aggregate data. No individual-level PII.</td>
+            </tr>
+            <tr>
+              <th scope="row" style="padding:6px 8px;"><span class="tier-2">Tier 2</span></th>
+              <td style="padding:6px 8px;color:var(--gray-700);">Hashed or pseudonymized PII. Restricted to authorized roles.</td>
+            </tr>
+            <tr>
+              <th scope="row" style="padding:6px 8px;"><span class="tier-3">Tier 3</span></th>
+              <td style="padding:6px 8px;color:var(--gray-700);">Personnel or sensitive PII. Limited to named office access only.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </aside>
+
+  </div><!-- /.two-col -->
+
+</main>
+
+<!-- Footer -->
+<footer class="footer" role="contentinfo">
+  <p>
+    <strong>U.S. Equal Employment Opportunity Commission</strong> |
+    <a href="https://www.eeoc.gov/accessibility">Accessibility</a> |
+    <a href="https://www.eeoc.gov/privacy-policy">Privacy Policy</a> |
+    <a href="#">Section 508</a>
+  </p>
+  <p class="footer__notice">
+    This system contains U.S. Government information. Unauthorized access is prohibited.
+    Usage is monitored and logged for security and compliance purposes.
+  </p>
+</footer>
+
+<!-- Demo JS (toast system) -->
+<script src="js/demo.js"></script>
+</body>
+</html>

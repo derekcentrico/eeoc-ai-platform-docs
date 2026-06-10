@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<!--
+  analytics-notebooks.html — JupyterHub launcher interface (demo mockup).
+  Mirrors the analytics.html custom CSS framework: government banner,
+  horizontal navbar, no Bootstrap.
+  Section 508 / WCAG 2.1 AA compliant.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <title>JupyterHub — Ad-Hoc Analysis — EEOC Analytics Assistant</title>
+
+  <style>
+/* ============================================================
+   CSS Custom Properties — matches ai-assistant/static/css/app.css
+   ============================================================ */
+:root {
+  --navy:        #003366;
+  --blue:        #0066CC;
+  --gold:        #996600;
+  --light-blue:  #E8F1FB;
+  --white:       #FFFFFF;
+  --gray-100:    #F5F7FA;
+  --gray-200:    #E2E8F0;
+  --gray-700:    #4A5568;
+  --gray-900:    #1A1A1A;
+  --success:     #006400;
+  --error:       #B22222;
+  --focus-ring:  3px solid #005FCC;
+
+  --font-sans:   "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+  --font-mono:   "Source Code Pro", "Courier New", monospace;
+
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.12);
+  --shadow-md:   0 4px 12px rgba(0,0,0,0.15);
+
+  --nav-height:  56px;
+}
+
+/* ============================================================
+   Reset / base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  color: var(--gray-900);
+  background: var(--gray-100);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Visible keyboard focus for all interactive elements */
+*:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Suppress low-contrast default focus rings */
+.btn:focus, a:focus, input:focus, button:focus, select:focus, textarea:focus {
+  box-shadow: none !important;
+}
+
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
+}
+
+/* Skip navigation */
+.skip-nav {
+  position: absolute; top: -100%; left: 0;
+  background: var(--navy); color: var(--white);
+  padding: 8px 16px; z-index: 9999;
+  font-weight: 600; text-decoration: none;
+  border-radius: 0 0 var(--radius-sm) 0;
+}
+.skip-nav:focus { top: 0; }
+
+/* ============================================================
+   Government banner
+   ============================================================ */
+.gov-banner {
+  background: var(--gray-200);
+  font-size: 0.8rem;
+  padding: 4px 0;
+  border-bottom: 1px solid #C5D0DC;
+}
+.gov-banner__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--gray-700);
+}
+
+.gov-flag {
+  display: inline-block;
+  width: 16px; height: 11px;
+  background: linear-gradient(
+    to bottom,
+    #B22234 0%, #B22234 14.3%,
+    #fff 14.3%, #fff 28.6%,
+    #B22234 28.6%, #B22234 42.9%,
+    #fff 42.9%, #fff 57.1%,
+    #B22234 57.1%, #B22234 71.4%,
+    #fff 71.4%, #fff 85.7%,
+    #B22234 85.7%, #B22234 100%
+  );
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Navigation
+   ============================================================ */
+.navbar {
+  background: var(--navy);
+  border-bottom: 3px solid var(--gold);
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar__brand { display: flex; align-items: center; gap: 0.75rem; }
+
+.navbar__logo-placeholder {
+  height: 36px; width: 120px;
+  background: rgba(255,255,255,0.15);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700; color: var(--white);
+  letter-spacing: 0.05em;
+}
+
+.navbar__title {
+  color: var(--white);
+  font-size: 1.1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.navbar__links {
+  display: flex; list-style: none; gap: 0.25rem;
+  flex: 1; justify-content: center;
+}
+.navbar__link {
+  color: #D6E4F7; text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  transition: background 0.15s, color 0.15s;
+}
+.navbar__link:hover,
+.navbar__link:focus { color: var(--white); background: rgba(255,255,255,0.12); }
+.navbar__link--active {
+  color: var(--white);
+  border-bottom: 2px solid var(--gold);
+  padding-bottom: calc(0.5rem - 2px);
+}
+
+.navbar__user { display: flex; align-items: center; gap: 0.75rem; white-space: nowrap; }
+.navbar__username { color: #D6E4F7; font-size: 0.9rem; }
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 0.4rem;
+  font-family: var(--font-sans); font-size: 0.95rem; font-weight: 600;
+  line-height: 1;
+  min-height: 44px; min-width: 44px;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.btn--primary   { background: var(--navy); color: var(--white); }
+.btn--primary:hover, .btn--primary:focus { background: #002244; }
+.btn--secondary { background: var(--white); border-color: var(--navy); color: var(--navy); }
+.btn--secondary:hover, .btn--secondary:focus { background: var(--light-blue); }
+.btn--ghost     { background: transparent; color: var(--gray-700); border-color: var(--gray-200); }
+.btn--ghost:hover, .btn--ghost:focus { background: var(--gray-200); }
+.btn--sm        { min-height: 36px; padding: 0.3rem 0.875rem; font-size: 0.875rem; }
+
+/* ============================================================
+   Main content area
+   ============================================================ */
+main {
+  flex: 1;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.page-header h1 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+.breadcrumb {
+  font-size: 0.8rem;
+  color: var(--gray-700);
+  margin-bottom: 0.25rem;
+}
+.breadcrumb a { color: var(--blue); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.page-header__actions { display: flex; gap: 0.75rem; }
+
+/* ============================================================
+   Content cards
+   ============================================================ */
+.content-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+.content-card h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ============================================================
+   Notebook card grid
+   ============================================================ */
+.notebook-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.notebook-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s;
+}
+.notebook-card:hover { box-shadow: var(--shadow-md); }
+
+.notebook-card__name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--navy);
+  font-family: var(--font-mono);
+  word-break: break-word;
+}
+
+.notebook-card__meta {
+  font-size: 0.78rem;
+  color: var(--gray-700);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.notebook-card__footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Kernel badge */
+.kernel-badge {
+  display: inline-block;
+  background: var(--light-blue);
+  color: #003366;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+}
+
+/* ============================================================
+   Status card
+   ============================================================ */
+.status-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.status-item {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 0.875rem 1.25rem;
+  flex: 1;
+  min-width: 200px;
+}
+.status-item__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gray-700);
+  margin-bottom: 0.25rem;
+}
+.status-item__value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+.status-dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--success);
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.footer {
+  background: var(--navy);
+  color: #D6E4F7;
+  text-align: center;
+  padding: 0.875rem 1rem;
+  font-size: 0.8rem;
+  margin-top: auto;
+}
+.footer p + p { margin-top: 0.25rem; }
+.footer a { color: #A8C8EE; }
+.footer a:hover { color: var(--white); }
+.footer__notice { color: #8AAFD4; font-size: 0.75rem; }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 900px) {
+  .navbar__links { display: none; }
+  .notebook-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .btn--primary { border: 2px solid ButtonText; }
+  .notebook-card { border: 1px solid CanvasText; }
+  .status-item { border: 1px solid CanvasText; }
+}
+  </style>
+</head>
+<body>
+
+<!-- Skip navigation — WCAG 2.4.1 -->
+<a class="skip-nav" href="#main-content">Skip to main content</a>
+
+<!-- Toast container -->
+<div class="toast-container"
+     id="toast-container"
+     aria-live="polite"
+     aria-atomic="false"
+     data-toasts='[
+       {"type":"info","title":"JupyterHub — AKS Isolation","text":"JupyterHub runs on AKS with user-level isolation. Each analyst gets a dedicated pod with access to the shared analytics database via Row-Level Security.","delay":3000,"duration":12000}
+     ]'>
+</div>
+
+<!-- Government banner -->
+<div class="gov-banner">
+  <div class="gov-banner__inner">
+    <span class="gov-flag" aria-hidden="true"></span>
+    <span>An official website of the United States government</span>
+  </div>
+</div>
+
+<!-- Primary navigation -->
+<header role="banner">
+  <nav class="navbar" aria-label="Primary navigation">
+    <div class="navbar__brand">
+      <a href="index.html" class="navbar__logo-link" aria-label="EEOC Analytics Portal home">
+        <div class="navbar__logo-placeholder" aria-hidden="true">EEOC</div>
+      </a>
+      <span class="navbar__title">Analytics Assistant</span>
+    </div>
+
+    <ul class="navbar__links" role="list">
+      <li>
+        <a href="analytics.html" class="navbar__link">
+          Dashboards
+        </a>
+      </li>
+      <li>
+        <a href="analytics-chat.html" class="navbar__link">AI Assistant</a>
+      </li>
+      <li>
+        <a href="analytics-search.html" class="navbar__link">Narrative Search</a>
+      </li>
+      <li>
+        <a href="analytics-notebooks.html" class="navbar__link navbar__link--active" aria-current="page">Notebooks</a>
+      </li>
+      <li>
+        <a href="analytics-catalog.html" class="navbar__link">Data Catalog</a>
+      </li>
+      <li>
+        <a href="analytics-admin.html" class="navbar__link">Access Mgmt</a>
+      </li>
+    </ul>
+
+    <div class="navbar__user" aria-label="User menu">
+      <span class="navbar__username"
+            aria-label="Signed in as D. Gordon">
+        D. Gordon
+      </span>
+      <a href="index.html" class="btn btn--secondary btn--sm">Sign out</a>
+    </div>
+  </nav>
+</header>
+
+<!-- Main content -->
+<main id="main-content" role="main" tabindex="-1">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <p class="breadcrumb">
+        <a href="analytics.html">Analytics</a> &rsaquo; JupyterHub
+      </p>
+      <h1>JupyterHub &mdash; Ad-Hoc Analysis</h1>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn btn--primary btn--sm" type="button" disabled aria-disabled="true">
+        New Notebook
+      </button>
+    </div>
+  </div>
+
+  <!-- Server status strip -->
+  <div class="status-row" role="region" aria-label="JupyterHub server status">
+    <div class="status-item">
+      <div class="status-item__label">Hub Status</div>
+      <div class="status-item__value">
+        <span class="status-dot" aria-hidden="true"></span>Running
+      </div>
+    </div>
+    <div class="status-item">
+      <div class="status-item__label">Active Sessions</div>
+      <div class="status-item__value">3</div>
+    </div>
+    <div class="status-item">
+      <div class="status-item__label">Available Kernels</div>
+      <div class="status-item__value" style="font-size:0.95rem;padding-top:0.15rem;">
+        <span class="kernel-badge">Python 3.13</span>&nbsp;
+        <span class="kernel-badge">R 4.4</span>
+      </div>
+    </div>
+    <div class="status-item">
+      <div class="status-item__label">Pod Namespace</div>
+      <div class="status-item__value" style="font-size:0.95rem;font-family:var(--font-mono);">analytics-jupyter</div>
+    </div>
+  </div>
+
+  <!-- My Notebooks -->
+  <section class="content-card" aria-labelledby="my-notebooks-heading">
+    <h2 id="my-notebooks-heading">My Notebooks</h2>
+
+    <div class="notebook-grid">
+
+      <article class="notebook-card" aria-label="FY2025 Q3 Charge Analysis notebook">
+        <div class="notebook-card__name">FY2025 Q3 Charge Analysis.ipynb</div>
+        <div class="notebook-card__meta">
+          <span>Last modified: May 15, 2026</span>
+          <span><span class="kernel-badge">Python 3.13</span></span>
+        </div>
+        <div class="notebook-card__footer">
+          <button class="btn btn--primary btn--sm" type="button" disabled aria-disabled="true">Launch</button>
+        </div>
+      </article>
+
+      <article class="notebook-card" aria-label="Office Performance Deep Dive notebook">
+        <div class="notebook-card__name">Office Performance Deep Dive.ipynb</div>
+        <div class="notebook-card__meta">
+          <span>Last modified: May 10, 2026</span>
+          <span><span class="kernel-badge">Python 3.13</span></span>
+        </div>
+        <div class="notebook-card__footer">
+          <button class="btn btn--primary btn--sm" type="button" disabled aria-disabled="true">Launch</button>
+        </div>
+      </article>
+
+      <article class="notebook-card" aria-label="Mediation Outcome Predictors notebook">
+        <div class="notebook-card__name">Mediation Outcome Predictors.ipynb</div>
+        <div class="notebook-card__meta">
+          <span>Last modified: Apr 28, 2026</span>
+          <span><span class="kernel-badge">Python 3.13</span></span>
+        </div>
+        <div class="notebook-card__footer">
+          <button class="btn btn--primary btn--sm" type="button" disabled aria-disabled="true">Launch</button>
+        </div>
+      </article>
+
+      <article class="notebook-card" aria-label="Quarterly Director Briefing notebook">
+        <div class="notebook-card__name">Quarterly Director Briefing.ipynb</div>
+        <div class="notebook-card__meta">
+          <span>Last modified: May 18, 2026</span>
+          <span><span class="kernel-badge">Python 3.13</span></span>
+        </div>
+        <div class="notebook-card__footer">
+          <button class="btn btn--primary btn--sm" type="button" disabled aria-disabled="true">Launch</button>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- Shared Notebooks -->
+  <section class="content-card" aria-labelledby="shared-notebooks-heading">
+    <h2 id="shared-notebooks-heading">Shared Notebooks</h2>
+
+    <div class="notebook-grid">
+
+      <article class="notebook-card" aria-label="National Trends FY2025 shared notebook by R. Washington">
+        <div class="notebook-card__name">National Trends FY2025.ipynb</div>
+        <div class="notebook-card__meta">
+          <span>Shared by R. Washington</span>
+          <span>Last modified: May 12, 2026</span>
+          <span><span class="kernel-badge">Python 3.13</span></span>
+        </div>
+        <div class="notebook-card__footer">
+          <button class="btn btn--secondary btn--sm" type="button" disabled aria-disabled="true">Launch (read-only)</button>
+        </div>
+      </article>
+
+      <article class="notebook-card" aria-label="Basis Code Distribution FY2024 shared notebook by L. Martinez">
+        <div class="notebook-card__name">Basis Code Distribution FY2024.ipynb</div>
+        <div class="notebook-card__meta">
+          <span>Shared by L. Martinez</span>
+          <span>Last modified: Apr 14, 2026</span>
+          <span><span class="kernel-badge">R 4.4</span></span>
+        </div>
+        <div class="notebook-card__footer">
+          <button class="btn btn--secondary btn--sm" type="button" disabled aria-disabled="true">Launch (read-only)</button>
+        </div>
+      </article>
+
+      <article class="notebook-card" aria-label="Settlement Amount Analysis shared notebook by P. Kim">
+        <div class="notebook-card__name">Settlement Amount Analysis.ipynb</div>
+        <div class="notebook-card__meta">
+          <span>Shared by P. Kim</span>
+          <span>Last modified: May 5, 2026</span>
+          <span><span class="kernel-badge">Python 3.13</span></span>
+        </div>
+        <div class="notebook-card__footer">
+          <button class="btn btn--secondary btn--sm" type="button" disabled aria-disabled="true">Launch (read-only)</button>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer" role="contentinfo">
+  <p>
+    <strong>U.S. Equal Employment Opportunity Commission</strong> |
+    <a href="https://www.eeoc.gov/accessibility">Accessibility</a> |
+    <a href="https://www.eeoc.gov/privacy-policy">Privacy Policy</a> |
+    <a href="#">Section 508</a>
+  </p>
+  <p class="footer__notice">
+    This system contains U.S. Government information. Unauthorized access is prohibited.
+    Usage is monitored and logged for security and compliance purposes.
+  </p>
+</footer>
+
+<!-- Demo JS (toast system) -->
+<script src="js/demo.js"></script>
+</body>
+</html>

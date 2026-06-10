@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Court Hearings — OGC Trial Tool Demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous">
+  <style>
+    /* ==========================================================================
+       508 overrides — EEOC color table, WCAG 2.x piecewise formula
+       ========================================================================== */
+    :root {
+      --bs-border-color: #737373;
+      --bs-danger-rgb: 176, 42, 55;
+      --bs-danger: #b02a37;
+      --bs-success-rgb: 20, 108, 67;
+      --bs-success: #146c43;
+      --bs-secondary-rgb: 90, 100, 114;
+      --bs-secondary: #5a6472;
+    }
+
+    .text-primary  { color: #0a58ca !important; }
+    .text-info     { color: #087990 !important; }
+    .text-warning  { color: #7f6500 !important; }
+    .text-danger   { color: #b02a37 !important; }
+    .text-success  { color: #146c43 !important; }
+    .text-muted    { color: #5a6472 !important; }
+
+    .bg-primary, .text-bg-primary { background-color: #0a58ca !important; }
+    .bg-success, .text-bg-success { background-color: #146c43 !important; }
+    .bg-danger,  .text-bg-danger  { background-color: #b02a37 !important; }
+
+    .btn-primary {
+      --bs-btn-bg: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-bg: #0a4fb4;
+      --bs-btn-hover-border-color: #0a4fb4;
+      --bs-btn-active-bg: #0842a0;
+      --bs-btn-active-border-color: #0842a0;
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-primary:hover  { background-color: #0a4fb4 !important; border-color: #0a4fb4 !important; }
+    .btn-primary:active, .btn-primary.active { background-color: #0842a0 !important; border-color: #0842a0 !important; }
+
+    .btn-outline-primary {
+      --bs-btn-color: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #0a58ca;
+      --bs-btn-hover-border-color: #0a58ca;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #0a58ca;
+      --bs-btn-active-border-color: #0a58ca;
+      --bs-btn-disabled-color: #0a58ca;
+      --bs-btn-disabled-border-color: #0a58ca;
+      color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-outline-primary:hover,
+    .btn-outline-primary:active,
+    .btn-outline-primary.active {
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+      color: #fff !important;
+    }
+
+    .btn-outline-secondary {
+      --bs-btn-color: #5a6472;
+      --bs-btn-border-color: #5a6472;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #5a6472;
+      --bs-btn-hover-border-color: #5a6472;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #5a6472;
+      --bs-btn-active-border-color: #5a6472;
+      --bs-btn-disabled-color: #5a6472;
+      --bs-btn-disabled-border-color: #5a6472;
+      color: #5a6472 !important;
+      border-color: #5a6472 !important;
+    }
+    .btn-outline-secondary:hover,
+    .btn-outline-secondary:active,
+    .btn-outline-secondary.active {
+      background-color: #5a6472 !important;
+      border-color: #5a6472 !important;
+      color: #fff !important;
+    }
+
+    /* Navbar text contrast — rgba(255,255,255,0.55) fails 4.5:1 */
+    .navbar-dark .navbar-text,
+    .navbar-dark .navbar-text a { color: #fff !important; }
+
+    /* Focus indicators — WCAG 2.4.7 + 1.4.11 */
+    .btn:focus-visible,
+    a:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible,
+    .nav-link:focus-visible,
+    .btn-close:focus-visible,
+    .dropdown-item:focus-visible,
+    .page-link:focus-visible,
+    .accordion-button:focus-visible { outline: 2px solid #0a58ca !important; outline-offset: 2px !important; }
+
+    .btn:focus, .nav-link:focus, .btn-close:focus, .dropdown-item:focus,
+    .page-link:focus, .accordion-button:focus, .form-control:focus,
+    .form-select:focus, .form-check-input:focus { box-shadow: none !important; }
+
+    /* ==========================================================================
+       Layout
+       ========================================================================== */
+    body { background-color: #f8f9fa; }
+    .container { max-width: 1280px; }
+    .navbar-brand { font-weight: bold; }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      z-index: 9999;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ==========================================================================
+       Calendar grid — table-based, no JS widget
+       ========================================================================== */
+    .cal-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+    }
+
+    .cal-table th {
+      padding: 0.5rem 0.25rem;
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #5a6472;
+      border-bottom: 2px solid #737373;
+    }
+
+    .cal-table td {
+      height: 80px;
+      vertical-align: top;
+      padding: 0.35rem;
+      border: 1px solid #dee2e6;
+      background: #fff;
+      font-size: 0.82rem;
+    }
+
+    .cal-table td.cal-other {
+      background: #f8f9fa;
+      color: #5a6472;
+    }
+
+    .cal-date {
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* Hearing day highlights */
+    .cal-table td.cal-hearing {
+      background: #e8f0fe;
+      border: 2px solid #0a58ca;
+    }
+
+    .cal-table td.cal-hearing .cal-date {
+      color: #0a58ca;
+    }
+
+    .cal-event {
+      font-size: 0.7rem;
+      background: #0a58ca;
+      color: #fff;
+      border-radius: 3px;
+      padding: 1px 5px;
+      margin-top: 2px;
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Hearing detail cards */
+    .hearing-card {
+      border-left: 4px solid #0a58ca;
+    }
+
+    .hearing-card .card-header {
+      background: #e8f0fe;
+    }
+
+    .detail-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+      font-size: 0.88rem;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      min-width: 90px;
+      flex-shrink: 0;
+      color: #5a6472;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Skip link — WCAG 2.4.1 -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ==========================================================================
+       Navbar
+       ========================================================================== -->
+  <header role="banner">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark"
+         role="navigation" aria-label="Main navigation">
+      <div class="container">
+        <a class="navbar-brand" href="trial-tool.html">OGC Trial Tool</a>
+        <div class="d-flex align-items-center">
+          <a href="trial-upload.html" class="btn btn-outline-light btn-sm me-2" role="button">Upload New Case</a>
+          <a href="trial-cases.html" class="btn btn-outline-light btn-sm me-2" role="button">Dashboard</a>
+          <button type="button" class="btn btn-outline-warning btn-sm me-3"
+                  disabled title="Admin tools — not yet available"
+                  style="--bs-btn-color:#7f6500;--bs-btn-border-color:#7f6500;--bs-btn-disabled-color:#7f6500;--bs-btn-disabled-border-color:#7f6500;">
+            Admin Tools
+          </button>
+          <span class="navbar-text me-3" aria-label="Current user">Welcome, A. Washington</span>
+          <a href="index.html" class="btn btn-light btn-sm" role="button">Logout</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ==========================================================================
+       Main content
+       ========================================================================== -->
+  <main id="main-content" class="container mt-4" role="main">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="h3 mb-0">Court Hearings</h1>
+        <p class="text-muted small mb-0">All cases &mdash; Washington Field Office</p>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="#" class="btn btn-outline-secondary btn-sm" role="button"
+           aria-label="Previous month">&#8592; May 2026</a>
+        <span class="btn btn-primary btn-sm" aria-current="true" style="pointer-events:none;">
+          June 2026
+        </span>
+        <a href="#" class="btn btn-outline-secondary btn-sm" role="button"
+           aria-label="Next month">Jul 2026 &#8594;</a>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         Calendar — June 2026
+         ===================================================================== -->
+    <section class="card mb-4" aria-labelledby="cal-heading">
+      <div class="card-header">
+        <h2 id="cal-heading" class="h5 mb-0">June 2026</h2>
+      </div>
+      <div class="card-body p-2">
+        <div class="table-responsive">
+          <table class="cal-table" aria-label="Court hearing calendar for June 2026">
+            <caption class="visually-hidden">Monthly calendar view for June 2026 showing scheduled court hearings</caption>
+            <thead>
+              <tr>
+                <th scope="col" abbr="Sunday">Sun</th>
+                <th scope="col" abbr="Monday">Mon</th>
+                <th scope="col" abbr="Tuesday">Tue</th>
+                <th scope="col" abbr="Wednesday">Wed</th>
+                <th scope="col" abbr="Thursday">Thu</th>
+                <th scope="col" abbr="Friday">Fri</th>
+                <th scope="col" abbr="Saturday">Sat</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Week 1: June 1–7 (Jun 1 = Monday) -->
+              <tr>
+                <td class="cal-other"><span class="cal-date">25</span></td>
+                <td class="cal-other"><span class="cal-date">26</span></td>
+                <td class="cal-other"><span class="cal-date">27</span></td>
+                <td class="cal-other"><span class="cal-date">28</span></td>
+                <td class="cal-other"><span class="cal-date">29</span></td>
+                <td class="cal-other"><span class="cal-date">30</span></td>
+                <td class="cal-other"><span class="cal-date">31</span></td>
+              </tr>
+              <tr>
+                <td><span class="cal-date">1</span></td>
+                <td><span class="cal-date">2</span></td>
+                <td><span class="cal-date">3</span></td>
+                <td><span class="cal-date">4</span></td>
+                <td class="cal-hearing">
+                  <span class="cal-date">5</span>
+                  <span class="cal-event">
+                    <a href="#hearing-1" class="text-white text-decoration-none"
+                       aria-label="Hearing June 5: EEOC v. National Electronics Corp., pre-trial conference">
+                      NEC Pre-Trial
+                    </a>
+                  </span>
+                </td>
+                <td><span class="cal-date">6</span></td>
+                <td><span class="cal-date">7</span></td>
+              </tr>
+              <tr>
+                <td><span class="cal-date">8</span></td>
+                <td><span class="cal-date">9</span></td>
+                <td><span class="cal-date">10</span></td>
+                <td><span class="cal-date">11</span></td>
+                <td><span class="cal-date">12</span></td>
+                <td><span class="cal-date">13</span></td>
+                <td><span class="cal-date">14</span></td>
+              </tr>
+              <tr>
+                <td><span class="cal-date">15</span></td>
+                <td><span class="cal-date">16</span></td>
+                <td><span class="cal-date">17</span></td>
+                <td class="cal-hearing">
+                  <span class="cal-date">18</span>
+                  <span class="cal-event">
+                    <a href="#hearing-2" class="text-white text-decoration-none"
+                       aria-label="Hearing June 18: EEOC v. Pinnacle Healthcare Systems, motion in limine">
+                      Pinnacle MIL
+                    </a>
+                  </span>
+                </td>
+                <td><span class="cal-date">19</span></td>
+                <td><span class="cal-date">20</span></td>
+                <td><span class="cal-date">21</span></td>
+              </tr>
+              <tr>
+                <td><span class="cal-date">22</span></td>
+                <td><span class="cal-date">23</span></td>
+                <td><span class="cal-date">24</span></td>
+                <td><span class="cal-date">25</span></td>
+                <td class="cal-hearing">
+                  <span class="cal-date">26</span>
+                  <span class="cal-event">
+                    <a href="#hearing-3" class="text-white text-decoration-none"
+                       aria-label="Hearing June 26: EEOC v. Summit Engineering Partners, status conference">
+                      Summit Status
+                    </a>
+                  </span>
+                </td>
+                <td><span class="cal-date">27</span></td>
+                <td><span class="cal-date">28</span></td>
+              </tr>
+              <tr>
+                <td><span class="cal-date">29</span></td>
+                <td><span class="cal-date">30</span></td>
+                <td class="cal-other"><span class="cal-date">1</span></td>
+                <td class="cal-other"><span class="cal-date">2</span></td>
+                <td class="cal-other"><span class="cal-date">3</span></td>
+                <td class="cal-other"><span class="cal-date">4</span></td>
+                <td class="cal-other"><span class="cal-date">5</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         Hearing detail cards — 3 scheduled hearings
+         ===================================================================== -->
+    <section aria-labelledby="hearing-details-heading">
+      <h2 id="hearing-details-heading" class="h5 mb-3">Scheduled Hearings &mdash; June 2026</h2>
+
+      <!-- Hearing 1 -->
+      <div class="card hearing-card mb-3" id="hearing-1">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="h6 mb-0">Pre-Trial Conference</h3>
+          <span class="badge text-bg-primary" aria-label="Outcome: Scheduled">Scheduled</span>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="detail-row">
+                <span class="detail-label">Case</span>
+                <span><a href="trial-chat.html">EEOC v. National Electronics Corp.</a></span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Date &amp; Time</span>
+                <span>Thursday, June 5, 2026 &mdash; 10:00 AM EDT</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Location</span>
+                <span>U.S. District Court, D.D.C., Courtroom 9</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="detail-row">
+                <span class="detail-label">Judge</span>
+                <span>Hon. B.A. Howell</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Attorney</span>
+                <span>A. Washington</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Purpose</span>
+                <span>Trial scheduling, MIL deadlines, witness list exchange</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 d-flex gap-2">
+            <a href="trial-chat.html" class="btn btn-outline-primary btn-sm"
+               role="button">Open AI Assistant</a>
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                    data-bs-toggle="modal" data-bs-target="#editModal1"
+                    aria-haspopup="dialog">
+              Edit
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hearing 2 -->
+      <div class="card hearing-card mb-3" id="hearing-2">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="h6 mb-0">Motion in Limine Hearing</h3>
+          <span class="badge text-bg-primary" aria-label="Outcome: Scheduled">Scheduled</span>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="detail-row">
+                <span class="detail-label">Case</span>
+                <span><a href="trial-chat.html">EEOC v. Pinnacle Healthcare Systems</a></span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Date &amp; Time</span>
+                <span>Wednesday, June 18, 2026 &mdash; 2:00 PM EDT</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Location</span>
+                <span>U.S. District Court, E.D. Va., Courtroom 4-A</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="detail-row">
+                <span class="detail-label">Judge</span>
+                <span>Hon. T.S. Ellis III</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Attorney</span>
+                <span>D. Okonkwo</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Purpose</span>
+                <span>Respondent's MIL to exclude comparator pay records</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 d-flex gap-2">
+            <a href="trial-chat.html" class="btn btn-outline-primary btn-sm"
+               role="button">Open AI Assistant</a>
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                    data-bs-toggle="modal" data-bs-target="#editModal2"
+                    aria-haspopup="dialog">
+              Edit
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hearing 3 -->
+      <div class="card hearing-card mb-3" id="hearing-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="h6 mb-0">Status Conference</h3>
+          <span class="badge text-bg-primary" aria-label="Outcome: Scheduled">Scheduled</span>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="detail-row">
+                <span class="detail-label">Case</span>
+                <span><a href="trial-chat.html">EEOC v. Summit Engineering Partners</a></span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Date &amp; Time</span>
+                <span>Thursday, June 26, 2026 &mdash; 9:30 AM EDT</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Location</span>
+                <span>U.S. District Court, D. Md., Courtroom 2</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="detail-row">
+                <span class="detail-label">Judge</span>
+                <span>Hon. C. Hollander</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Attorney</span>
+                <span>D. Okonkwo</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Purpose</span>
+                <span>Discovery status; respondent requested 30-day extension</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 d-flex gap-2">
+            <a href="trial-chat.html" class="btn btn-outline-primary btn-sm"
+               role="button">Open AI Assistant</a>
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                    data-bs-toggle="modal" data-bs-target="#editModal3"
+                    aria-haspopup="dialog">
+              Edit
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =====================================================================
+         Full hearing list table — all active cases
+         ===================================================================== -->
+    <section class="mt-4" aria-labelledby="hearings-table-heading">
+      <h2 id="hearings-table-heading" class="h5 mb-3">All Upcoming Hearings</h2>
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover mb-0">
+              <caption class="visually-hidden">All upcoming court hearings for Washington Field Office cases</caption>
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Case</th>
+                  <th scope="col">Hearing Type</th>
+                  <th scope="col">Court</th>
+                  <th scope="col">Judge</th>
+                  <th scope="col">Attorney</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Jun 5, 2026</th>
+                  <td>EEOC v. National Electronics Corp.</td>
+                  <td>Pre-Trial Conference</td>
+                  <td>D.D.C.</td>
+                  <td>Howell</td>
+                  <td>A. Washington</td>
+                  <td><span class="badge text-bg-primary" aria-label="Status: Scheduled">Scheduled</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Jun 18, 2026</th>
+                  <td>EEOC v. Pinnacle Healthcare Systems</td>
+                  <td>Motion in Limine</td>
+                  <td>E.D. Va.</td>
+                  <td>Ellis</td>
+                  <td>D. Okonkwo</td>
+                  <td><span class="badge text-bg-primary" aria-label="Status: Scheduled">Scheduled</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Jun 26, 2026</th>
+                  <td>EEOC v. Summit Engineering Partners</td>
+                  <td>Status Conference</td>
+                  <td>D. Md.</td>
+                  <td>Hollander</td>
+                  <td>D. Okonkwo</td>
+                  <td><span class="badge text-bg-primary" aria-label="Status: Scheduled">Scheduled</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Aug 12, 2026</th>
+                  <td>EEOC v. National Electronics Corp.</td>
+                  <td>Trial</td>
+                  <td>D.D.C.</td>
+                  <td>Howell</td>
+                  <td>A. Washington</td>
+                  <td><span class="badge text-bg-danger" aria-label="Status: Trial">Trial</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Sep 22, 2026</th>
+                  <td>EEOC v. Pinnacle Healthcare Systems</td>
+                  <td>Trial</td>
+                  <td>E.D. Va.</td>
+                  <td>Ellis</td>
+                  <td>D. Okonkwo</td>
+                  <td>
+                    <span class="badge" style="background-color:#7f6500;color:#fff;"
+                          aria-label="Status: Trial Prep">Trial Prep</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       Edit modals — one per hearing
+       ========================================================================== -->
+
+  <!-- Hearing 1 edit modal -->
+  <div class="modal fade" id="editModal1" tabindex="-1" role="dialog"
+       aria-modal="true" aria-labelledby="editModal1Label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="editModal1Label">Edit Hearing &mdash; Jun 5, 2026</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div role="alert" aria-live="assertive" class="visually-hidden" id="modal1-errors"></div>
+          <div class="mb-3">
+            <label for="edit1_date" class="form-label">Hearing Date</label>
+            <input type="date" class="form-control" id="edit1_date"
+                   name="hearing_date" value="2026-06-05"
+                   aria-required="true" required>
+          </div>
+          <div class="mb-3">
+            <label for="edit1_court" class="form-label">Court</label>
+            <input type="text" class="form-control" id="edit1_court"
+                   name="court_name" value="U.S. District Court, D.D.C."
+                   aria-required="true" required maxlength="200">
+          </div>
+          <div class="mb-3">
+            <label for="edit1_judge" class="form-label">Judge</label>
+            <input type="text" class="form-control" id="edit1_judge"
+                   name="judge_name" value="Hon. B.A. Howell" maxlength="200">
+          </div>
+          <div class="mb-3">
+            <label for="edit1_outcome" class="form-label">Outcome</label>
+            <select id="edit1_outcome" name="outcome_code" class="form-select">
+              <option value="PENDING" selected>Pending</option>
+              <option value="GRANTED">Granted</option>
+              <option value="DENIED">Denied</option>
+              <option value="SETTLED">Settled</option>
+              <option value="CONTINUED">Continued</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hearing 2 edit modal -->
+  <div class="modal fade" id="editModal2" tabindex="-1" role="dialog"
+       aria-modal="true" aria-labelledby="editModal2Label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="editModal2Label">Edit Hearing &mdash; Jun 18, 2026</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div role="alert" aria-live="assertive" class="visually-hidden" id="modal2-errors"></div>
+          <div class="mb-3">
+            <label for="edit2_date" class="form-label">Hearing Date</label>
+            <input type="date" class="form-control" id="edit2_date"
+                   name="hearing_date" value="2026-06-18"
+                   aria-required="true" required>
+          </div>
+          <div class="mb-3">
+            <label for="edit2_court" class="form-label">Court</label>
+            <input type="text" class="form-control" id="edit2_court"
+                   name="court_name" value="U.S. District Court, E.D. Va."
+                   aria-required="true" required maxlength="200">
+          </div>
+          <div class="mb-3">
+            <label for="edit2_judge" class="form-label">Judge</label>
+            <input type="text" class="form-control" id="edit2_judge"
+                   name="judge_name" value="Hon. T.S. Ellis III" maxlength="200">
+          </div>
+          <div class="mb-3">
+            <label for="edit2_outcome" class="form-label">Outcome</label>
+            <select id="edit2_outcome" name="outcome_code" class="form-select">
+              <option value="PENDING" selected>Pending</option>
+              <option value="GRANTED">Granted</option>
+              <option value="DENIED">Denied</option>
+              <option value="SETTLED">Settled</option>
+              <option value="CONTINUED">Continued</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hearing 3 edit modal -->
+  <div class="modal fade" id="editModal3" tabindex="-1" role="dialog"
+       aria-modal="true" aria-labelledby="editModal3Label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="editModal3Label">Edit Hearing &mdash; Jun 26, 2026</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div role="alert" aria-live="assertive" class="visually-hidden" id="modal3-errors"></div>
+          <div class="mb-3">
+            <label for="edit3_date" class="form-label">Hearing Date</label>
+            <input type="date" class="form-control" id="edit3_date"
+                   name="hearing_date" value="2026-06-26"
+                   aria-required="true" required>
+          </div>
+          <div class="mb-3">
+            <label for="edit3_court" class="form-label">Court</label>
+            <input type="text" class="form-control" id="edit3_court"
+                   name="court_name" value="U.S. District Court, D. Md."
+                   aria-required="true" required maxlength="200">
+          </div>
+          <div class="mb-3">
+            <label for="edit3_judge" class="form-label">Judge</label>
+            <input type="text" class="form-control" id="edit3_judge"
+                   name="judge_name" value="Hon. C. Hollander" maxlength="200">
+          </div>
+          <div class="mb-3">
+            <label for="edit3_outcome" class="form-label">Outcome</label>
+            <select id="edit3_outcome" name="outcome_code" class="form-select">
+              <option value="PENDING" selected>Pending</option>
+              <option value="GRANTED">Granted</option>
+              <option value="DENIED">Denied</option>
+              <option value="SETTLED">Settled</option>
+              <option value="CONTINUED">Continued</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       Footer
+       ========================================================================== -->
+  <footer class="py-4 mt-5 bg-light" role="contentinfo">
+    <div class="container text-center text-muted" style="font-size:0.8rem;">
+      <p class="mb-1">U.S. Equal Employment Opportunity Commission &mdash; Office of General Counsel</p>
+      <p class="mb-0">All access or use of this system constitutes user understanding and acceptance of applicable terms and policies.</p>
+    </div>
+  </footer>
+
+  <!-- Toast container -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3"
+       role="status" aria-live="polite" aria-atomic="false">
+
+    <div id="toast-hearing-sync" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">Calendar Sync</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close notification"></button>
+      </div>
+      <div class="toast-body">
+        Hearing dates are pulled from ARC court records and kept in sync with each case docket.
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmY19UFhFKhxtuQFBTzAIiL5FsDq"
+          crossorigin="anonymous"></script>
+  <script src="js/demo.js"></script>
+
+  <script>
+  (function () {
+    setTimeout(function () {
+      var el = document.getElementById('toast-hearing-sync');
+      if (el) { new bootstrap.Toast(el, { delay: 7000 }).show(); }
+    }, 1500);
+  })();
+  </script>
+
+</body>
+</html>

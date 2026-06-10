@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Case OVP-2026-0034 — EEOC OCHCO Benefits Validation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        rel="stylesheet">
+  <link href="css/demo.css" rel="stylesheet">
+  <style>
+    /* ===== EEOC 508 contrast overrides (mirrors app.css) ===== */
+    :root {
+      --bs-border-color: #737373;
+      --bs-danger-rgb: 176, 42, 55;
+      --bs-danger: #b02a37;
+      --bs-success-rgb: 20, 108, 67;
+      --bs-success: #146c43;
+      --bs-secondary-rgb: 90, 100, 114;
+      --bs-secondary: #5a6472;
+    }
+
+    .text-primary  { color: #0a58ca !important; }
+    .text-info     { color: #087990 !important; }
+    .text-warning  { color: #7f6500 !important; }
+    .text-danger   { color: #b02a37 !important; }
+    .text-success  { color: #146c43 !important; }
+    .text-muted    { color: #5a6472 !important; }
+
+    .badge.bg-info,
+    .badge.bg-warning { color: #000 !important; }
+
+    .navbar-dark .navbar-text,
+    .navbar-dark .navbar-text a { color: #fff !important; }
+
+    .btn-primary {
+      --bs-btn-bg: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-bg: #084298;
+      --bs-btn-hover-border-color: #084298;
+      --bs-btn-active-bg: #084298;
+      --bs-btn-active-border-color: #063773;
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-primary:hover,
+    .btn-primary:active,
+    .btn-primary.active {
+      background-color: #084298 !important;
+      border-color: #084298 !important;
+      color: #fff !important;
+    }
+
+    .btn-outline-primary {
+      --bs-btn-color: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #0a58ca;
+      --bs-btn-hover-border-color: #0a58ca;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #0a58ca;
+      --bs-btn-active-border-color: #0a58ca;
+      color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-outline-primary:hover,
+    .btn-outline-primary:active,
+    .btn-outline-primary.active {
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+      color: #fff !important;
+    }
+
+    .btn-outline-secondary {
+      --bs-btn-color: #5a6472;
+      --bs-btn-border-color: #5a6472;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #5a6472;
+      --bs-btn-hover-border-color: #5a6472;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #5a6472;
+      --bs-btn-active-border-color: #5a6472;
+      color: #5a6472 !important;
+      border-color: #5a6472 !important;
+    }
+    .btn-outline-secondary:hover,
+    .btn-outline-secondary:active,
+    .btn-outline-secondary.active {
+      background-color: #5a6472 !important;
+      border-color: #5a6472 !important;
+      color: #fff !important;
+    }
+
+    .btn-danger {
+      --bs-btn-bg: #b02a37;
+      --bs-btn-border-color: #b02a37;
+      --bs-btn-hover-bg: #8c2030;
+      --bs-btn-hover-border-color: #7d1c2a;
+      background-color: #b02a37 !important;
+      border-color: #b02a37 !important;
+    }
+    .btn-danger:hover,
+    .btn-danger:active {
+      background-color: #8c2030 !important;
+      border-color: #8c2030 !important;
+      color: #fff !important;
+    }
+
+    /* Focus indicators */
+    .btn:focus-visible,
+    a:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible,
+    .nav-link:focus-visible,
+    .btn-close:focus-visible,
+    .dropdown-item:focus-visible,
+    .page-link:focus-visible,
+    details > summary:focus-visible {
+      outline: 2px solid #0a58ca !important;
+      outline-offset: 2px !important;
+    }
+    .btn:focus, .nav-link:focus, .btn-close:focus, .dropdown-item:focus,
+    .page-link:focus, .form-control:focus, .form-select:focus,
+    .form-check-input:focus {
+      box-shadow: none !important;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #0a58ca;
+      color: #fff;
+      padding: 8px;
+      z-index: 9999;
+      transition: top 0.3s;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* Badge classes from real app.css */
+    .badge-detected    { background-color: #7f6500 !important; color: #fff !important; }
+    .badge-confirmed   { background-color: #b02a37 !important; color: #fff !important; }
+    .badge-corrective  { background-color: #087990 !important; color: #fff !important; }
+    .badge-resolved    { background-color: #146c43 !important; color: #fff !important; }
+    .badge-waiver      { background-color: #5a6472 !important; color: #fff !important; }
+
+    /* Finding severity indicators */
+    .finding-high   { border-left: 4px solid #b02a37; }
+    .finding-medium { border-left: 4px solid #7f6500; }
+    .finding-low    { border-left: 4px solid #087990; }
+
+    body { overflow: auto; }
+    .app-shell { display: block !important; height: auto !important; overflow: visible !important; }
+
+    .footer-text { font-size: 0.8rem; }
+
+    /* Case header card */
+    .case-header-card {
+      background: #1a2744;
+      color: #fff;
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .case-header-card .case-num {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 0.25rem;
+    }
+    .case-header-card .case-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+    .case-header-card .case-meta {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.75);
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0.5rem;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #e2e8f0;
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+    .timeline-item:last-child { margin-bottom: 0; }
+    .timeline-dot {
+      position: absolute;
+      left: -1.7rem;
+      top: 3px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+    }
+    .timeline-dot.complete { background: #146c43; }
+    .timeline-dot.active   { background: #0a58ca; }
+    .timeline-dot.pending  { background: #e2e8f0; border-color: #5a6472; }
+    .timeline-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+    .timeline-date {
+      font-size: 0.75rem;
+      color: #5a6472;
+    }
+
+    /* AI panel */
+    .ai-panel {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .ai-panel-header {
+      background: #1a2744;
+      color: #fff;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ai-panel-body { padding: 1rem; }
+
+    /* AI response bubble */
+    .ai-response {
+      background: #f8f9fa;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 0.875rem 1rem;
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+    .ai-suggest-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .ai-suggest {
+      background: #fff;
+      border: 1px solid #0a58ca;
+      color: #0a58ca;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .ai-suggest:hover,
+    .ai-suggest:focus-visible {
+      background: #0a58ca;
+      color: #fff;
+      outline: 2px solid #0a58ca;
+      outline-offset: 2px;
+    }
+
+    /* Audit trail */
+    .audit-entry {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #e9ecef;
+      font-size: 0.8rem;
+    }
+    .audit-entry:last-child { border-bottom: 0; }
+    .audit-time {
+      flex-shrink: 0;
+      color: #5a6472;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11px;
+      white-space: nowrap;
+      min-width: 140px;
+    }
+    .audit-mono {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11px;
+    }
+    .audit-hmac {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 10px;
+      color: #5a6472;
+      background: #f8f9fa;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 1px 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Skip link — WCAG 2.4.1 -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- SR status region -->
+  <div id="sr-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ======================== NAVBAR ======================== -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Primary navigation">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="benefits.html">
+        <i class="fa-solid fa-shield-check me-2" aria-hidden="true"></i>Benefits Validation
+      </a>
+      <button class="navbar-toggler" type="button"
+              data-bs-toggle="collapse" data-bs-target="#mainNav"
+              aria-controls="mainNav" aria-expanded="false"
+              aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="benefits-validate.html">
+              <i class="fa-solid fa-clipboard-check me-1" aria-hidden="true"></i>Validate Action
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="benefits-cases.html">
+              <i class="fa-solid fa-folder-open me-1" aria-hidden="true"></i>Overpayment Cases
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="benefits.html">
+              <i class="fa-solid fa-chart-line me-1" aria-hidden="true"></i>Dashboard
+            </a>
+          </li>
+        </ul>
+        <span class="navbar-text me-3" style="color:#fff !important;">
+          <i class="fa-solid fa-user me-1" aria-hidden="true"></i>L. Martinez
+        </span>
+        <a href="index.html" class="btn btn-outline-light btn-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ======================== MAIN CONTENT ======================== -->
+  <main id="main-content" class="container-fluid py-4 px-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumb mb-1" style="font-size:12px;">
+        <li class="breadcrumb-item"><a href="benefits.html">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="benefits-cases.html">Overpayment Cases</a></li>
+        <li class="breadcrumb-item active" aria-current="page">OVP-2026-0034</li>
+      </ol>
+    </nav>
+
+    <!-- ---- Case header ---- -->
+    <div class="case-header-card" role="region" aria-label="Case OVP-2026-0034 header">
+      <div class="case-num">Overpayment Case</div>
+      <div class="case-title">
+        OVP-2026-0034
+        <span class="badge badge-confirmed ms-2" role="status">Under Review</span>
+      </div>
+      <div class="case-meta">
+        <span><i class="fa-solid fa-user me-1" aria-hidden="true"></i>J. Thompson</span>
+        <span><i class="fa-solid fa-calendar me-1" aria-hidden="true"></i>Opened 2026-05-19</span>
+        <span><i class="fa-solid fa-tag me-1" aria-hidden="true"></i>Retirement (702)</span>
+        <span><i class="fa-solid fa-dollar-sign me-1" aria-hidden="true"></i>$28,080 estimated</span>
+      </div>
+    </div>
+
+    <div class="row g-4">
+
+      <!-- ===== LEFT COLUMN ===== -->
+      <div class="col-lg-8">
+
+        <!-- ---- Timeline ---- -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2 class="h5 mb-0">
+              <i class="fa-solid fa-timeline me-1" aria-hidden="true"></i>Case Timeline
+            </h2>
+          </div>
+          <div class="card-body">
+            <ol class="timeline" aria-label="Case status timeline">
+
+              <li class="timeline-item">
+                <div class="timeline-dot complete" aria-hidden="true"></div>
+                <div class="timeline-label text-success">
+                  <i class="fa-solid fa-circle-check me-1" aria-hidden="true"></i>Detected
+                </div>
+                <div class="timeline-date">2026-05-19 09:14 UTC — Automated batch review #2026-05-19</div>
+              </li>
+
+              <li class="timeline-item">
+                <div class="timeline-dot active" aria-hidden="true"></div>
+                <div class="timeline-label" style="color:#0a58ca;">
+                  <i class="fa-solid fa-circle-dot me-1" aria-hidden="true"></i>Under Review
+                  <span class="badge badge-confirmed ms-1" aria-label="Current status">Current</span>
+                </div>
+                <div class="timeline-date">2026-05-20 11:32 UTC — Assigned to L. Martinez (Benefits Specialist)</div>
+              </li>
+
+              <li class="timeline-item">
+                <div class="timeline-dot pending" aria-hidden="true"></div>
+                <div class="timeline-label text-muted">Corrective Action Issued</div>
+                <div class="timeline-date text-muted">Pending — SF-50 correction and NFC submission required</div>
+              </li>
+
+              <li class="timeline-item">
+                <div class="timeline-dot pending" aria-hidden="true"></div>
+                <div class="timeline-label text-muted">Pending Resolution</div>
+                <div class="timeline-date text-muted">Pending — Awaiting payroll recalculation confirmation</div>
+              </li>
+
+            </ol>
+          </div>
+        </div>
+
+        <!-- ---- Findings table ---- -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2 class="h5 mb-0">
+              <i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i>Findings
+              <span class="badge badge-confirmed ms-2">3 findings</span>
+            </h2>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-sm mb-0">
+                <caption class="visually-hidden">
+                  Findings for case OVP-2026-0034: J. Thompson, retirement action 702.
+                  Three findings with severity, rule violated, expected value, and actual value.
+                </caption>
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col">Severity</th>
+                    <th scope="col">Rule Violated</th>
+                    <th scope="col">Expected</th>
+                    <th scope="col">Actual</th>
+                  </tr>
+                </thead>
+                <tbody>
+
+                  <tr class="finding-high">
+                    <td>
+                      <span class="badge badge-confirmed">
+                        <i class="fa-solid fa-circle-exclamation me-1" aria-hidden="true"></i>High
+                      </span>
+                    </td>
+                    <td>
+                      <strong>OPM 831.201</strong><br>
+                      <span class="text-muted" style="font-size:0.8rem;">Retirement plan eligibility</span>
+                    </td>
+                    <td>CSRS Offset (Code K)</td>
+                    <td style="color:#b02a37;font-weight:600;">FERS (Code C)</td>
+                  </tr>
+
+                  <tr class="finding-medium">
+                    <td>
+                      <span class="badge badge-detected">
+                        <i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i>Medium
+                      </span>
+                    </td>
+                    <td>
+                      <strong>OPM 831.102</strong><br>
+                      <span class="text-muted" style="font-size:0.8rem;">Service computation date</span>
+                    </td>
+                    <td>SCD includes 6 yr military credit</td>
+                    <td style="color:#7f6500;font-weight:600;">Military credit not applied</td>
+                  </tr>
+
+                  <tr class="finding-low">
+                    <td>
+                      <span class="badge badge-corrective">
+                        <i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>Low
+                      </span>
+                    </td>
+                    <td>
+                      <strong>OPM SF-50 Procedure</strong><br>
+                      <span class="text-muted" style="font-size:0.8rem;">Supporting documentation</span>
+                    </td>
+                    <td>SF-180 on file before retirement</td>
+                    <td style="color:#087990;font-weight:600;">SF-180 not on file</td>
+                  </tr>
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---- Corrective action section ---- -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2 class="h5 mb-0">
+              <i class="fa-solid fa-file-pen me-1" aria-hidden="true"></i>Corrective Action
+            </h2>
+          </div>
+          <div class="card-body">
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;
+                     letter-spacing:0.05em;color:#5a6472;margin-bottom:4px;">Responsible Officer</div>
+                <div>Benefits Manager, OCHCO</div>
+                <div class="text-muted" style="font-size:0.8rem;">J. Collins</div>
+              </div>
+              <div class="col-md-4">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;
+                     letter-spacing:0.05em;color:#5a6472;margin-bottom:4px;">Due Date</div>
+                <div>2026-06-02</div>
+                <div class="text-muted" style="font-size:0.8rem;">12 days remaining</div>
+              </div>
+              <div class="col-md-4">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;
+                     letter-spacing:0.05em;color:#5a6472;margin-bottom:4px;">Corrective Action Code</div>
+                <code>NOA-702-K-CORRECT</code>
+              </div>
+            </div>
+
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;
+                 letter-spacing:0.05em;color:#5a6472;margin-bottom:6px;">Recommended Steps</div>
+            <ol style="font-size:0.875rem;" class="mb-3">
+              <li class="mb-2">
+                Request SF-180 (Request for Military Records) from employee to document
+                six years of prior military service credit.
+              </li>
+              <li class="mb-2">
+                Update the Service Computation Date to reflect verified military service
+                credit per 5 CFR 831.301.
+              </li>
+              <li class="mb-2">
+                Correct retirement plan code from FERS (C) to CSRS Offset (K) on the SF-50.
+                Submit corrected SF-50 to NFC payroll.
+              </li>
+              <li class="mb-2">
+                Suspend retirement benefit computation pending SCD verification.
+                Notify employee in writing within 5 business days.
+              </li>
+              <li>
+                Recalculate annuity base at CSRS Offset rate. Adjust payroll retroactive
+                to 2026-05-18 effective date. Record correction in audit log.
+              </li>
+            </ol>
+
+            <div class="d-flex gap-2 flex-wrap">
+              <button type="button" class="btn btn-primary btn-sm"
+                      aria-label="Submit corrective action SF-50 to NFC payroll">
+                <i class="fa-solid fa-paper-plane me-1" aria-hidden="true"></i>Submit Corrective Action
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm"
+                      aria-label="Download SF-50 correction form">
+                <i class="fa-solid fa-download me-1" aria-hidden="true"></i>Download SF-50 Form
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ---- AI analysis panel ---- -->
+        <div class="ai-panel" role="region" aria-label="Benefits rule reference assistant">
+          <div class="ai-panel-header">
+            <i class="fa-solid fa-microchip me-1" aria-hidden="true"></i>
+            Benefits Rule Reference
+            <span style="margin-left:auto;font-size:11px;color:rgba(255,255,255,0.75);font-weight:400;">
+              Human review required before case action
+            </span>
+          </div>
+          <div class="ai-panel-body">
+
+            <p style="font-size:0.8rem;color:#5a6472;margin-bottom:0.75rem;">
+              Pre-populated query: <em>"What OPM rules apply to this situation?"</em>
+            </p>
+
+            <div class="ai-response" role="region"
+                 aria-label="Benefits rule reference response">
+              <p class="mb-2">
+                <strong>Case OVP-2026-0034</strong> involves three OPM regulatory citations:
+              </p>
+              <p class="mb-2">
+                <strong>5 CFR Part 831 (CSRS)</strong> — Employees hired before January 1, 1984
+                are generally covered under CSRS. Those with prior military service who elected
+                to deposit the civilian service equivalent are eligible for CSRS Offset (Code K)
+                rather than standard FERS. The retirement plan code on the SF-50 must match
+                the system under which the annuity is computed.
+              </p>
+              <p class="mb-2">
+                <strong>5 CFR 831.102 — Service Computation Date</strong> — The SCD must reflect
+                all creditable service including verified military service periods. Per 5 CFR
+                831.301, military service credit requires an SF-180 from the National Personnel
+                Records Center prior to retirement processing.
+              </p>
+              <p class="mb-0">
+                <strong>OPM Retirement and Insurance Policy Memo 2019-02</strong> — CSRS Offset
+                employees receive a higher annuity base that is partially offset by Social Security
+                benefits at age 62. Computing the annuity at the FERS rate understates the
+                correct benefit and constitutes an improper payment under 31 U.S.C. 3321.
+              </p>
+              <div class="mt-3 pt-2 border-top d-flex gap-3" style="font-size:11px;color:#5a6472;">
+                <span class="audit-mono">
+                  <i class="fa-solid fa-shield-check me-1" aria-hidden="true"></i>HMAC-SHA256 verified
+                </span>
+                <span aria-hidden="true">&bull;</span>
+                <span class="audit-mono">Audit ID: ai-c7d4e9f2</span>
+                <span aria-hidden="true">&bull;</span>
+                <span class="audit-mono">Human review required before case action</span>
+              </div>
+            </div>
+
+            <div class="ai-suggest-row" aria-label="Suggested follow-up questions">
+              <button type="button" class="ai-suggest"
+                      aria-label="Ask: How is the CSRS Offset annuity base computed">
+                How is the CSRS Offset annuity base computed?
+              </button>
+              <button type="button" class="ai-suggest"
+                      aria-label="Ask: What is the SF-180 request process">
+                What is the SF-180 request process?
+              </button>
+              <button type="button" class="ai-suggest"
+                      aria-label="Ask: What are the 31 USC 3321 reporting requirements">
+                What are the 31 U.S.C. 3321 reporting requirements?
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== RIGHT COLUMN ===== -->
+      <div class="col-lg-4">
+
+        <!-- Case summary -->
+        <div class="card mb-4">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h2 class="h5 mb-0">Case Information</h2>
+            <span class="badge badge-confirmed" role="status">Under Review</span>
+          </div>
+          <div class="card-body p-0">
+            <table class="table table-sm mb-0">
+              <caption class="visually-hidden">Case attributes for OVP-2026-0034</caption>
+              <tbody>
+                <tr>
+                  <th scope="row" style="width:45%;font-size:0.8rem;">Case ID</th>
+                  <td style="font-size:0.8rem;"><code>OVP-2026-0034</code></td>
+                </tr>
+                <tr>
+                  <th scope="row" style="font-size:0.8rem;">Employee</th>
+                  <td style="font-size:0.8rem;">J. Thompson</td>
+                </tr>
+                <tr>
+                  <th scope="row" style="font-size:0.8rem;">Action Code</th>
+                  <td style="font-size:0.8rem;">702 — Retirement</td>
+                </tr>
+                <tr>
+                  <th scope="row" style="font-size:0.8rem;">Error Type</th>
+                  <td style="font-size:0.8rem;">Retirement plan mismatch</td>
+                </tr>
+                <tr>
+                  <th scope="row" style="font-size:0.8rem;">Overpayment</th>
+                  <td style="font-size:0.8rem;color:#b02a37;font-weight:600;">$28,080/yr</td>
+                </tr>
+                <tr>
+                  <th scope="row" style="font-size:0.8rem;">Fiscal Year</th>
+                  <td style="font-size:0.8rem;">FY 2026</td>
+                </tr>
+                <tr>
+                  <th scope="row" style="font-size:0.8rem;">Detected By</th>
+                  <td style="font-size:0.8rem;">Batch validation engine</td>
+                </tr>
+                <tr>
+                  <th scope="row" style="font-size:0.8rem;">Detected Date</th>
+                  <td style="font-size:0.8rem;">2026-05-19 09:14 UTC</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Audit trail -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="h5 mb-0">
+              <i class="fa-solid fa-shield-check me-1" aria-hidden="true"></i>Audit Trail
+            </h2>
+          </div>
+          <div class="card-body py-2 px-3">
+
+            <div class="audit-entry" role="listitem">
+              <div class="audit-time">2026-05-19 09:14 UTC</div>
+              <div>
+                Case created by batch engine — batch <code>2026-05-19</code>
+                <div class="mt-1">
+                  <span class="audit-hmac">HMAC: 3c9f1d2a…</span>
+                  <span class="badge badge-resolved ms-1" style="font-size:10px;">Verified</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="audit-entry" role="listitem">
+              <div class="audit-time">2026-05-19 09:14 UTC</div>
+              <div>
+                Initial findings recorded — 3 rule violations
+                <div class="mt-1">
+                  <span class="audit-hmac">HMAC: 4a7b3e1c…</span>
+                  <span class="badge badge-resolved ms-1" style="font-size:10px;">Verified</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="audit-entry" role="listitem">
+              <div class="audit-time">2026-05-20 11:32 UTC</div>
+              <div>
+                Case assigned to L. Martinez — status changed to Under Review
+                <div class="mt-1">
+                  <span class="audit-hmac">HMAC: 8d2f5c9b…</span>
+                  <span class="badge badge-resolved ms-1" style="font-size:10px;">Verified</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="audit-entry" role="listitem">
+              <div class="audit-time">2026-05-20 14:07 UTC</div>
+              <div>
+                OPM rule reference queried — model: gpt-4o, audit ID: ai-c7d4e9f2
+                <div class="mt-1">
+                  <span class="audit-hmac">HMAC: 2b6e8a4d…</span>
+                  <span class="badge badge-resolved ms-1" style="font-size:10px;">Verified</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="audit-entry" role="listitem">
+              <div class="audit-time">2026-05-21 08:55 UTC</div>
+              <div>
+                Corrective action steps generated — responsible officer assigned: J. Collins
+                <div class="mt-1">
+                  <span class="audit-hmac">HMAC: 7f1a3d8e…</span>
+                  <span class="badge badge-resolved ms-1" style="font-size:10px;">Verified</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="card-footer text-muted" style="font-size:11px;">
+            <i class="fa-solid fa-lock me-1" aria-hidden="true"></i>
+            All entries are HMAC-SHA256 signed. WORM retention: 7 years (NARA).
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ======================== FOOTER ======================== -->
+  <footer class="mt-5 py-3 bg-light border-top">
+    <div class="container-fluid text-center">
+      <p class="footer-text text-muted mb-1">
+        U.S. Equal Employment Opportunity Commission &mdash;
+        Office of the Chief Human Capital Officer
+      </p>
+      <p class="footer-text text-muted mb-0">
+        For Official Use Only &mdash; Contains Sensitive PII
+      </p>
+    </div>
+  </footer>
+
+  <!-- ======================== TOAST CONTAINER ======================== -->
+  <div id="toast-container"
+       class="toast-container"
+       role="region"
+       aria-label="System notifications"
+       aria-live="polite"
+       data-toasts='[
+         {"type":"info","title":"Case OVP-2026-0034","text":"This case was auto-detected during batch review on 2026-05-19. 3 rule violations were identified: retirement plan mismatch (High), SCD error (Medium), and missing SF-180 documentation (Low).","delay":2000,"duration":11000},
+         {"type":"mcp","title":"AI Audit Log","text":"All AI-generated content on this page is HMAC-SHA256 signed and stored with 7-year WORM retention per NARA requirements. Human review is required before any case action.","delay":5500,"duration":11000}
+       ]'>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          crossorigin="anonymous"></script>
+  <script src="js/demo.js"></script>
+  <script>
+    // Demo: AI suggest buttons populate a follow-up indicator
+    document.querySelectorAll('.ai-suggest').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var srStatus = document.getElementById('sr-status');
+        var label = btn.getAttribute('aria-label').replace('Ask: ', '');
+        if (srStatus) {
+          srStatus.textContent = 'Question submitted: ' + label +
+            '. Response would be fetched from the Benefits MCP tool.';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

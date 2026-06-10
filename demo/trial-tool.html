@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OGC Trial Tool — EEOC AI Platform Demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous">
+  <style>
+    /* ==========================================================================
+       508 overrides — EEOC color table, WCAG 2.x piecewise formula
+       ========================================================================== */
+    :root {
+      --bs-border-color: #737373;
+      --bs-danger-rgb: 176, 42, 55;
+      --bs-danger: #b02a37;
+      --bs-success-rgb: 20, 108, 67;
+      --bs-success: #146c43;
+      --bs-secondary-rgb: 90, 100, 114;
+      --bs-secondary: #5a6472;
+    }
+
+    .text-primary  { color: #0a58ca !important; }
+    .text-info     { color: #087990 !important; }
+    .text-warning  { color: #7f6500 !important; }
+    .text-danger   { color: #b02a37 !important; }
+    .text-success  { color: #146c43 !important; }
+    .text-muted    { color: #5a6472 !important; }
+
+    /* bg / badge overrides */
+    .bg-primary, .text-bg-primary { background-color: #0a58ca !important; }
+    .bg-success, .text-bg-success { background-color: #146c43 !important; }
+    .bg-danger,  .text-bg-danger  { background-color: #b02a37 !important; }
+
+    /* Button: primary */
+    .btn-primary {
+      --bs-btn-bg: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-bg: #0a4fb4;
+      --bs-btn-hover-border-color: #0a4fb4;
+      --bs-btn-active-bg: #0842a0;
+      --bs-btn-active-border-color: #0842a0;
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-primary:hover { background-color: #0a4fb4 !important; border-color: #0a4fb4 !important; }
+    .btn-primary:active, .btn-primary.active { background-color: #0842a0 !important; border-color: #0842a0 !important; }
+
+    /* Button: danger */
+    .btn-danger {
+      --bs-btn-bg: #b02a37;
+      --bs-btn-border-color: #b02a37;
+      --bs-btn-hover-bg: #96232e;
+      --bs-btn-hover-border-color: #96232e;
+      --bs-btn-active-bg: #7c1d27;
+      --bs-btn-active-border-color: #7c1d27;
+      background-color: #b02a37 !important;
+      border-color: #b02a37 !important;
+    }
+    .btn-danger:hover { background-color: #96232e !important; border-color: #96232e !important; }
+
+    /* Button: outline-primary */
+    .btn-outline-primary {
+      --bs-btn-color: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #0a58ca;
+      --bs-btn-hover-border-color: #0a58ca;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #0a58ca;
+      --bs-btn-active-border-color: #0a58ca;
+      --bs-btn-disabled-color: #0a58ca;
+      --bs-btn-disabled-border-color: #0a58ca;
+      color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-outline-primary:hover,
+    .btn-outline-primary:active,
+    .btn-outline-primary.active {
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+      color: #fff !important;
+    }
+
+    /* Button: outline-secondary */
+    .btn-outline-secondary {
+      --bs-btn-color: #5a6472;
+      --bs-btn-border-color: #5a6472;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #5a6472;
+      --bs-btn-hover-border-color: #5a6472;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #5a6472;
+      --bs-btn-active-border-color: #5a6472;
+      --bs-btn-disabled-color: #5a6472;
+      --bs-btn-disabled-border-color: #5a6472;
+      color: #5a6472 !important;
+      border-color: #5a6472 !important;
+    }
+    .btn-outline-secondary:hover,
+    .btn-outline-secondary:active,
+    .btn-outline-secondary.active {
+      background-color: #5a6472 !important;
+      border-color: #5a6472 !important;
+      color: #fff !important;
+    }
+
+    /* Navbar text contrast — rgba(255,255,255,0.55) fails 4.5:1 */
+    .navbar-dark .navbar-text,
+    .navbar-dark .navbar-text a { color: #fff !important; }
+
+    /* Focus indicators — WCAG 2.4.7 + 1.4.11 */
+    .btn:focus-visible,
+    a:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible,
+    .nav-link:focus-visible,
+    .btn-close:focus-visible,
+    .dropdown-item:focus-visible,
+    .page-link:focus-visible,
+    .accordion-button:focus-visible { outline: 2px solid #0a58ca !important; outline-offset: 2px !important; }
+
+    /* Suppress Bootstrap 50%-opacity box-shadow focus rings */
+    .btn:focus, .nav-link:focus, .btn-close:focus, .dropdown-item:focus,
+    .page-link:focus, .accordion-button:focus, .form-control:focus,
+    .form-select:focus, .form-check-input:focus { box-shadow: none !important; }
+
+    /* ==========================================================================
+       Layout
+       ========================================================================== */
+    body { background-color: #f8f9fa; }
+    .container { max-width: 1280px; }
+    .card { margin-top: 1.5rem; }
+    .navbar-brand { font-weight: bold; }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      z-index: 9999;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ==========================================================================
+       Case detail / chat layout — matches case_chat.html
+       ========================================================================== */
+    .demo-section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #5a6472;
+      border-bottom: 1px solid #737373;
+      padding-bottom: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .chat-container-demo {
+      display: flex;
+      height: 480px;
+      border: 1px solid #737373;
+      border-radius: 0.375rem;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .chat-sidebar-demo {
+      width: 220px;
+      flex-shrink: 0;
+      border-right: 1px solid #737373;
+      overflow-y: auto;
+      padding: 1rem;
+      background: #f8f9fa;
+    }
+
+    .chat-main-demo {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-messages-demo {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    .msg-user {
+      background: #e3f2fd;
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .msg-assistant {
+      background: #f5f5f5;
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .msg-audit {
+      margin-top: 0.5rem;
+      font-size: 0.72rem;
+      color: #5a6472;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .msg-audit span::before {
+      content: "\2022\0020";
+    }
+    .msg-audit span:first-child::before { content: none; }
+
+    .citation-tag {
+      font-size: 0.78rem;
+      background: #fff3cd;
+      padding: 2px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: none;
+      color: #7f6500;
+      font-weight: 600;
+    }
+    .citation-tag:hover { background: #ffe08a; }
+    .citation-tag:focus-visible { outline: 2px solid #0a58ca; outline-offset: 2px; }
+
+    .chat-input-row {
+      border-top: 1px solid #737373;
+      padding: 0.75rem;
+    }
+
+    /* AI analysis tabs */
+    .analysis-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid #737373;
+      margin-bottom: 1rem;
+    }
+
+    .analysis-tab {
+      padding: 8px 16px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #5a6472;
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      font-family: inherit;
+    }
+
+    .analysis-tab:hover { color: #212529; }
+
+    .analysis-tab.active {
+      color: #0a58ca;
+      border-bottom-color: #0a58ca;
+    }
+
+    .analysis-tab:focus-visible { outline: 2px solid #0a58ca; outline-offset: 2px; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Timeline */
+    .tl-list {
+      position: relative;
+      padding-left: 28px;
+      list-style: none;
+      margin: 0;
+      padding-top: 4px;
+    }
+
+    .tl-list::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: #737373;
+    }
+
+    .tl-event {
+      position: relative;
+      padding: 0 0 16px 0;
+    }
+
+    .tl-event:last-child { padding-bottom: 0; }
+
+    .tl-dot {
+      position: absolute;
+      left: -21px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #737373;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 2px #737373;
+    }
+
+    .tl-event.tl-adverse .tl-dot {
+      background: #b02a37;
+      box-shadow: 0 0 0 2px #b02a37;
+    }
+
+    .tl-event.tl-complaint .tl-dot {
+      background: #7f6500;
+      box-shadow: 0 0 0 2px #7f6500;
+    }
+
+    .tl-date {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #5a6472;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 2px;
+    }
+
+    .tl-label {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #212529;
+    }
+
+    .tl-note {
+      font-size: 0.72rem;
+      color: #5a6472;
+      margin-top: 2px;
+    }
+
+    /* Deposition status pills */
+    .dep-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .dep-yes   { background: #d1fae5; color: #146c43; }
+    .dep-sched { background: #fff3cd; color: #7f6500; }
+    .dep-none  { background: #e9ecef; color: #5a6472; }
+  </style>
+</head>
+<body>
+
+  <!-- Skip link — WCAG 2.4.1 -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- SR announcer — chat live region per WCAG 4.1.3 -->
+  <div id="chat-sr-announcer" class="visually-hidden"
+       role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- AI results announcer — outside modal so it persists across open/close -->
+  <div id="ai-results-sr-announcer" class="visually-hidden"
+       role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ==========================================================================
+       Navbar — matches layout.html exactly
+       ========================================================================== -->
+  <header role="banner">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark"
+         role="navigation" aria-label="Main navigation">
+      <div class="container">
+        <a class="navbar-brand" href="index.html">OGC Trial Tool</a>
+        <div class="d-flex align-items-center">
+          <a href="trial-upload.html" class="btn btn-outline-light btn-sm me-2" role="button">Upload New Case</a>
+          <a href="trial-cases.html" class="btn btn-outline-light btn-sm me-2" role="button">Dashboard</a>
+          <button type="button" class="btn btn-outline-warning btn-sm me-3"
+                  disabled title="Admin tools — not yet available"
+                  style="--bs-btn-color:#7f6500;--bs-btn-border-color:#7f6500;--bs-btn-disabled-color:#7f6500;--bs-btn-disabled-border-color:#7f6500;">
+            Admin Tools
+          </button>
+          <span class="navbar-text me-3" aria-label="Current user">Welcome, A. Washington</span>
+          <a href="index.html" class="btn btn-light btn-sm" role="button">Logout</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ==========================================================================
+       Main content
+       ========================================================================== -->
+  <main id="main-content" class="container mt-4" role="main">
+
+    <!-- Flash alert region -->
+    <div role="alert" aria-live="assertive">
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Case documents processed. All 7 files are indexed and ready for analysis.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close message"></button>
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         Section 1 — Dashboard (case list)
+         ======================================================================== -->
+    <div id="dashboard-section">
+      <div class="demo-section-label" aria-hidden="true">Dashboard view</div>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">My Cases</h1>
+      </div>
+
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <caption class="visually-hidden">List of cases assigned to A. Washington</caption>
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Case Name</th>
+                  <th scope="col">Assigned Attorney</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Witnesses / Deponents</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">EEOC v. National Electronics Corp.</th>
+                  <td>A. Washington</td>
+                  <td>
+                    <span class="badge text-bg-danger" aria-label="Status: Trial">Trial</span>
+                  </td>
+                  <td><small>J. Williams, R. Chen, T. Martinez, K. Johnson</small></td>
+                  <td>
+                    <button class="btn btn-sm btn-primary"
+                            data-bs-toggle="modal" data-bs-target="#aiToolsModal"
+                            data-case-name="EEOC v. National Electronics Corp."
+                            aria-haspopup="dialog">
+                      AI Tools
+                    </button>
+                    <a class="btn btn-sm btn-outline-primary" href="#case-detail-section">View Case</a>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">EEOC v. Metro Transit Authority</th>
+                  <td>A. Washington</td>
+                  <td>
+                    <span class="badge text-bg-primary" aria-label="Status: Open">Open</span>
+                  </td>
+                  <td><small>M. Torres, B. Singh</small></td>
+                  <td>
+                    <button class="btn btn-sm btn-primary" disabled title="Analysis available once processing completes">
+                      Processing...
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">EEOC v. Hartwell Financial Group</th>
+                  <td>A. Washington</td>
+                  <td>
+                    <span class="badge text-bg-secondary" aria-label="Status: Settled">Settled</span>
+                  </td>
+                  <td><small>D. Hartwell, P. Kim</small></td>
+                  <td>
+                    <button class="btn btn-sm btn-secondary" disabled title="Case closed">
+                      Closed
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         Section 2 — Case detail (matches case_detail.html structure)
+         ======================================================================== -->
+    <div id="case-detail-section" class="mt-5">
+      <div class="demo-section-label" aria-hidden="true">Case detail view</div>
+
+      <nav aria-label="Case navigation">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="trial-cases.html">Cases</a></li>
+          <li class="breadcrumb-item active" aria-current="page">EEOC v. National Electronics Corp.</li>
+        </ol>
+      </nav>
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3">EEOC v. National Electronics Corp.</h1>
+        <span class="badge text-bg-danger fs-6" aria-label="Status: Trial">Trial</span>
+      </div>
+
+      <div class="row">
+        <!-- Case information card -->
+        <div class="col-md-6">
+          <section class="card mb-3" aria-labelledby="case-info-heading">
+            <div class="card-header">
+              <h2 id="case-info-heading" class="h5 mb-0">Case Information</h2>
+            </div>
+            <div class="card-body">
+              <table class="table table-sm mb-0">
+                <caption class="visually-hidden">Case metadata for EEOC v. National Electronics Corp.</caption>
+                <tbody>
+                  <tr><th scope="row">Case Number</th><td>570-2026-00412</td></tr>
+                  <tr><th scope="row">Type</th><td>Title VII Discrimination</td></tr>
+                  <tr><th scope="row">Office</th><td>Washington Field Office</td></tr>
+                  <tr><th scope="row">Region</th><td>Region 3 &mdash; Mid-Atlantic</td></tr>
+                  <tr><th scope="row">Court</th><td>U.S. District Court, D.D.C.</td></tr>
+                  <tr><th scope="row">Docket</th><td>1:26-cv-00891-BAH</td></tr>
+                  <tr><th scope="row">Basis</th><td>Race, Retaliation (Title VII)</td></tr>
+                  <tr><th scope="row">Trial Date</th><td><strong>August 12, 2026</strong> (83 days)</td></tr>
+                  <tr><th scope="row">Created</th><td>2026-04-03 14:22 UTC</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <!-- Actions card -->
+        <div class="col-md-6">
+          <section class="card mb-3" aria-labelledby="actions-heading">
+            <div class="card-header">
+              <h2 id="actions-heading" class="h5 mb-0">Actions</h2>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <div class="row g-2">
+                  <div class="col-md-8">
+                    <label for="update-status" class="form-label">Update Status</label>
+                    <select id="update-status" name="status" class="form-select" aria-required="true">
+                      <option value="open">Open</option>
+                      <option value="trial" selected>Trial</option>
+                      <option value="settled">Settled</option>
+                      <option value="closed">Closed</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-primary btn-sm">Update</button>
+                  </div>
+                </div>
+              </div>
+              <hr>
+              <h3 class="h6">ARC Charge Link</h3>
+              <p class="mb-1"><strong>Charge Number:</strong> 570-2026-00412</p>
+              <p class="text-muted small mb-0">Charge data pulled from ARC Integration API (read-only).</p>
+            </div>
+          </section>
+
+          <section class="card mb-3" aria-labelledby="docs-summary-heading">
+            <div class="card-header">
+              <h2 id="docs-summary-heading" class="h5 mb-0">Uploaded Documents</h2>
+            </div>
+            <div class="card-body p-0">
+              <table class="table table-sm mb-0">
+                <caption class="visually-hidden">Case documents for EEOC v. National Electronics Corp.</caption>
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col">Document</th>
+                    <th scope="col">Pages</th>
+                    <th scope="col">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Complaint.pdf</th>
+                    <td>12</td>
+                    <td><span class="badge text-bg-success">Indexed</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Respondent Answer.pdf</th>
+                    <td>8</td>
+                    <td><span class="badge text-bg-success">Indexed</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Dep. &mdash; J. Williams.pdf</th>
+                    <td>45</td>
+                    <td><span class="badge text-bg-success">Indexed</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Dep. &mdash; R. Chen.pdf</th>
+                    <td>32</td>
+                    <td><span class="badge text-bg-success">Indexed</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Exhibit A: Email Chain.pdf</th>
+                    <td>3</td>
+                    <td><span class="badge text-bg-success">Indexed</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Exhibit B: Performance Reviews.pdf</th>
+                    <td>15</td>
+                    <td><span class="badge text-bg-success">Indexed</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Exhibit C: Termination Letter.pdf</th>
+                    <td>1</td>
+                    <td><span class="badge text-bg-success">Indexed</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         Section 3 — AI Analysis tabs (Key Facts / Timeline / Witnesses)
+         ======================================================================== -->
+    <div id="analysis-section" class="mt-2">
+      <div class="demo-section-label" aria-hidden="true">AI analysis panel</div>
+
+      <section class="card" aria-labelledby="analysis-card-heading">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h2 id="analysis-card-heading" class="h5 mb-0">AI Case Analysis</h2>
+          <span class="badge text-bg-success">All documents reviewed</span>
+        </div>
+        <div class="card-body">
+          <!-- Tab list -->
+          <div class="analysis-tabs" role="tablist" aria-label="Case analysis sections">
+            <button class="analysis-tab active" role="tab"
+                    id="tab-facts" aria-controls="panel-facts" aria-selected="true">
+              Key Facts
+            </button>
+            <button class="analysis-tab" role="tab"
+                    id="tab-timeline" aria-controls="panel-timeline" aria-selected="false">
+              Timeline
+            </button>
+            <button class="analysis-tab" role="tab"
+                    id="tab-witnesses" aria-controls="panel-witnesses" aria-selected="false">
+              Witnesses
+            </button>
+          </div>
+
+          <!-- Panel: Key Facts -->
+          <div id="panel-facts" class="tab-panel active"
+               role="tabpanel" aria-labelledby="tab-facts">
+            <table class="table table-sm">
+              <caption class="visually-hidden">Key facts extracted from case documents</caption>
+              <thead class="table-light">
+                <tr>
+                  <th scope="col" style="width:2.5rem;">#</th>
+                  <th scope="col">Fact</th>
+                  <th scope="col">Source Citations</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">1</th>
+                  <td>Employed since March 2019; promoted to Senior Analyst July 2022.</td>
+                  <td>
+                    <button class="citation-tag me-1" type="button" title="Complaint p.2">Complaint p.2</button>
+                    <button class="citation-tag" type="button" title="Exhibit B p.3">Exhibit B p.3</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">2</th>
+                  <td>Internal EEO complaint filed January 12, 2026.</td>
+                  <td>
+                    <button class="citation-tag" type="button" title="Complaint p.5">Complaint p.5</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">3</th>
+                  <td>Passed over for Director position February 3, 2026. Position awarded to external hire with 2 years less experience.</td>
+                  <td>
+                    <button class="citation-tag me-1" type="button" title="Complaint p.7">Complaint p.7</button>
+                    <button class="citation-tag" type="button" title="Exhibit B p.12">Exhibit B p.12</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">4</th>
+                  <td>Termination effective March 15, 2026, cited &ldquo;restructuring.&rdquo;</td>
+                  <td>
+                    <button class="citation-tag" type="button" title="Exhibit C">Exhibit C</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">5</th>
+                  <td>Williams testified charging party &ldquo;consistently exceeded expectations.&rdquo;</td>
+                  <td>
+                    <button class="citation-tag" type="button" title="Dep. Williams p.18">Dep. Williams p.18</button>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">6</th>
+                  <td>Three other employees in protected class passed over in the same period.</td>
+                  <td>
+                    <button class="citation-tag" type="button" title="Dep. Williams p.22">Dep. Williams p.22</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="text-muted small mb-0">
+              All citations reference source documents. Attorney verification required before use in filings.
+            </p>
+          </div>
+
+          <!-- Panel: Timeline -->
+          <div id="panel-timeline" class="tab-panel"
+               role="tabpanel" aria-labelledby="tab-timeline" hidden>
+
+            <div class="alert alert-warning py-2 small" role="note">
+              <strong>Key finding:</strong> 22-day gap between internal EEO complaint (Jan 12) and promotion denial (Feb 3).
+              Supports temporal proximity for retaliation claim.
+            </div>
+
+            <ol class="tl-list" aria-label="Case chronology">
+              <li class="tl-event">
+                <div class="tl-dot" aria-hidden="true"></div>
+                <div class="tl-date">Mar 2019</div>
+                <div class="tl-label">Hired as Analyst</div>
+              </li>
+              <li class="tl-event">
+                <div class="tl-dot" aria-hidden="true"></div>
+                <div class="tl-date">Jul 2022</div>
+                <div class="tl-label">Promoted to Senior Analyst</div>
+              </li>
+              <li class="tl-event">
+                <div class="tl-dot" aria-hidden="true"></div>
+                <div class="tl-date">Dec 2025</div>
+                <div class="tl-label">Director position posted</div>
+              </li>
+              <li class="tl-event tl-complaint">
+                <div class="tl-dot" aria-hidden="true"></div>
+                <div class="tl-date">Jan 12, 2026</div>
+                <div class="tl-label">Internal EEO complaint filed</div>
+                <div class="tl-note" style="color:#7f6500;font-weight:600;">Start of temporal proximity window</div>
+              </li>
+              <li class="tl-event">
+                <div class="tl-dot" aria-hidden="true"></div>
+                <div class="tl-date">Jan 20, 2026</div>
+                <div class="tl-label">Application deadline</div>
+              </li>
+              <li class="tl-event">
+                <div class="tl-dot" aria-hidden="true"></div>
+                <div class="tl-date">Jan 24, 2026</div>
+                <div class="tl-label">Hiring committee meets</div>
+              </li>
+              <li class="tl-event tl-adverse">
+                <div class="tl-dot" aria-hidden="true"></div>
+                <div class="tl-date">Feb 3, 2026</div>
+                <div class="tl-label">Promotion denied &mdash; external hire selected</div>
+                <div class="tl-note" style="color:#b02a37;font-weight:600;">
+                  22 days after complaint
+                  <span class="visually-hidden">(adverse action)</span>
+                </div>
+              </li>
+              <li class="tl-event tl-adverse">
+                <div class="tl-dot" aria-hidden="true"></div>
+                <div class="tl-date">Mar 15, 2026</div>
+                <div class="tl-label">Terminated &mdash; &ldquo;restructuring&rdquo;</div>
+                <div class="tl-note" style="color:#b02a37;font-weight:600;">
+                  62 days after complaint
+                  <span class="visually-hidden">(termination)</span>
+                </div>
+              </li>
+              <li class="tl-event">
+                <div class="tl-dot" aria-hidden="true"></div>
+                <div class="tl-date">Apr 3, 2026</div>
+                <div class="tl-label">EEOC charge filed</div>
+              </li>
+              <li class="tl-event">
+                <div class="tl-dot" aria-hidden="true"></div>
+                <div class="tl-date">Aug 12, 2026</div>
+                <div class="tl-label">Trial date</div>
+              </li>
+            </ol>
+          </div>
+
+          <!-- Panel: Witnesses -->
+          <div id="panel-witnesses" class="tab-panel"
+               role="tabpanel" aria-labelledby="tab-witnesses" hidden>
+            <table class="table table-sm table-hover">
+              <caption class="visually-hidden">Witness list for EEOC v. National Electronics Corp.</caption>
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Role</th>
+                  <th scope="col">Relevance</th>
+                  <th scope="col">Deposition</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">J. Williams</th>
+                  <td>Former Supervisor</td>
+                  <td>Testified CP exceeded expectations; contradicts performance concerns cited in termination</td>
+                  <td><span class="dep-pill dep-yes">Yes &mdash; 45 pages</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">R. Chen</th>
+                  <td>HR Director</td>
+                  <td>Managed hiring committee; approved external hire</td>
+                  <td><span class="dep-pill dep-yes">Yes &mdash; 32 pages</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">T. Martinez</th>
+                  <td>Colleague</td>
+                  <td>Also passed over in same period; member of protected class</td>
+                  <td><span class="dep-pill dep-sched">Scheduled Jun 2026</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">K. Johnson</th>
+                  <td>Hiring Manager</td>
+                  <td>Made final selection; no deposition yet</td>
+                  <td><span class="dep-pill dep-none">Not scheduled</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ========================================================================
+         Section 4 — Case AI Assistant chat (matches case_chat.html structure)
+         ======================================================================== -->
+    <div id="chat-section" class="mt-4">
+      <div class="demo-section-label" aria-hidden="true">AI assistant view — EEOC v. National Electronics Corp.</div>
+
+      <nav aria-label="Case navigation">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="trial-cases.html">Cases</a></li>
+          <li class="breadcrumb-item"><a href="#case-detail-section">EEOC v. National Electronics Corp.</a></li>
+          <li class="breadcrumb-item active" aria-current="page">AI Assistant</li>
+        </ol>
+      </nav>
+
+      <section aria-label="Case AI Assistant">
+        <div class="chat-container-demo" role="region" aria-label="Case AI Assistant">
+
+          <!-- Conversation sidebar -->
+          <aside class="chat-sidebar-demo" role="complementary" aria-label="Conversation history">
+            <h2 class="h6 mb-3">Conversations</h2>
+            <button id="new-conv-btn" class="btn btn-sm btn-primary w-100 mb-3"
+                    aria-label="Start new conversation">
+              New Conversation
+            </button>
+            <div id="conv-list" role="list" aria-label="Previous conversations">
+              <button class="btn btn-sm btn-outline-secondary w-100 mb-1 text-start"
+                      aria-label="Open conversation from 2026-05-19"
+                      type="button">
+                2026-05-19 09:14
+              </button>
+              <button class="btn btn-sm btn-outline-secondary w-100 mb-1 text-start"
+                      aria-label="Open conversation from 2026-05-17"
+                      type="button">
+                2026-05-17 16:30
+              </button>
+              <button class="btn btn-sm btn-outline-secondary w-100 mb-1 text-start"
+                      aria-label="Open conversation from 2026-05-14"
+                      type="button">
+                2026-05-14 11:05
+              </button>
+            </div>
+          </aside>
+
+          <!-- Chat main area -->
+          <section class="chat-main-demo" aria-label="Chat area">
+            <div id="chat-messages" class="chat-messages-demo"
+                 role="log" aria-live="polite" aria-atomic="false"
+                 aria-label="Chat messages">
+
+              <div class="msg-user" role="article" aria-label="Your message">
+                What contradictions exist between the termination rationale in Exhibit C and the deposition testimony?
+              </div>
+
+              <div class="msg-assistant" role="article" aria-label="Assistant response">
+                <p class="mb-2">
+                  Cross-referencing Exhibit B (performance reviews) against Deposition &mdash; J. Williams:
+                  Williams states the charging party &ldquo;consistently exceeded expectations&rdquo;
+                  (Dep. p.18, line 4), which directly contradicts the respondent&rsquo;s claim of
+                  &ldquo;performance concerns&rdquo; cited in the termination letter (Exhibit C).
+                  This discrepancy spans three document sources and strengthens the pretext argument.
+                </p>
+                <div class="mt-2">
+                  <button class="citation-tag me-1" type="button"
+                          title="Dep. Williams p.18, line 4">Dep. Williams p.18</button>
+                  <button class="citation-tag me-1" type="button"
+                          title="Exhibit B, performance review summary">Exhibit B</button>
+                  <button class="citation-tag" type="button"
+                          title="Exhibit C, termination letter">Exhibit C</button>
+                </div>
+                <div class="msg-audit">
+                  <span>HMAC-SHA256 verified</span>
+                  <span>Audit ID: tri-6b3d9f4a</span>
+                  <span>Human review required before use in filings</span>
+                </div>
+              </div>
+
+              <div class="msg-user" role="article" aria-label="Your message">
+                Is there evidence supporting temporal proximity for the retaliation claim?
+              </div>
+
+              <div class="msg-assistant" role="article" aria-label="Assistant response">
+                <p class="mb-2">
+                  Yes. The record shows the internal EEO complaint was filed January 12, 2026
+                  (Complaint p.5). The promotion denial followed 22 days later on February 3, 2026
+                  (Complaint p.7). Termination occurred 62 days after the complaint on March 15, 2026
+                  (Exhibit C). Courts have found temporal proximity of less than three months
+                  sufficient to establish a prima facie case of retaliation under Title VII.
+                </p>
+                <div class="mt-2">
+                  <button class="citation-tag me-1" type="button"
+                          title="Complaint p.5">Complaint p.5</button>
+                  <button class="citation-tag me-1" type="button"
+                          title="Complaint p.7">Complaint p.7</button>
+                  <button class="citation-tag" type="button"
+                          title="Exhibit C">Exhibit C</button>
+                </div>
+                <div class="msg-audit">
+                  <span>HMAC-SHA256 verified</span>
+                  <span>Audit ID: tri-7e1a2c8f</span>
+                  <span>Human review required before use in filings</span>
+                </div>
+              </div>
+
+            </div>
+
+            <form id="chat-form" class="chat-input-row" aria-label="Send message">
+              <div class="input-group">
+                <label for="chat-input-field" class="visually-hidden">Type your legal research query</label>
+                <input type="text" id="chat-input-field" class="form-control"
+                       placeholder="Ask about case documents, contradictions, or legal authorities..."
+                       aria-required="true" autocomplete="off" maxlength="4000">
+                <button type="submit" class="btn btn-primary" id="send-btn"
+                        aria-label="Send message">Send</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- ==========================================================================
+       Footer — matches layout.html
+       ========================================================================== -->
+  <footer class="py-4 mt-5 bg-light" role="contentinfo">
+    <div class="container text-center text-muted" style="font-size:0.8rem;">
+      <p class="mb-1">U.S. Equal Employment Opportunity Commission &mdash; Office of General Counsel</p>
+      <p class="mb-0">All access or use of this system constitutes user understanding and acceptance of applicable terms and policies.</p>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       AI Tools Modal — matches dashboard.html aiToolsModal
+       ========================================================================== -->
+  <div class="modal fade" id="aiToolsModal" tabindex="-1"
+       role="dialog" aria-modal="true"
+       aria-labelledby="aiToolsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="aiToolsModalLabel">
+            AI Tools for Case: <span id="modal-case-name">EEOC v. National Electronics Corp.</span>
+          </h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <!-- Controls column -->
+            <div class="col-md-4 border-end">
+              <div class="mb-3">
+                <label for="ai-tool-select" class="form-label fw-bold">Select Analysis Tool:</label>
+                <select id="ai-tool-select" class="form-select mb-2" aria-describedby="tool-description">
+                  <option value="q_and_a">Question &amp; Answer</option>
+                  <option value="timeline">Build Timeline</option>
+                  <option value="summary">Case Summary</option>
+                  <option value="outline_builder">Witness Outline</option>
+                  <option value="impeachment_kit">Impeachment Kit</option>
+                  <option value="comparator_analyzer">Comparator Analysis</option>
+                  <option value="damages_snapshot">Damages Assessment</option>
+                  <option value="issue_matrix">Issue Matrix</option>
+                  <option value="mil_helper">Motion in Limine</option>
+                </select>
+                <div id="tool-description" class="text-muted small mb-3">
+                  Ask specific questions about the case.
+                </div>
+              </div>
+              <div id="ai-input-area" class="mb-3">
+                <div class="mb-3">
+                  <label for="tool-input-prompt" class="form-label fw-bold">Your Question</label>
+                  <textarea id="tool-input-prompt" class="form-control" rows="3"
+                            aria-required="false"></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="tool-input-doc-filter" class="form-label fw-bold">
+                    Filter by Document Name (Optional)
+                  </label>
+                  <input type="text" id="tool-input-doc-filter" class="form-control"
+                         placeholder="e.g. Williams_Deposition">
+                </div>
+              </div>
+              <button id="run-ai-tool-btn" class="btn btn-primary w-100"
+                      type="button">Run Analysis</button>
+            </div>
+
+            <!-- Results column -->
+            <div class="col-md-8">
+              <h3 class="h5 fw-bold">Results</h3>
+              <div id="ai-results-wrapper" class="border rounded bg-white p-3"
+                   style="min-height:400px;max-height:600px;overflow-y:auto;">
+                <div id="ai-loading" class="text-center d-none mt-5">
+                  <div class="spinner-border text-primary" aria-hidden="true"></div>
+                  <p class="mt-2 text-muted" role="status">Analyzing case files...</p>
+                </div>
+                <div id="ai-results-area">
+                  <p class="text-muted text-center mt-5">Select a tool and click Run Analysis.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container — role="status" per live region pattern -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3"
+       role="status" aria-live="polite" aria-atomic="false">
+
+    <div id="toast-docs" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">Document Processing</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close notification"></button>
+      </div>
+      <div class="toast-body">
+        All 7 case documents processed through Azure AI Search with OCR and text extraction.
+        Each page is indexed for semantic search.
+      </div>
+    </div>
+
+    <div id="toast-rag" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">RAG Pipeline</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close notification"></button>
+      </div>
+      <div class="toast-body">
+        AI analysis uses Retrieval Augmented Generation &mdash; every finding is grounded
+        in specific document passages.
+      </div>
+    </div>
+
+    <div id="toast-review" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">Attorney Verification</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close notification"></button>
+      </div>
+      <div class="toast-body">
+        AI-extracted facts and timeline events require attorney review. No AI output is
+        used in filings without human verification.
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmY19UFhFKhxtuQFBTzAIiL5FsDq"
+          crossorigin="anonymous"></script>
+
+  <script>
+  (function () {
+
+    // --- Tab switching — ARIA APG tabs pattern ---
+    var tabs = document.querySelectorAll('.analysis-tab[role="tab"]');
+    var panels = document.querySelectorAll('.tab-panel[role="tabpanel"]');
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var target = tab.getAttribute('aria-controls');
+
+        tabs.forEach(function (t) {
+          t.classList.remove('active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        panels.forEach(function (p) {
+          p.classList.remove('active');
+          p.hidden = true;
+        });
+
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+
+        var panel = document.getElementById(target);
+        if (panel) {
+          panel.classList.add('active');
+          panel.hidden = false;
+        }
+      });
+
+      // Arrow key navigation
+      tab.addEventListener('keydown', function (e) {
+        var tabList = Array.from(tabs);
+        var idx = tabList.indexOf(tab);
+        var next = null;
+
+        if (e.key === 'ArrowRight') {
+          next = tabList[(idx + 1) % tabList.length];
+        } else if (e.key === 'ArrowLeft') {
+          next = tabList[(idx - 1 + tabList.length) % tabList.length];
+        } else if (e.key === 'Home') {
+          next = tabList[0];
+        } else if (e.key === 'End') {
+          next = tabList[tabList.length - 1];
+        }
+
+        if (next) {
+          e.preventDefault();
+          next.focus();
+          next.click();
+        }
+      });
+    });
+
+    // --- Tool description update on select change ---
+    var toolDescriptions = {
+      q_and_a:             'Ask specific questions about the case.',
+      timeline:            'Generates a chronological table of events.',
+      summary:             'Summarizes key parties, issues, and facts.',
+      outline_builder:     'Creates a cross-examination outline.',
+      impeachment_kit:     'Finds contradictions in the record.',
+      comparator_analyzer: 'Compares treatment of different employees.',
+      damages_snapshot:    'Extracts financial data or provides EEO framework.',
+      issue_matrix:        'Tables facts in dispute vs. positions.',
+      mil_helper:          'Drafts arguments to exclude evidence.'
+    };
+
+    var toolSelect = document.getElementById('ai-tool-select');
+    var toolDesc   = document.getElementById('tool-description');
+
+    if (toolSelect && toolDesc) {
+      toolSelect.addEventListener('change', function () {
+        toolDesc.textContent = toolDescriptions[toolSelect.value] || '';
+      });
+    }
+
+    // --- Modal: populate case name ---
+    var aiToolsModal = document.getElementById('aiToolsModal');
+    if (aiToolsModal) {
+      aiToolsModal.addEventListener('show.bs.modal', function (event) {
+        var btn = event.relatedTarget;
+        if (btn) {
+          var name = btn.getAttribute('data-case-name') || '';
+          var span = document.getElementById('modal-case-name');
+          if (span) { span.textContent = name; }
+        }
+      });
+    }
+
+    // --- Simulated Run Analysis ---
+    var runBtn = document.getElementById('run-ai-tool-btn');
+    var loadingDiv = document.getElementById('ai-loading');
+    var resultsArea = document.getElementById('ai-results-area');
+    var srAnnouncer = document.getElementById('ai-results-sr-announcer');
+
+    function announce(text) {
+      if (!srAnnouncer) { return; }
+      srAnnouncer.textContent = '';
+      setTimeout(function () { srAnnouncer.textContent = text; }, 100);
+    }
+
+    if (runBtn) {
+      runBtn.addEventListener('click', function () {
+        runBtn.disabled = true;
+        resultsArea.classList.add('d-none');
+        loadingDiv.classList.remove('d-none');
+
+        setTimeout(function () {
+          loadingDiv.classList.add('d-none');
+          resultsArea.classList.remove('d-none');
+          runBtn.disabled = false;
+
+          var toolLabel = toolSelect ? toolSelect.options[toolSelect.selectedIndex].text : 'Analysis';
+          resultsArea.innerHTML =
+            '<div class="alert alert-success py-2 small mb-2" role="status">' + toolLabel + ' complete.</div>' +
+            '<p><strong>Key finding:</strong> Cross-referencing Exhibit B performance reviews with ' +
+            'Deposition J. Williams confirms the charging party received &ldquo;Exceeds Expectations&rdquo; ' +
+            'ratings in 2023 and 2024, contradicting the respondent&rsquo;s stated rationale of performance ' +
+            'concerns in the March 15, 2026 termination letter (Exhibit C, p.1).</p>' +
+            '<p class="text-muted small">HMAC-SHA256 audit record written. Human review required.</p>';
+
+          announce(toolLabel + ' complete. Results are now available.');
+        }, 1800);
+      });
+    }
+
+    // --- New conversation button (demo stub) ---
+    var newConvBtn = document.getElementById('new-conv-btn');
+    if (newConvBtn) {
+      newConvBtn.addEventListener('click', function () {
+        var msgs = document.getElementById('chat-messages');
+        if (msgs) {
+          msgs.innerHTML = '<p class="text-muted text-center mt-5">New conversation started.</p>';
+        }
+        var chatInput = document.getElementById('chat-input-field');
+        if (chatInput) { chatInput.focus(); }
+      });
+    }
+
+    // --- Chat form (demo stub — no real API call) ---
+    var chatForm = document.getElementById('chat-form');
+    if (chatForm) {
+      chatForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var input = document.getElementById('chat-input-field');
+        var msgs  = document.getElementById('chat-messages');
+        var chatAnnouncer = document.getElementById('chat-sr-announcer');
+
+        function chatAnnounce(text) {
+          if (!chatAnnouncer) { return; }
+          chatAnnouncer.textContent = '';
+          setTimeout(function () { chatAnnouncer.textContent = text; }, 100);
+        }
+
+        var text = input ? input.value.trim() : '';
+        if (!text || !msgs) { return; }
+
+        // User message
+        var userDiv = document.createElement('div');
+        userDiv.className = 'msg-user';
+        userDiv.setAttribute('role', 'article');
+        userDiv.setAttribute('aria-label', 'Your message');
+        userDiv.textContent = text;
+        msgs.appendChild(userDiv);
+        msgs.scrollTop = msgs.scrollHeight;
+        input.value = '';
+        chatAnnounce('Sending message');
+
+        // Simulated assistant response
+        setTimeout(function () {
+          var aDiv = document.createElement('div');
+          aDiv.className = 'msg-assistant';
+          aDiv.setAttribute('role', 'article');
+          aDiv.setAttribute('aria-label', 'Assistant response');
+          aDiv.innerHTML =
+            '<p class="mb-2">Based on the indexed case documents, the record supports your query. ' +
+            'See the Key Facts tab for extracted findings with source citations. ' +
+            'Attorney review is required before any AI-generated content is used in filings.</p>' +
+            '<div class="msg-audit"><span>HMAC-SHA256 verified</span>' +
+            '<span>Human review required</span></div>';
+          msgs.appendChild(aDiv);
+          msgs.scrollTop = msgs.scrollHeight;
+          chatAnnounce('Assistant response received.');
+        }, 900);
+      });
+    }
+
+    // --- Staggered toasts on load ---
+    var toastIds = ['toast-docs', 'toast-rag', 'toast-review'];
+    var delays   = [1500, 3500, 5500];
+    toastIds.forEach(function (id, i) {
+      setTimeout(function () {
+        var el = document.getElementById(id);
+        if (el) {
+          var t = new bootstrap.Toast(el, { delay: 7000 });
+          t.show();
+        }
+      }, delays[i]);
+    });
+
+  })();
+  </script>
+
+</body>
+</html>

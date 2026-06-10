@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Tools — EEOC AI Triage System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="css/demo.css" rel="stylesheet">
+  <style>
+    /* =========================================================================
+       EEOC AI Triage System — Page overrides
+       Mirrors eeoc-ofs-triage/triage_webapp/static/css/eeoc-ai-triage-custom.css
+       Section 508 / WCAG 2.1 AA verified 2026-05-21
+       ========================================================================= */
+
+    :root {
+      --bs-danger-rgb:    176, 42, 55;
+      --bs-danger:        #b02a37;
+      --bs-success-rgb:   20, 108, 67;
+      --bs-success:       #146c43;
+      --bs-secondary-rgb: 90, 100, 114;
+      --bs-secondary:     #5a6472;
+      --bs-info-rgb:      8, 121, 144;
+      --bs-info:          #087990;
+      --bs-warning-rgb:   127, 101, 0;
+      --bs-warning:       #7f6500;
+      --bs-border-color:  #737373;
+    }
+
+    .text-muted   { color: #5a6472 !important; }
+    .text-danger  { color: #b02a37 !important; }
+    .text-success { color: #146c43 !important; }
+    .text-info    { color: #087990 !important; }
+    .text-warning { color: #7f6500 !important; }
+    .text-primary { color: #0a58ca !important; }
+
+    .navbar-dark .navbar-text,
+    .navbar-dark .navbar-text a { color: #fff !important; }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      text-decoration: none;
+      z-index: 1100;
+      border-radius: 0 0 4px 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    [tabindex]:focus-visible,
+    .btn:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible,
+    .nav-link:focus-visible,
+    .btn-close:focus-visible,
+    .dropdown-item:focus-visible,
+    .page-link:focus-visible {
+      outline: 2px solid #0a58ca !important;
+      outline-offset: 2px !important;
+      box-shadow: none !important;
+    }
+
+    .btn:focus, a:focus, button:focus, input:focus, select:focus, textarea:focus,
+    [tabindex]:focus, .form-control:focus, .form-select:focus,
+    .form-check-input:focus, .nav-link:focus, .btn-close:focus,
+    .dropdown-item:focus, .page-link:focus {
+      box-shadow: none !important;
+    }
+
+    body {
+      background-color: #f8f9fa;
+      color: #212529;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+                   "Noto Sans", "Liberation Sans", Arial, sans-serif;
+    }
+
+    .container { max-width: 1140px; }
+
+    .navbar .btn-outline-light[aria-current="page"] {
+      background-color: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+
+    .btn-outline-light {
+      --bs-btn-color:               #f8f9fa;
+      --bs-btn-border-color:        #f8f9fa;
+      --bs-btn-hover-color:         #212529;
+      --bs-btn-hover-bg:            #f8f9fa;
+      --bs-btn-hover-border-color:  #f8f9fa;
+      --bs-btn-active-color:        #212529;
+      --bs-btn-active-bg:           #f8f9fa;
+      --bs-btn-active-border-color: #f8f9fa;
+    }
+
+    /* btn-outline-warning in navbar — active page indicator */
+    .btn-outline-warning {
+      --bs-btn-color:               #7f6500;
+      --bs-btn-border-color:        #7f6500;
+      --bs-btn-hover-color:         #fff;
+      --bs-btn-hover-bg:            #7f6500;
+      --bs-btn-hover-border-color:  #7f6500;
+      --bs-btn-active-color:        #fff;
+      --bs-btn-active-bg:           #7f6500;
+      --bs-btn-active-border-color: #7f6500;
+      color: #7f6500 !important;
+      border-color: #7f6500 !important;
+    }
+    .btn-outline-warning:hover,
+    .btn-outline-warning:active,
+    .btn-outline-warning.active {
+      background-color: #7f6500 !important;
+      border-color:     #7f6500 !important;
+      color:            #fff !important;
+    }
+
+    /* Active state for the admin nav button */
+    .navbar .btn-outline-warning[aria-current="page"] {
+      background-color: #7f6500 !important;
+      color: #fff !important;
+    }
+
+    /* Health cards */
+    .health-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+    }
+    .health-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #5a6472;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+    .health-card .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1a2744;
+      line-height: 1.1;
+    }
+    .health-card .value.value-healthy { color: #146c43; }
+    .health-card .value.value-warn    { color: #7f6500; }
+    .health-card .value.value-error   { color: #b02a37; }
+    .health-card .sub {
+      font-size: 12px;
+      color: #5a6472;
+      margin-top: 0.25rem;
+    }
+
+    /* Activity log result badges */
+    .result-ok      { background: #d1fae5; color: #146c43; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+    .result-warn    { background: #fef3c7; color: #7f6500; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+    .result-error   { background: #fde8ea; color: #b02a37; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+
+    /* Monospace timestamp */
+    .ts {
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      font-size: 11px;
+      color: #5a6472;
+    }
+
+    footer .text-muted { color: #5a6472 !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Skip navigation — WCAG 2.4.1 -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ===== Navbar ===== -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">EEOC AI Triage System</a>
+      <div class="d-flex align-items-center flex-wrap gap-1">
+        <a href="triage-upload.html" class="btn btn-outline-light btn-sm me-1">Upload</a>
+        <a href="triage.html" class="btn btn-outline-light btn-sm me-1">Dashboard</a>
+        <a href="triage-analytics.html" class="btn btn-outline-light btn-sm me-1">Analytics</a>
+        <a href="triage-reports.html" class="btn btn-outline-light btn-sm me-1">Reports</a>
+        <a href="triage-library.html" class="btn btn-outline-light btn-sm me-1">Manage Library</a>
+        <a href="triage-admin.html" class="btn btn-outline-warning btn-sm me-2" aria-current="page" title="Admin Tools" aria-label="Admin Tools">Admin Tools</a>
+        <span class="navbar-text me-2">Welcome, S. Rodriguez</span>
+        <a href="index.html" class="btn btn-light btn-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Main Content ===== -->
+  <main id="main-content" class="container mt-4" role="main" tabindex="-1">
+
+    <div class="mb-4">
+      <h1 class="mb-1">Admin Tools</h1>
+      <p class="lead mb-0" style="font-size:14px;">System health and recent activity. Administrative actions are disabled in the demo environment.</p>
+    </div>
+
+    <!-- Flash / alert region -->
+    <div role="alert" aria-live="assertive"></div>
+
+    <!-- ===== System Health Cards ===== -->
+    <div class="row g-3 mb-4" role="region" aria-label="System health status">
+
+      <div class="col-sm-6 col-lg-3">
+        <div class="health-card">
+          <div class="label">Function App Status</div>
+          <div class="value value-healthy">Healthy</div>
+          <div class="sub">All endpoints responding</div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-lg-3">
+        <div class="health-card">
+          <div class="label">Last ARC Sync</div>
+          <div class="value value-healthy">3 min ago</div>
+          <div class="sub">Next sync in 12 min</div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-lg-3">
+        <div class="health-card">
+          <div class="label">Queue Depth</div>
+          <div class="value">7</div>
+          <div class="sub">Charges pending triage</div>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-lg-3">
+        <div class="health-card">
+          <div class="label">Error Rate (24h)</div>
+          <div class="value value-healthy">0.2%</div>
+          <div class="sub">Below 1.0% threshold</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== Background Task Status ===== -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h2 class="h5 mb-0">Background Task Status</h2>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm mb-0">
+            <caption class="visually-hidden">Background task status showing task names and current operational status</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Task</th>
+                <th scope="col">Status</th>
+                <th scope="col">Last Run</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row" style="font-weight:500; font-size:13px;">ARC Charge Importer</th>
+                <td><span class="result-ok">Running</span></td>
+                <td class="ts">2026-05-21 14:12 UTC</td>
+              </tr>
+              <tr>
+                <th scope="row" style="font-weight:500; font-size:13px;">Nightly Metrics Rollup</th>
+                <td><span class="result-ok">OK</span></td>
+                <td class="ts">2026-05-21 02:00 UTC</td>
+              </tr>
+              <tr>
+                <th scope="row" style="font-weight:500; font-size:13px;">AI Audit WORM Export</th>
+                <td><span class="result-ok">OK</span></td>
+                <td class="ts">2026-05-21 02:05 UTC</td>
+              </tr>
+              <tr>
+                <th scope="row" style="font-weight:500; font-size:13px;">Retention Verifier</th>
+                <td><span class="result-ok">OK</span></td>
+                <td class="ts">2026-05-20 23:00 UTC</td>
+              </tr>
+              <tr>
+                <th scope="row" style="font-weight:500; font-size:13px;">Config Drift Detector</th>
+                <td><span class="result-warn">Warning</span></td>
+                <td class="ts">2026-05-21 06:00 UTC</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Recent Activity Log ===== -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Recent Activity</h2>
+        <span class="text-muted" style="font-size:12px;">Last 5 events — audit export disabled in demo</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0" id="activity-log">
+            <caption class="visually-hidden">Recent system activity log showing timestamp, user, action taken, and result</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Timestamp (UTC)</th>
+                <th scope="col">User</th>
+                <th scope="col">Action</th>
+                <th scope="col">Result</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <tr>
+                <td class="ts">2026-05-21 14:09:42</td>
+                <td style="font-size:13px;">s.rodriguez</td>
+                <td style="font-size:13px;">Approved classification — Charge #2025-01847</td>
+                <td><span class="result-ok">OK</span></td>
+              </tr>
+
+              <tr>
+                <td class="ts">2026-05-21 13:47:18</td>
+                <td style="font-size:13px;">m.chen</td>
+                <td style="font-size:13px;">Overrode AI rank B → A — Charge #2025-01844</td>
+                <td><span class="result-ok">OK</span></td>
+              </tr>
+
+              <tr>
+                <td class="ts">2026-05-21 13:22:05</td>
+                <td style="font-size:13px;">system</td>
+                <td style="font-size:13px;">ARC sync — 3 new charges imported</td>
+                <td><span class="result-ok">OK</span></td>
+              </tr>
+
+              <tr>
+                <td class="ts">2026-05-21 12:58:31</td>
+                <td style="font-size:13px;">a.williams</td>
+                <td style="font-size:13px;">Library article updated — ADR Mediation Eligibility</td>
+                <td><span class="result-warn">Pending Review</span></td>
+              </tr>
+
+              <tr>
+                <td class="ts">2026-05-21 06:00:03</td>
+                <td style="font-size:13px;">system</td>
+                <td style="font-size:13px;">Config drift check — non-critical deviation detected</td>
+                <td><span class="result-warn">Warning</span></td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="py-4 mt-5 bg-light" role="contentinfo">
+    <div class="container text-center text-muted" style="font-size:0.8rem;">
+      <p class="mb-1">This U.S. government system is to be used by authorized users only. Information from this system resides on computer systems funded by the government.</p>
+      <p class="mb-1">The data and documents on this system include Federal records that contain sensitive information protected by various Federal statutes, including the Privacy Act, 5 U.S.C. &sect; 552a.</p>
+      <p class="mb-1">All access or use of this system constitutes user understanding and acceptance of these terms and constitutes unconditional consent to review, monitor, record, audit and take action by all authorized government and law enforcement personnel.</p>
+      <p class="mb-0">Unauthorized user attempts or acts to (1) access, view, upload, change, or delete information on this system, (2) modify this system, (3) deny access to this system, (4) accrue resources for unauthorized use or (5) otherwise misuse this system are strictly prohibited. Such attempts or acts are subject to action that may result in criminal, civil, or administrative penalties.</p>
+    </div>
+  </footer>
+
+  <!-- ===== Toast Container ===== -->
+  <div id="toast-container"
+       class="toast-container"
+       role="status"
+       aria-live="polite"
+       aria-atomic="false"
+       data-toasts='[
+         {"type":"data","title":"ARC Sync","text":"The ARC Charge Importer runs every 15 minutes via a Timer Trigger in Azure Functions. It pulls new and updated charges from ARC through the Integration API service.","delay":3000,"duration":10000},
+         {"type":"mcp","title":"AI Audit Logs","text":"Every AI generation is signed with HMAC-SHA256 and written to WORM-protected Blob Storage within the same transaction. The 7-year retention policy satisfies NARA requirements.","delay":5000,"duration":10000},
+         {"type":"info","title":"Config Drift","text":"The Config Drift Detector compares live Function App settings against the approved baseline in Key Vault. Non-critical drift is logged but does not halt operations.","delay":7000,"duration":10000}
+       ]'>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmY19UFhFBKhxtuQFBTzAIiL5FsDq" crossorigin="anonymous"></script>
+  <script src="js/demo.js"></script>
+</body>
+</html>

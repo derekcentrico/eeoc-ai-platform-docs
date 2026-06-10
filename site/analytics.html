@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Analytics Dashboard — EEOC AI Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/site.css">
+    <style>
+        /* Analytics page — page-level additions only */
+
+        /* Skip link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #0a58ca;
+            color: #fff;
+            padding: 8px 16px;
+            z-index: 9999;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 0 0 4px 0;
+            text-decoration: none;
+        }
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Focus indicator overrides (WCAG 2.4.7) */
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        .sidebar-nav li a:focus-visible {
+            outline: 2px solid #0a58ca;
+            outline-offset: 2px;
+            box-shadow: none;
+        }
+
+        /* Expanded demo window for full dashboard */
+        .demo-window-full {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .app-layout-full {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            min-height: 820px;
+        }
+
+        /* Sidebar tweaks for analytics nav */
+        .sidebar-section-label {
+            padding: 12px 16px 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .sidebar-nav li a .nav-badge {
+            margin-left: auto;
+            background: #0a58ca;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 8px;
+        }
+
+        /* App toolbar */
+        .app-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .app-toolbar .toolbar-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .app-toolbar .toolbar-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .app-toolbar .toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toolbar-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .toolbar-btn:hover {
+            background: var(--surface-alt);
+            color: var(--text-primary);
+        }
+
+        /* App content scroll area */
+        .app-main-inner {
+            padding: 16px;
+            background: var(--surface);
+            overflow-y: auto;
+        }
+
+        /* Metric card — analytics variant */
+        .metric-row-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .metric-card-sm {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px 14px;
+        }
+
+        .metric-card-sm .metric-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 4px;
+        }
+
+        .metric-card-sm .metric-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .metric-card-sm .metric-change {
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        /* #146c43 = 6.45:1 on white — passes AA */
+        .metric-change-up { color: #146c43; }
+        /* #b02a37 = 6.50:1 on white — passes AA */
+        .metric-change-down { color: #b02a37; }
+
+        /* Charts row */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .chart-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+        }
+
+        .chart-card-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chart-period-tag {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: var(--surface);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* Chart accessible data table */
+        .chart-data-table {
+            font-size: 11px;
+        }
+
+        .chart-data-table summary {
+            font-size: 11px;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 0;
+        }
+
+        .chart-data-table summary:focus-visible {
+            outline: 2px solid #0a58ca;
+            outline-offset: 2px;
+        }
+
+        /* Chat panel — full-width analytics variant */
+        .chat-panel-analytics {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 340px;
+        }
+
+        .chat-header-analytics {
+            padding: 10px 14px;
+            background: var(--eeoc-navy);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-header-analytics h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-header-analytics .ai-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+        .chat-header-analytics .header-meta {
+            font-size: 10px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .chat-messages-analytics {
+            flex: 1;
+            padding: 12px 14px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-msg.user {
+            align-self: flex-end;
+            max-width: 80%;
+            padding: 9px 13px;
+            border-radius: 12px 12px 3px 12px;
+            background: #0a58ca;
+            color: #fff;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .chat-msg.ai {
+            align-self: flex-start;
+            max-width: 90%;
+            padding: 10px 13px;
+            border-radius: 3px 12px 12px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-primary);
+        }
+
+        .chat-msg-meta {
+            margin-top: 7px;
+            padding-top: 6px;
+            border-top: 1px solid var(--border);
+            font-size: 10px;
+            /* #5a6472 = 6.00:1 on white — passes AA */
+            color: #5a6472;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chat-suggest-row {
+            padding: 8px 14px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .chat-suggest {
+            padding: 4px 10px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: #fff;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .chat-suggest:hover {
+            border-color: #0a58ca;
+            color: #0a58ca;
+        }
+
+        .chat-suggest:focus-visible {
+            outline: 2px solid #0a58ca;
+            outline-offset: 2px;
+        }
+
+        .chat-input-row {
+            padding: 10px 14px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            background: #fff;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 7px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--text-primary);
+        }
+
+        .chat-input:focus {
+            outline: 2px solid #0a58ca;
+            outline-offset: 0;
+            box-shadow: none;
+            border-color: #0a58ca;
+        }
+
+        .chat-send {
+            padding: 7px 14px;
+            background: var(--eeoc-navy);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background var(--transition);
+        }
+
+        .chat-send:hover {
+            background: var(--eeoc-navy-light);
+        }
+
+        .chat-send:focus-visible {
+            outline: 2px solid #0a58ca;
+            outline-offset: 2px;
+        }
+
+        /* SR-only announcer — outside chat window */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* How it works section */
+        .how-it-works-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .hiw-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .hiw-step-num {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--eeoc-navy);
+            color: var(--eeoc-gold);
+            font-weight: 800;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hiw-card h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.35rem;
+        }
+
+        .hiw-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            margin: 0;
+        }
+
+        .hiw-detail {
+            margin-top: 0.5rem;
+            padding: 6px 10px;
+            background: var(--surface);
+            border-left: 3px solid var(--eeoc-gold);
+            border-radius: 0 4px 4px 0;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .app-layout-full {
+                grid-template-columns: 1fr;
+            }
+            .app-sidebar {
+                display: none;
+            }
+            .metric-row-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+            .how-it-works-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Skip navigation -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- SR-only chat announcer (WCAG 4.1.3 — outside chat log) -->
+<div id="chat-sr-announcer" class="visually-hidden"
+     role="status" aria-live="polite" aria-atomic="true"></div>
+
+<!-- Navigation -->
+<nav class="site-nav" aria-label="Site navigation">
+    <a href="index.html" class="brand">
+        <div class="brand-icon" aria-hidden="true">EE</div>
+        <div class="brand-text">EEOC <span>AI Platform</span></div>
+    </a>
+    <ul class="nav-links" role="list">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="applications.html">Applications</a></li>
+        <li><a href="analytics.html" class="active" aria-current="page">Analytics</a></li>
+        <li><a href="integration.html">Integration</a></li>
+        <li><a href="security.html">Security</a></li>
+    </ul>
+</nav>
+
+<div class="page-content" id="main-content">
+
+<!-- Page intro -->
+<section class="section" style="padding-bottom: 1.5rem;">
+    <div class="section-label">Unified Data Analytics Platform</div>
+    <h1 class="section-title">UDAP Analytics Dashboard</h1>
+    <p class="section-desc">
+        Live simulation of the UDAP analytics interface — the cross-program data layer that aggregates
+        charge activity, mediation outcomes, and operational metrics from all EEOC applications.
+        Natural language queries execute against a Row-Level Security-enforced data warehouse with
+        every result HMAC-signed and retained for 7 years.
+    </p>
+</section>
+
+<!-- Demo window -->
+<section class="section" style="padding-top: 0;" aria-label="UDAP analytics dashboard simulation">
+    <div class="demo-window-full" role="region" aria-label="Simulated UDAP application">
+
+        <!-- Browser chrome titlebar -->
+        <div class="demo-titlebar" role="presentation" aria-hidden="true">
+            <span class="demo-dot red"></span>
+            <span class="demo-dot yellow"></span>
+            <span class="demo-dot green"></span>
+            <div class="demo-url">https://udap.eeoc.gov/analytics</div>
+        </div>
+
+        <!-- App layout: sidebar + main -->
+        <div class="app-layout-full">
+
+            <!-- Sidebar -->
+            <nav class="app-sidebar" aria-label="Analytics application navigation">
+                <div class="sidebar-header">
+                    <h2 style="color:#fff; font-size:13px; font-weight:700; margin:0;">
+                        <i class="bi bi-graph-up" aria-hidden="true"></i> UDAP
+                    </h2>
+                    <span style="color:var(--eeoc-gold); font-size:10px;">Unified Data Analytics</span>
+                </div>
+
+                <div class="sidebar-section-label">Main</div>
+                <ul class="sidebar-nav" role="list">
+                    <li>
+                        <a href="#" class="active" aria-current="page">
+                            <i class="bi bi-speedometer2 nav-icon" aria-hidden="true"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="bi bi-graph-up-arrow nav-icon" aria-hidden="true"></i>
+                            Charge Trends
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="bi bi-people nav-icon" aria-hidden="true"></i>
+                            Mediation Outcomes
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="bi bi-building nav-icon" aria-hidden="true"></i>
+                            Office Performance
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="bi bi-check2-circle nav-icon" aria-hidden="true"></i>
+                            Case Disposition
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="sidebar-section-label">Tools</div>
+                <ul class="sidebar-nav" role="list">
+                    <li>
+                        <a href="#analytics-chat-section">
+                            <i class="bi bi-stars nav-icon" aria-hidden="true"></i>
+                            AI Assistant
+                            <span class="nav-badge" aria-label="3 new">3</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="bi bi-file-earmark-text nav-icon" aria-hidden="true"></i>
+                            Reports
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="bi bi-gear nav-icon" aria-hidden="true"></i>
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Main content area -->
+            <main class="app-main" aria-label="Dashboard main content">
+
+                <!-- Toolbar -->
+                <div class="app-toolbar">
+                    <div>
+                        <div class="toolbar-title">
+                            <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                            Executive Dashboard
+                        </div>
+                        <div class="toolbar-meta">FY2025 Q3 &bull; Data as of May 20, 2026 06:00 UTC</div>
+                    </div>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" type="button" aria-label="Export dashboard as PDF">
+                            <i class="bi bi-download" aria-hidden="true"></i> Export
+                        </button>
+                        <button class="toolbar-btn" type="button" aria-label="Refresh dashboard data">
+                            <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Refresh
+                        </button>
+                        <span style="width:8px; height:8px; border-radius:50%; background:#146c43; display:inline-block; margin-left:4px;"
+                              title="Data pipeline healthy" aria-label="Data pipeline status: healthy"></span>
+                    </div>
+                </div>
+
+                <div class="app-main-inner">
+
+                    <!-- Metric cards -->
+                    <div class="metric-row-4" role="region" aria-label="Key performance indicators">
+
+                        <article class="metric-card-sm" aria-label="Active Cases metric">
+                            <div class="metric-label">Active Cases</div>
+                            <div class="metric-value" aria-label="2,847 active cases">2,847</div>
+                            <div class="metric-change metric-change-up" aria-label="Up 12.3% from prior quarter">
+                                <i class="bi bi-arrow-up-short" aria-hidden="true"></i>
+                                12.3% vs. prior quarter
+                            </div>
+                        </article>
+
+                        <article class="metric-card-sm" aria-label="Settlement Rate metric">
+                            <div class="metric-label">Settlement Rate</div>
+                            <div class="metric-value" aria-label="72.3 percent">72.3%</div>
+                            <div class="metric-change metric-change-up" aria-label="Up 4.1 percentage points from prior quarter">
+                                <i class="bi bi-arrow-up-short" aria-hidden="true"></i>
+                                +4.1 pp from Q2
+                            </div>
+                        </article>
+
+                        <article class="metric-card-sm" aria-label="Average Resolution Time metric">
+                            <div class="metric-label">Avg Resolution</div>
+                            <div class="metric-value" aria-label="41 days">41 days</div>
+                            <div class="metric-change metric-change-up" aria-label="Improved: 6 days faster than prior quarter">
+                                <i class="bi bi-arrow-down-short" aria-hidden="true"></i>
+                                6 days faster than Q2
+                            </div>
+                        </article>
+
+                        <article class="metric-card-sm" aria-label="Pending Mediations metric">
+                            <div class="metric-label">Pending Mediations</div>
+                            <div class="metric-value" aria-label="384 pending mediations">384</div>
+                            <div class="metric-change metric-change-down" aria-label="Down 8.2 percent from prior quarter">
+                                <i class="bi bi-arrow-down-short" aria-hidden="true"></i>
+                                8.2% from prior quarter
+                            </div>
+                        </article>
+
+                    </div>
+                    <!-- /metric cards -->
+
+                    <!-- Charts row -->
+                    <div class="charts-row" role="region" aria-label="Analytics charts">
+
+                        <!-- Line chart -->
+                        <div class="chart-card">
+                            <div class="chart-card-title">
+                                Mediation Outcomes by Quarter
+                                <span class="chart-period-tag">FY2024 Q1 &ndash; FY2025 Q3</span>
+                            </div>
+                            <canvas id="mediationLineChart"
+                                    role="img"
+                                    aria-label="Line chart showing mediation outcomes by quarter: Settled cases (green) vs No Agreement cases (red) from FY2024 Q1 through FY2025 Q3"
+                                    style="max-height:200px;"></canvas>
+                            <details class="chart-data-table mt-2">
+                                <summary>Chart data is available in the table below.</summary>
+                                <table class="table table-sm" style="font-size:11px; margin-top:6px;">
+                                    <caption class="visually-hidden">Mediation outcomes by quarter — Settled and No Agreement case counts</caption>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Quarter</th>
+                                            <th scope="col">Settled</th>
+                                            <th scope="col">No Agreement</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><th scope="row">FY2024 Q1</th><td>284</td><td>112</td></tr>
+                                        <tr><th scope="row">FY2024 Q2</th><td>301</td><td>108</td></tr>
+                                        <tr><th scope="row">FY2024 Q3</th><td>318</td><td>103</td></tr>
+                                        <tr><th scope="row">FY2024 Q4</th><td>296</td><td>118</td></tr>
+                                        <tr><th scope="row">FY2025 Q1</th><td>332</td><td>97</td></tr>
+                                        <tr><th scope="row">FY2025 Q2</th><td>348</td><td>94</td></tr>
+                                        <tr><th scope="row">FY2025 Q3</th><td>372</td><td>88</td></tr>
+                                    </tbody>
+                                </table>
+                            </details>
+                        </div>
+
+                        <!-- Doughnut chart -->
+                        <div class="chart-card">
+                            <div class="chart-card-title">
+                                Cases by Basis
+                                <span class="chart-period-tag">FY2025 YTD</span>
+                            </div>
+                            <canvas id="basisDoughnutChart"
+                                    role="img"
+                                    aria-label="Doughnut chart showing FY2025 year-to-date cases by discrimination basis: Race 34.2%, Disability 22.1%, Sex/Gender 18.7%, Age 12.4%, Retaliation 8.3%, Other 4.3%"
+                                    style="max-height:170px;"></canvas>
+                            <details class="chart-data-table mt-2">
+                                <summary>Chart data is available in the table below.</summary>
+                                <table class="table table-sm" style="font-size:11px; margin-top:6px;">
+                                    <caption class="visually-hidden">Cases by discrimination basis, FY2025 year to date, percentage of total</caption>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Basis</th>
+                                            <th scope="col">Share</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><th scope="row">Race</th><td>34.2%</td></tr>
+                                        <tr><th scope="row">Disability</th><td>22.1%</td></tr>
+                                        <tr><th scope="row">Sex / Gender</th><td>18.7%</td></tr>
+                                        <tr><th scope="row">Age</th><td>12.4%</td></tr>
+                                        <tr><th scope="row">Retaliation</th><td>8.3%</td></tr>
+                                        <tr><th scope="row">Other</th><td>4.3%</td></tr>
+                                    </tbody>
+                                </table>
+                            </details>
+                        </div>
+
+                    </div>
+                    <!-- /charts row -->
+
+                    <!-- AI chat panel -->
+                    <div id="analytics-chat-section"
+                         class="chat-panel-analytics chat-panel"
+                         data-chat-id="analytics"
+                         role="region"
+                         aria-label="AI Analytics Assistant">
+
+                        <div class="chat-header-analytics">
+                            <h3 style="margin:0; font-size:13px; font-weight:600; color:#fff; display:flex; align-items:center; gap:8px;">
+                                <span class="ai-pulse" role="presentation" aria-hidden="true"></span>
+                                AI Analytics Assistant
+                            </h3>
+                            <span class="header-meta">
+                                <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                                HMAC-SHA256 &bull; RLS-enforced &bull; Audit retained 7 years
+                            </span>
+                        </div>
+
+                        <!-- Chat log — role="log" for structural semantics -->
+                        <div class="chat-messages-analytics chat-messages"
+                             role="log"
+                             aria-live="polite"
+                             aria-atomic="false"
+                             aria-label="AI Analytics Assistant conversation">
+
+                            <!-- Pre-populated exchange (not typed — already rendered) -->
+                            <div class="chat-msg user" role="article" aria-label="User query">
+                                What were the mediation outcomes for FY2025 Q3?
+                            </div>
+
+                            <div class="chat-msg ai" role="article" aria-label="AI response">
+                                <span class="ai-content">In FY2025 Q3, the ADR program resolved 847 mediations
+                                across 15 district offices. The national settlement rate was 72.3%, up 4.1
+                                percentage points from Q2. Philadelphia (81.2%), Chicago (79.8%), and Dallas
+                                (78.4%) led in settlement rates.</span>
+                                <div class="chat-msg-meta" aria-label="Audit metadata">
+                                    <span>
+                                        <i class="bi bi-patch-check" aria-hidden="true"></i>
+                                        HMAC-SHA256 verified
+                                    </span>
+                                    <span>Audit ID: aud-7f3a9e2c</span>
+                                    <span>Human review required</span>
+                                </div>
+                            </div>
+
+                        </div>
+                        <!-- /chat log -->
+
+                        <!-- Suggested queries -->
+                        <div class="chat-suggest-row" role="group" aria-label="Suggested queries">
+                            <button type="button" class="chat-suggest">Cases by basis in FY2025</button>
+                            <button type="button" class="chat-suggest">Top 5 offices by caseload</button>
+                            <button type="button" class="chat-suggest">Resource utilization by office</button>
+                        </div>
+
+                        <!-- Input row -->
+                        <div class="chat-input-row">
+                            <label for="analytics-chat-input" class="visually-hidden">Query the AI Analytics Assistant</label>
+                            <input type="text"
+                                   id="analytics-chat-input"
+                                   class="chat-input"
+                                   placeholder="Ask about charges, outcomes, offices, or trends..."
+                                   aria-label="Query the AI Analytics Assistant"
+                                   aria-required="false"
+                                   autocomplete="off">
+                            <button type="button"
+                                    class="chat-send"
+                                    aria-label="Send query to AI Analytics Assistant">
+                                Send
+                            </button>
+                        </div>
+
+                    </div>
+                    <!-- /chat panel -->
+
+                </div>
+                <!-- /app-main-inner -->
+
+            </main>
+            <!-- /main -->
+
+        </div>
+        <!-- /app-layout-full -->
+
+    </div>
+    <!-- /demo-window-full -->
+</section>
+
+<!-- How It Works -->
+<section class="section-dark" aria-labelledby="how-it-works-heading">
+    <div class="section-inner">
+        <div class="section-label">Under the Hood</div>
+        <h2 class="section-title" id="how-it-works-heading">How the AI Assistant Works</h2>
+        <p class="section-desc">
+            Every query follows a four-step pipeline designed to balance analytical productivity with
+            federal data governance requirements. No AI output drives case action without human review.
+        </p>
+
+        <div class="how-it-works-grid">
+
+            <div class="hiw-card">
+                <div class="hiw-step-num" aria-hidden="true">1</div>
+                <div>
+                    <h3>Natural Language Parsing and Schema Validation</h3>
+                    <p>
+                        The query is parsed by GPT-4o against a published data dictionary. Before SQL
+                        generation, the model confirms that every referenced field, office, and time period
+                        maps to a known schema element. Ambiguous queries are flagged for clarification
+                        rather than resolved by inference.
+                    </p>
+                    <div class="hiw-detail">
+                        NL query &rarr; entity extraction &rarr; schema validation &rarr; intent classification
+                    </div>
+                </div>
+            </div>
+
+            <div class="hiw-card">
+                <div class="hiw-step-num" aria-hidden="true">2</div>
+                <div>
+                    <h3>SQL Generation and Row-Level Security Enforcement</h3>
+                    <p>
+                        Parameterized SQL is generated from the validated intent and executed against
+                        Azure SQL with Row-Level Security policies active. The calling user's Entra ID
+                        group membership determines which office partitions are visible. The generated SQL
+                        is logged verbatim before execution.
+                    </p>
+                    <div class="hiw-detail">
+                        validated intent &rarr; parameterized SQL &rarr; RLS filter predicate &rarr; execution
+                    </div>
+                </div>
+            </div>
+
+            <div class="hiw-card">
+                <div class="hiw-step-num" aria-hidden="true">3</div>
+                <div>
+                    <h3>HMAC Signing and 7-Year Audit Retention</h3>
+                    <p>
+                        Every query, the generated SQL, the raw result set, and the formatted response are
+                        concatenated and signed with HMAC-SHA256 using a key stored in Azure Key Vault.
+                        The signed record is written to Azure Blob immutable storage and indexed in the
+                        audit log before the response is returned to the user.
+                    </p>
+                    <div class="hiw-detail">
+                        HMAC-SHA256 sign &rarr; immutable Blob write &rarr; audit index &rarr; response served
+                    </div>
+                </div>
+            </div>
+
+            <div class="hiw-card">
+                <div class="hiw-step-num" aria-hidden="true">4</div>
+                <div>
+                    <h3>Human Review Required Before Case Action</h3>
+                    <p>
+                        AI-generated analytics are advisory. Every response is watermarked "Human review
+                        required" and the platform enforces a workflow gate: no AI output can be attached
+                        to a case record, exported to an official report, or forwarded to a respondent
+                        without a named EEOC staff member acknowledging review.
+                    </p>
+                    <div class="hiw-detail">
+                        AI output flagged &rarr; reviewer assigned &rarr; acknowledgment logged &rarr; action permitted
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <strong>U.S. Equal Employment Opportunity Commission</strong> &mdash; Office of the Chief Information Officer<br>
+    AI-Enabled Case Management Platform &bull; FedRAMP High &bull; NIST 800-53 Rev5 &bull; WCAG 2.1 AA
+</footer>
+
+</div><!-- /page-content -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+<script src="js/site.js"></script>
+<script>
+/* Analytics page charts — initialized after site.js sets up the chat simulation */
+
+(function () {
+    'use strict';
+
+    /* ---- Mediation Outcomes Line Chart ---- */
+    const lineCtx = document.getElementById('mediationLineChart');
+    if (lineCtx) {
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: [
+                    'FY24 Q1', 'FY24 Q2', 'FY24 Q3', 'FY24 Q4',
+                    'FY25 Q1', 'FY25 Q2', 'FY25 Q3'
+                ],
+                datasets: [
+                    {
+                        label: 'Settled',
+                        data: [284, 301, 318, 296, 332, 348, 372],
+                        borderColor: 'rgb(20, 108, 67)',    /* #146c43 — 6.45:1 on white */
+                        backgroundColor: 'rgb(20, 108, 67)',
+                        pointBackgroundColor: 'rgb(20, 108, 67)',
+                        tension: 0.3,
+                        borderWidth: 2,
+                        pointRadius: 4
+                    },
+                    {
+                        label: 'No Agreement',
+                        data: [112, 108, 103, 118, 97, 94, 88],
+                        borderColor: 'rgb(176, 42, 55)',    /* #b02a37 — 6.50:1 on white */
+                        backgroundColor: 'rgb(176, 42, 55)',
+                        pointBackgroundColor: 'rgb(176, 42, 55)',
+                        tension: 0.3,
+                        borderWidth: 2,
+                        pointRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: { family: 'Inter', size: 11 },
+                            /* solid color boxes — no rgba */
+                            usePointStyle: true,
+                            pointStyleWidth: 12
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgb(226, 232, 240)' },
+                        ticks: { font: { family: 'Inter', size: 10 } }
+                    },
+                    y: {
+                        grid: { color: 'rgb(226, 232, 240)' },
+                        ticks: { font: { family: 'Inter', size: 10 } },
+                        beginAtZero: false,
+                        min: 60,
+                        title: {
+                            display: true,
+                            text: 'Cases',
+                            font: { family: 'Inter', size: 10 }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /* ---- Cases by Basis Doughnut Chart ---- */
+    const doughnutCtx = document.getElementById('basisDoughnutChart');
+    if (doughnutCtx) {
+        new Chart(doughnutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    'Race', 'Disability', 'Sex / Gender', 'Age', 'Retaliation', 'Other'
+                ],
+                datasets: [
+                    {
+                        data: [34.2, 22.1, 18.7, 12.4, 8.3, 4.3],
+                        /*
+                         * All solid rgb() — no rgba — WCAG 1.4.11 compliance.
+                         * Contrast vs white canvas verified:
+                         *   #0a58ca  (primary)  6.44:1  pass
+                         *   #6d28d9  (purple)   8.50:1  pass
+                         *   #0a58ca  -> using #146c43 for race to separate from blue
+                         *   Slot colors chosen with 3:1 separation from adjacent slices.
+                         */
+                        backgroundColor: [
+                            'rgb(10, 88, 202)',    /* Race — #0a58ca — 6.44:1 */
+                            'rgb(109, 40, 217)',   /* Disability — #6d28d9 — 8.50:1 */
+                            'rgb(20, 108, 67)',    /* Sex/Gender — #146c43 — 6.45:1 */
+                            'rgb(127, 101, 0)',    /* Age — #7f6500 — 5.58:1 */
+                            'rgb(176, 42, 55)',    /* Retaliation — #b02a37 — 6.50:1 */
+                            'rgb(90, 100, 114)'   /* Other — #5a6472 — 6.00:1 */
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: { family: 'Inter', size: 10 },
+                            boxWidth: 12,
+                            padding: 10
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (ctx) {
+                                return ' ' + ctx.label + ': ' + ctx.parsed + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /* ---- SR announcer wiring for chat accessibility (WCAG 4.1.3) ---- */
+    /*
+     * site.js appends new child nodes to .chat-messages without clearing innerHTML,
+     * so role="log" aria-live works for incremental appends. The announcer below
+     * captures new AI responses and repeats them to screen readers via the polite
+     * live region outside the chat log, avoiding double-announcement on full redraws.
+     */
+    (function wireAnnouncerToChat() {
+        const announcer = document.getElementById('chat-sr-announcer');
+        const chatLog = document.querySelector('[data-chat-id="analytics"] .chat-messages');
+        if (!announcer || !chatLog) return;
+
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType !== 1) return;
+                    if (!node.classList.contains('chat-msg')) return;
+
+                    const contentEl = node.querySelector('.ai-content') || node;
+                    const text = contentEl.textContent.trim();
+                    if (!text) return;
+
+                    /* Clear first so the same text re-triggers the live region */
+                    announcer.textContent = '';
+                    setTimeout(() => {
+                        announcer.textContent = text;
+                    }, 120);
+                });
+            });
+        });
+
+        observer.observe(chatLog, { childList: true });
+    }());
+
+}());
+</script>
+
+</body>
+</html>

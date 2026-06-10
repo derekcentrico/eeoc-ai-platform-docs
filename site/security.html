@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Security Posture — EEOC AI Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/site.css">
+    <style>
+        /* --- Page-scoped additions --- */
+
+        /* 508: ensure focus rings are visible on all interactive elements */
+        a:focus-visible,
+        button:focus-visible,
+        summary:focus-visible {
+            outline: 2px solid #0a58ca;
+            outline-offset: 2px;
+            box-shadow: none;
+        }
+
+        /* Summary matrix cell colors */
+        .cell-full {
+            background: #d1fae5;
+            color: #065f46;
+            font-weight: 700;
+            text-align: center;
+        }
+        .cell-partial {
+            background: #fef3c7;
+            color: #78350f;
+            font-weight: 600;
+            text-align: center;
+        }
+        .cell-none {
+            background: #f1f5f9;
+            color: #5a6472;
+            text-align: center;
+        }
+
+        /* Hero-style stat section — dark band */
+        .security-hero {
+            background: linear-gradient(135deg, var(--eeoc-navy) 0%, var(--eeoc-navy-light) 60%, #1e3a5f 100%);
+            color: #fff;
+            padding: 4rem 2rem 3rem;
+            text-align: center;
+        }
+
+        .security-hero .hero-badge {
+            display: inline-block;
+            background: rgba(197,165,86,0.15);
+            border: 1px solid rgba(197,165,86,0.3);
+            color: var(--eeoc-gold-light);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 1.25rem;
+        }
+
+        .security-hero h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+
+        .security-hero h1 span {
+            color: var(--eeoc-gold);
+        }
+
+        .security-hero .subtitle {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.7);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.7;
+        }
+
+        /* Stat cards inside dark hero */
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem 1rem;
+        }
+
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--eeoc-gold);
+            line-height: 1;
+            margin-bottom: 0.35rem;
+        }
+
+        .stat-card .stat-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.75);
+            line-height: 1.4;
+        }
+
+        /* Unique-tools card grid override — 3 + 4 layout */
+        .tool-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .tool-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem 1.25rem 1rem;
+            border-left: 4px solid var(--eeoc-gold);
+        }
+
+        .tool-card h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.4rem;
+        }
+
+        .tool-card p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            margin: 0;
+        }
+
+        /* NIST table */
+        .nist-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .nist-table th {
+            background: var(--eeoc-navy);
+            color: #fff;
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .nist-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .nist-table tr:nth-child(even) td {
+            background: var(--surface);
+        }
+
+        .nist-table td:first-child {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--eeoc-navy);
+            white-space: nowrap;
+        }
+
+        /* Summary matrix table */
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .matrix-table th {
+            background: var(--eeoc-navy);
+            color: #fff;
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .matrix-table td {
+            padding: 9px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        .matrix-table td:first-child {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .matrix-table tr:hover td {
+            filter: brightness(0.97);
+        }
+
+        /* Bottom-line callout */
+        .callout {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--eeoc-navy);
+            border-radius: var(--radius);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .callout p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        .callout.gap {
+            border-left-color: var(--eeoc-gold-dark);
+        }
+
+        @media (max-width: 768px) {
+            .stat-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .security-hero h1 {
+                font-size: 1.6rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stat-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- Navigation -->
+<nav class="site-nav" aria-label="Site navigation">
+    <a href="index.html" class="brand" aria-label="EEOC AI Platform home">
+        <div class="brand-icon" aria-hidden="true">EE</div>
+        <div class="brand-text">EEOC <span>AI Platform</span></div>
+    </a>
+    <ul class="nav-links" role="list">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="applications.html">Applications</a></li>
+        <li><a href="analytics.html">Analytics</a></li>
+        <li><a href="integration.html">Integration</a></li>
+        <li><a href="security.html" class="active" aria-current="page">Security</a></li>
+    </ul>
+</nav>
+
+<div class="page-content">
+
+<!-- ============================================================
+     Section 1: Security Overview (Hero)
+     ============================================================ -->
+<main id="main-content">
+<section class="security-hero" aria-labelledby="security-hero-heading">
+    <div class="hero-badge">Security Posture</div>
+    <h1 id="security-hero-heading">Defense in <span>Depth</span></h1>
+    <p class="subtitle">
+        Every commit runs 15+ security gates before production. Six advisory databases,
+        static and dynamic analysis, supply chain signing, and tamper-evident audit trails
+        anchored to 7-year WORM retention.
+    </p>
+
+    <div class="stat-row" role="list" aria-label="Security statistics">
+        <div class="stat-card" role="listitem">
+            <div class="stat-number">15+</div>
+            <div class="stat-label">Security gates per commit</div>
+        </div>
+        <div class="stat-card" role="listitem">
+            <div class="stat-number">6</div>
+            <div class="stat-label">Advisory databases queried per build</div>
+        </div>
+        <div class="stat-card" role="listitem">
+            <div class="stat-number">4</div>
+            <div class="stat-label">Custom PII leak detection rules</div>
+        </div>
+        <div class="stat-card" role="listitem">
+            <div class="stat-number">7yr</div>
+            <div class="stat-label">WORM audit retention (NARA-compliant)</div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     Section 2: Tooling Comparison — Internal vs Black Duck SCA
+     ============================================================ -->
+<section class="section" aria-labelledby="bd-compare-heading">
+    <div class="section-label">Software Composition Analysis</div>
+    <h2 class="section-title" id="bd-compare-heading">Internal Toolset vs. Black Duck SCA</h2>
+    <p class="section-desc">
+        Black Duck is the GSA-schedule SCA tool most federal agencies procure. This table
+        maps each Black Duck capability to its internal equivalent and notes where a gap
+        exists.
+    </p>
+
+    <div style="overflow-x:auto;">
+        <table class="comparison-table" aria-describedby="bd-table-caption">
+            <caption id="bd-table-caption" class="visually-hidden">
+                Comparison of Black Duck SCA capabilities against the internal toolset, with gap assessment for each capability.
+            </caption>
+            <thead>
+                <tr>
+                    <th scope="col">Capability</th>
+                    <th scope="col">Black Duck</th>
+                    <th scope="col">Internal Toolset</th>
+                    <th scope="col">Gap Assessment</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">Known CVE detection</th>
+                    <td>NVD + BDSA (~2K proprietary advisories)</td>
+                    <td>6 databases: OWASP DC + pip-audit + Trivy + Dependabot + OSV-Scanner + Grype</td>
+                    <td class="partial">Minimal — BDSA has ~2K early-warning entries with a 2–14 day NVD lead time; internal queries 6 databases vs. 2</td>
+                </tr>
+                <tr>
+                    <th scope="row">License compliance</th>
+                    <td>Deep detection + legal workflow + binary scanning</td>
+                    <td>ScanCode snippet-level detection + pip-licenses copyleft gate</td>
+                    <td class="partial">Close — ScanCode matches snippet detection. No legal workflow UI in the internal stack.</td>
+                </tr>
+                <tr>
+                    <th scope="row">Snippet matching</th>
+                    <td>Source fragment detection</td>
+                    <td>ScanCode snippet detection</td>
+                    <td class="check">Parity</td>
+                </tr>
+                <tr>
+                    <th scope="row">Binary analysis</th>
+                    <td>JAR/Docker layer fingerprinting</td>
+                    <td>Trivy Docker layer scanning + Syft system SBOM</td>
+                    <td class="partial">Partial — Python repos have no compiled binaries; container layer scanning covered</td>
+                </tr>
+                <tr>
+                    <th scope="row">SBOM generation</th>
+                    <td>CycloneDX + SPDX</td>
+                    <td>CycloneDX (cyclonedx-bom) + Syft</td>
+                    <td class="check">Parity</td>
+                </tr>
+                <tr>
+                    <th scope="row">Policy enforcement</th>
+                    <td>Dashboard + approval workflows</td>
+                    <td>15+ CI gates that block the build on any finding</td>
+                    <td class="check">Exceeds — build is blocked rather than flagged to a dashboard</td>
+                </tr>
+                <tr>
+                    <th scope="row">Continuous monitoring</th>
+                    <td>Dashboard alerts when new CVE published</td>
+                    <td>Dependabot PRs opened automatically when new CVEs are published</td>
+                    <td class="check">Parity — different mechanism, same outcome</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     Section 3: Tooling Comparison — Internal vs Seeker IAST
+     ============================================================ -->
+<section class="section-dark" aria-labelledby="seeker-compare-heading">
+<div class="section-inner">
+    <div class="section-label">Interactive Application Security Testing</div>
+    <h2 class="section-title" id="seeker-compare-heading">Internal Toolset vs. Seeker IAST</h2>
+    <p class="section-desc">
+        Seeker instruments the running application and traces inputs through internal
+        call chains at runtime. The internal toolset approximates this from outside
+        the process using authenticated DAST and static analysis.
+    </p>
+
+    <div style="overflow-x:auto;">
+        <table class="comparison-table" aria-describedby="seeker-table-caption">
+            <caption id="seeker-table-caption" class="visually-hidden">
+                Comparison of Seeker IAST capabilities against the internal toolset, with gap assessment for each capability.
+            </caption>
+            <thead>
+                <tr>
+                    <th scope="col">Capability</th>
+                    <th scope="col">Seeker IAST</th>
+                    <th scope="col">Internal Toolset</th>
+                    <th scope="col">Gap Assessment</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">Runtime vulnerability detection</th>
+                    <td>Instruments the running app, watches live HTTP traffic</td>
+                    <td>ZAP authenticated active scan + Hypothesis property-based fuzzing</td>
+                    <td class="partial">Partial — ZAP operates from outside the process; Seeker sees inside</td>
+                </tr>
+                <tr>
+                    <th scope="row">Data flow tracking</th>
+                    <td>Traces PII through the application at runtime</td>
+                    <td>4 custom Semgrep rules: pii-in-log, pii-in-jsonify, pii-in-exception, unhashed-oid-in-audit</td>
+                    <td class="partial">Partial — static detection catches the pattern at build time; Seeker catches execution at runtime</td>
+                </tr>
+                <tr>
+                    <th scope="row">False positive rate</th>
+                    <td>~5% (reports only code that executed)</td>
+                    <td>~30–40% for SAST; 0% for Hypothesis fuzzing (confirms real behavior)</td>
+                    <td class="partial">Gap on SAST — property-based fuzzing confirms real execution paths and reduces net false positives</td>
+                </tr>
+                <tr>
+                    <th scope="row">OWASP Top 10</th>
+                    <td>All 10 categories via runtime instrumentation</td>
+                    <td>Bandit + Semgrep + ZAP active scan + Checkov + manual patterns</td>
+                    <td class="check">Parity — five tools collectively cover the same OWASP categories</td>
+                </tr>
+                <tr>
+                    <th scope="row">PII exposure detection</th>
+                    <td>Runtime tracing — follows PII from input to log/response/DB</td>
+                    <td>Semgrep static rules block PII patterns at compile time; gating on ERROR severity</td>
+                    <td class="partial">Close — static analysis catches the pattern before deployment; runtime tracing catches execution after</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</section>
+
+
+<!-- ============================================================
+     Section 4: Tools Unique to the Internal Stack
+     ============================================================ -->
+<section class="section" aria-labelledby="unique-tools-heading">
+    <div class="section-label">Internal Advantages</div>
+    <h2 class="section-title" id="unique-tools-heading">Tools Neither Black Duck nor Seeker Provide</h2>
+    <p class="section-desc">
+        Several categories are outside the scope of both commercial products entirely.
+        These are enforced in every repo through the local CI sweep.
+    </p>
+
+    <div class="tool-card-grid" role="list">
+        <div class="tool-card" role="listitem">
+            <h3>
+                <i class="bi bi-key-fill" aria-hidden="true" style="color:var(--eeoc-gold-dark);"></i>
+                &nbsp;Gitleaks — Secret Scanning
+            </h3>
+            <p>Scans the full git commit history on every push. Pre-commit hooks prevent
+               credentials from reaching the remote. CI gates fail the build on any finding.</p>
+        </div>
+
+        <div class="tool-card" role="listitem">
+            <h3>
+                <i class="bi bi-file-code" aria-hidden="true" style="color:var(--eeoc-gold-dark);"></i>
+                &nbsp;Checkov — IaC Scanning
+            </h3>
+            <p>Scans Kubernetes manifests, Dockerfiles, and Bicep/Terraform for
+               misconfigurations — exposed ports, overprivileged service accounts,
+               missing network policies.</p>
+        </div>
+
+        <div class="tool-card" role="listitem">
+            <h3>
+                <i class="bi bi-patch-check-fill" aria-hidden="true" style="color:var(--eeoc-gold-dark);"></i>
+                &nbsp;SLSA + Cosign — Supply Chain Provenance
+            </h3>
+            <p>Container images are signed at build time via Cosign keyless OIDC.
+               SLSA provenance attestations link every image back to the source commit
+               and build pipeline.</p>
+        </div>
+
+        <div class="tool-card" role="listitem">
+            <h3>
+                <i class="bi bi-shuffle" aria-hidden="true" style="color:var(--eeoc-gold-dark);"></i>
+                &nbsp;Hypothesis — Property-Based Fuzzing
+            </h3>
+            <p>Generates thousands of inputs from type contracts and verifies invariants
+               hold under adversarial conditions. Catches classes of bugs that fixed test
+               cases miss — particularly boundary and encoding issues.</p>
+        </div>
+
+        <div class="tool-card" role="listitem">
+            <h3>
+                <i class="bi bi-fingerprint" aria-hidden="true" style="color:var(--eeoc-gold-dark);"></i>
+                &nbsp;HMAC Audit Integrity (AU-10)
+            </h3>
+            <p>Every AI generation is signed with HMAC-SHA256 before storage. Signatures
+               are verified on retrieval. Non-repudiation is enforced at the application
+               layer, not just at the infrastructure layer.</p>
+        </div>
+
+        <div class="tool-card" role="listitem">
+            <h3>
+                <i class="bi bi-universal-access" aria-hidden="true" style="color:var(--eeoc-gold-dark);"></i>
+                &nbsp;508 Accessibility Scanning
+            </h3>
+            <p>axe-core accessibility scanning (vendored library for template testing)
+               runs alongside a custom Semgrep rule set that catches missing ARIA attributes
+               and contrast failures at the source level.
+               Section 508 is federal law — Semgrep findings block the build.</p>
+        </div>
+
+        <div class="tool-card" role="listitem">
+            <h3>
+                <i class="bi bi-archive-fill" aria-hidden="true" style="color:var(--eeoc-gold-dark);"></i>
+                &nbsp;7-Year WORM Retention (NARA)
+            </h3>
+            <p>Audit records are written to Azure Blob immutable storage with a 7-year
+               retention lock. Required by NARA for AI-generated federal records.
+               Verified during a 2025 OIG inquiry that required retrieval of
+               18-month-old records.</p>
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     Section 5: Summary Comparison Matrix
+     ============================================================ -->
+<section class="section-dark" aria-labelledby="matrix-heading">
+<div class="section-inner">
+    <div class="section-label">Summary Matrix</div>
+    <h2 class="section-title" id="matrix-heading">Coverage by Category</h2>
+    <p class="section-desc">
+        Full coverage means the category is enforced with build-blocking gates.
+        Partial means the category is detected but with a narrower scope or lower
+        fidelity than the commercial tool.
+    </p>
+
+    <div style="overflow-x:auto;">
+        <table class="matrix-table" aria-describedby="matrix-caption">
+            <caption id="matrix-caption" class="visually-hidden">
+                Security coverage matrix comparing internal toolset, Black Duck, and Seeker across 14 categories.
+                Color coding: green indicates full coverage, amber indicates partial coverage, gray indicates none.
+            </caption>
+            <thead>
+                <tr>
+                    <th scope="col">Category</th>
+                    <th scope="col">Internal Toolset</th>
+                    <th scope="col">Black Duck</th>
+                    <th scope="col">Seeker IAST</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>SAST</td>
+                    <td class="cell-full">Full</td>
+                    <td class="cell-none">None</td>
+                    <td class="cell-none">None</td>
+                </tr>
+                <tr>
+                    <td>SCA (known CVEs)</td>
+                    <td class="cell-full">Full — 6 databases</td>
+                    <td class="cell-full">Full — NVD + BDSA</td>
+                    <td class="cell-none">None</td>
+                </tr>
+                <tr>
+                    <td>License compliance</td>
+                    <td class="cell-partial">Partial — snippet + copyleft gate</td>
+                    <td class="cell-full">Full — legal workflow</td>
+                    <td class="cell-none">None</td>
+                </tr>
+                <tr>
+                    <td>Container scanning</td>
+                    <td class="cell-full">Full — Trivy + Grype</td>
+                    <td class="cell-partial">Partial — layer fingerprinting</td>
+                    <td class="cell-none">None</td>
+                </tr>
+                <tr>
+                    <td>Secrets</td>
+                    <td class="cell-full">Full — Gitleaks full history</td>
+                    <td class="cell-none">None</td>
+                    <td class="cell-none">None</td>
+                </tr>
+                <tr>
+                    <td>SBOM</td>
+                    <td class="cell-full">Full — CycloneDX + Syft</td>
+                    <td class="cell-full">Full — CycloneDX + SPDX</td>
+                    <td class="cell-none">None</td>
+                </tr>
+                <tr>
+                    <td>Supply chain provenance</td>
+                    <td class="cell-full">Full — SLSA + Cosign</td>
+                    <td class="cell-none">None</td>
+                    <td class="cell-none">None</td>
+                </tr>
+                <tr>
+                    <td>DAST</td>
+                    <td class="cell-full">Full — ZAP authenticated</td>
+                    <td class="cell-none">None</td>
+                    <td class="cell-none">None</td>
+                </tr>
+                <tr>
+                    <td>IAST (runtime)</td>
+                    <td class="cell-partial">Partial — outside-in only</td>
+                    <td class="cell-none">None</td>
+                    <td class="cell-full">Full — instrumented</td>
+                </tr>
+                <tr>
+                    <td>PII leak detection</td>
+                    <td class="cell-full">Full — 4 Semgrep rules, gating</td>
+                    <td class="cell-none">None</td>
+                    <td class="cell-partial">Partial — runtime trace only</td>
+                </tr>
+                <tr>
+                    <td>Fuzzing</td>
+                    <td class="cell-full">Full — Hypothesis property-based</td>
+                    <td class="cell-none">None</td>
+                    <td class="cell-none">None</td>
+                </tr>
+                <tr>
+                    <td>IaC scanning</td>
+                    <td class="cell-full">Full — Checkov</td>
+                    <td class="cell-none">None</td>
+                    <td class="cell-none">None</td>
+                </tr>
+                <tr>
+                    <td>AI/LLM audit trail</td>
+                    <td class="cell-full">Full — HMAC-SHA256, 7-yr WORM</td>
+                    <td class="cell-none">None</td>
+                    <td class="cell-none">None</td>
+                </tr>
+                <tr>
+                    <td>Audit retention (NARA)</td>
+                    <td class="cell-full">Full — immutable Azure Blob</td>
+                    <td class="cell-none">None</td>
+                    <td class="cell-none">None</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top:1rem; display:flex; gap:1.5rem; flex-wrap:wrap; font-size:12px;" aria-label="Legend">
+        <span style="display:flex;align-items:center;gap:6px;">
+            <span style="width:14px;height:14px;background:#d1fae5;border-radius:3px;display:inline-block;" aria-hidden="true"></span>
+            Full coverage — build-blocking gate
+        </span>
+        <span style="display:flex;align-items:center;gap:6px;">
+            <span style="width:14px;height:14px;background:#fef3c7;border-radius:3px;display:inline-block;" aria-hidden="true"></span>
+            Partial — narrower scope or fidelity
+        </span>
+        <span style="display:flex;align-items:center;gap:6px;">
+            <span style="width:14px;height:14px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:3px;display:inline-block;" aria-hidden="true"></span>
+            None — not in scope for that tool
+        </span>
+    </div>
+</div>
+</section>
+
+
+<!-- ============================================================
+     Section 6: NIST 800-53 Control Mapping
+     ============================================================ -->
+<section class="section" aria-labelledby="nist-heading">
+    <div class="section-label">Compliance</div>
+    <h2 class="section-title" id="nist-heading">NIST 800-53 Rev5 Control Mapping</h2>
+    <p class="section-desc">
+        FedRAMP High requires documented traceability from controls to implemented
+        tooling. The table below maps eight security-relevant controls to the specific
+        tools and mechanisms that satisfy them. These are a representative subset of
+        the full FedRAMP High control baseline.
+    </p>
+
+    <div style="overflow-x:auto;">
+        <table class="nist-table" aria-describedby="nist-caption">
+            <caption id="nist-caption" class="visually-hidden">
+                NIST 800-53 Rev5 controls mapped to implementing tools and mechanisms.
+            </caption>
+            <thead>
+                <tr>
+                    <th scope="col">Control</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Implementing Tools / Mechanism</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">RA-5</th>
+                    <td>Vulnerability Scanning</td>
+                    <td>
+                        6-database SCA sweep (OWASP DC, pip-audit, Trivy, Dependabot, OSV-Scanner, Grype)
+                        + ZAP authenticated DAST
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">SA-4</th>
+                    <td>Acquisition Process</td>
+                    <td>
+                        CycloneDX SBOM + Syft system inventory + ScanCode snippet-level license detection
+                        + pip-licenses copyleft gate
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">SA-11</th>
+                    <td>Developer Testing</td>
+                    <td>
+                        Bandit SAST + Semgrep (custom PII + security rules) + Hypothesis property-based
+                        fuzzing + pytest unit and integration suite
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">CA-8</th>
+                    <td>Penetration Testing</td>
+                    <td>
+                        ZAP authenticated active scan on staging environment before each production
+                        deployment; baseline scan required in CI
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">AU-10</th>
+                    <td>Non-repudiation</td>
+                    <td>
+                        HMAC-SHA256 signature on every AI generation record, stored in Azure Blob
+                        immutable storage; signature verified on retrieval
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">SI-2</th>
+                    <td>Flaw Remediation</td>
+                    <td>
+                        Dependabot PRs opened within 24 hours of new CVE publication +
+                        weekly cross-repo dependency alignment sweeps
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">CM-6</th>
+                    <td>Configuration Settings</td>
+                    <td>
+                        Checkov IaC scanning of all Kubernetes manifests, Dockerfiles, and
+                        Bicep templates; build fails on HIGH or CRITICAL misconfigurations
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">IA-5(7)</th>
+                    <td>Secret Management</td>
+                    <td>
+                        Gitleaks full git history scan on every commit + Azure Key Vault for all
+                        runtime secrets; no credentials in source code or config files
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     Section 7: The Bottom Line
+     ============================================================ -->
+<section class="section-dark" aria-labelledby="bottom-line-heading">
+<div class="section-inner">
+    <div class="section-label">Assessment</div>
+    <h2 class="section-title" id="bottom-line-heading">Where the Gaps Are</h2>
+
+    <div class="callout">
+        <p>
+            Black Duck queries two vulnerability databases (NVD and its proprietary BDSA feed).
+            The internal toolset queries six. Black Duck's one concrete advantage is the BDSA
+            advisory library — approximately 2,000 entries that NVD does not yet carry, with a
+            2 to 14 day early-warning window before the NVD record is published. On license
+            detection, the two stacks reach parity through ScanCode's snippet matching.
+            The only Black Duck capability without an internal equivalent is its legal workflow
+            dashboard for tracking license approvals across a legal team.
+        </p>
+    </div>
+
+    <div class="callout gap" style="margin-top:1rem;">
+        <p>
+            Seeker instruments the running application from inside the process. It can trace a
+            specific HTTP input through five internal function calls and confirm it reaches a
+            vulnerable sink — at runtime, against real execution paths. The internal toolset
+            approaches this from two directions: ZAP runs authenticated DAST from outside the
+            HTTP boundary, and four Semgrep rules block PII patterns at build time before the
+            code ships. Property-based fuzzing with Hypothesis validates function-level invariants.
+            None of these replicate the inside-out tracing that IAST provides. That is the only
+            architectural gap in the internal security stack.
+        </p>
+    </div>
+</div>
+</section>
+
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <strong>U.S. Equal Employment Opportunity Commission</strong> &mdash; Office of the Chief Information Officer<br>
+    AI-Enabled Case Management Platform &bull; FedRAMP High &bull; NIST 800-53 Rev5 &bull; WCAG 2.1 AA
+</footer>
+
+</div><!-- /page-content -->
+
+<script src="js/site.js"></script>
+</body>
+</html>

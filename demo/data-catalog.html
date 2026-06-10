@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EEOC Enterprise Data Catalog — OMB M-19-18 Compliance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="css/demo.css" rel="stylesheet">
+  <style>
+    /* Federal palette overrides for Public Sans + data catalog layout */
+    :root {
+      --federal-navy: #1a4480;
+      --federal-blue: #2491ff;
+      --federal-cool-gray: #71767a;
+      --federal-cool-gray-dark: #3d4551;
+      --catalog-accent: #0a58ca;
+      --catalog-bg: #f0f2f5;
+      --catalog-border: #c9c9c9;
+    }
+
+    body {
+      font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--catalog-bg);
+      color: #1b1b1b;
+    }
+
+    /* 508 focus indicators */
+    a:focus-visible,
+    button:focus-visible,
+    summary:focus-visible,
+    .btn:focus-visible {
+      outline: 2px solid #0a58ca;
+      outline-offset: 2px;
+      box-shadow: none !important;
+    }
+
+    /* Suppress Bootstrap's low-contrast focus ring */
+    .btn:focus, a:focus, summary:focus,
+    .nav-link:focus, .btn-close:focus {
+      box-shadow: none !important;
+    }
+
+    /* Government banner */
+    .gov-banner {
+      background: #f0f0f0;
+      border-bottom: 1px solid #dcdcdc;
+      font-size: 12px;
+      color: #1b1b1b;
+      padding: 6px 0;
+    }
+
+    .gov-banner .banner-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .gov-banner .flag-icon {
+      font-size: 14px;
+    }
+
+    /* Navy navbar */
+    .catalog-navbar {
+      background: var(--federal-navy);
+      padding: 0.75rem 0;
+      border-bottom: 3px solid #0a58ca;
+    }
+
+    .catalog-navbar .navbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .catalog-navbar .brand {
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .catalog-navbar .brand:hover { color: #dce8ff; }
+
+    .catalog-navbar .brand-icon {
+      width: 36px; height: 36px;
+      background: #fff;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--federal-navy);
+      font-size: 16px;
+    }
+
+    .catalog-navbar .back-link {
+      color: rgba(255,255,255,0.85);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 5px 12px;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+
+    .catalog-navbar .back-link:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border-color: rgba(255,255,255,0.6);
+    }
+
+    /* Hero section */
+    .catalog-hero {
+      background: var(--federal-navy);
+      color: #fff;
+      padding: 3.5rem 0 2.5rem;
+    }
+
+    .catalog-hero .hero-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .catalog-hero h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      line-height: 1.2;
+    }
+
+    .catalog-hero .subtitle {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.75);
+      max-width: 680px;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .stat-cards-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      padding: 1.25rem 1rem;
+      text-align: center;
+    }
+
+    .stat-card .stat-value {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.65);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Page body */
+    .catalog-body {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Section headers */
+    .section-heading {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--federal-navy);
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-subheading {
+      font-size: 0.85rem;
+      color: var(--federal-cool-gray);
+      margin-bottom: 1.25rem;
+    }
+
+    /* Compliance cards grid */
+    .compliance-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .compliance-card {
+      background: #fff;
+      border: 1px solid var(--catalog-border);
+      border-top: 3px solid var(--federal-navy);
+      border-radius: 6px;
+      padding: 1.25rem;
+    }
+
+    .compliance-card .req-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--federal-navy);
+      margin-bottom: 0.4rem;
+    }
+
+    .compliance-card .req-text {
+      font-size: 13px;
+      color: #3d4551;
+      margin-bottom: 0.75rem;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .compliance-card .how-text {
+      font-size: 13px;
+      color: #1b1b1b;
+      line-height: 1.55;
+    }
+
+    .compliance-card .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #e8f5e9;
+      color: #146c43;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-bottom: 0.6rem;
+    }
+
+    /* Schema overview table */
+    .schema-table-wrap {
+      background: #fff;
+      border: 1px solid var(--catalog-border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 2.5rem;
+    }
+
+    .schema-table-wrap table {
+      margin: 0;
+    }
+
+    /* Schema pill badges */
+    .schema-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: monospace;
+    }
+
+    .schema-pill-accessory { background: #e8eaf6; color: #3949ab; }
+    .schema-pill-admin     { background: #fce4ec; color: #b02a37; }
+    .schema-pill-adr       { background: #e0f2f1; color: #00695c; }
+    .schema-pill-private   { background: #fff3e0; color: #7f6500; }
+    .schema-pill-kb        { background: #f3e5f5; color: #6a1b9a; }
+    .schema-pill-dbo       { background: #e3f2fd; color: #0a58ca; }
+    .schema-pill-eeo       { background: #e8f5e9; color: #146c43; }
+    .schema-pill-retro     { background: #fafafa; color: #3d4551; }
+    .schema-pill-retroadr  { background: #f1f8e9; color: #33691e; }
+
+    /* Detailed registry — collapsible sections */
+    .registry-section {
+      background: #fff;
+      border: 1px solid var(--catalog-border);
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+    }
+
+    .registry-section summary {
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--federal-navy);
+      list-style: none;
+      background: #f7f9fc;
+      border-bottom: 1px solid transparent;
+      user-select: none;
+    }
+
+    .registry-section summary::-webkit-details-marker { display: none; }
+
+    .registry-section[open] summary {
+      border-bottom-color: var(--catalog-border);
+    }
+
+    .registry-section summary .toggle-icon {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--federal-cool-gray);
+      transition: transform 0.2s;
+    }
+
+    .registry-section[open] summary .toggle-icon {
+      transform: rotate(90deg);
+    }
+
+    .registry-section .registry-body {
+      padding: 0;
+    }
+
+    .registry-note {
+      padding: 0.6rem 1.25rem;
+      font-size: 12px;
+      color: var(--federal-cool-gray);
+      background: #fafafa;
+      border-top: 1px solid var(--catalog-border);
+      font-style: italic;
+    }
+
+    /* Knowledge base rule cards */
+    .kb-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .kb-card {
+      background: #fff;
+      border: 1px solid var(--catalog-border);
+      border-left: 3px solid var(--catalog-accent);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+    }
+
+    .kb-card .kb-type {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--catalog-accent);
+      margin-bottom: 0.3rem;
+    }
+
+    .kb-card h3 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #1b1b1b;
+    }
+
+    .kb-card p {
+      font-size: 13px;
+      color: #3d4551;
+      margin-bottom: 0.5rem;
+      line-height: 1.5;
+    }
+
+    .kb-card pre {
+      background: #f0f2f5;
+      border: 1px solid #dde1e7;
+      border-radius: 4px;
+      font-size: 11px;
+      padding: 0.6rem 0.8rem;
+      overflow-x: auto;
+      color: #1b1b1b;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Example queries */
+    .query-table-wrap {
+      background: #fff;
+      border: 1px solid var(--catalog-border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 2.5rem;
+    }
+
+    .query-row-detail {
+      background: #f7f9fc;
+      border-top: 1px solid #e8eaf0;
+    }
+
+    .query-sql pre {
+      background: #1b1f23;
+      color: #e6edf3;
+      border-radius: 4px;
+      font-size: 12px;
+      padding: 0.75rem 1rem;
+      margin: 0;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* ERD grid */
+    .erd-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .erd-card {
+      background: #fff;
+      border: 1px solid var(--catalog-border);
+      border-radius: 6px;
+      padding: 0.875rem 1rem;
+      text-align: center;
+    }
+
+    .erd-card .erd-icon {
+      font-size: 1.5rem;
+      color: var(--federal-navy);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .erd-card .erd-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1b1b1b;
+      margin-bottom: 0.25rem;
+    }
+
+    .erd-card .erd-schema {
+      font-size: 11px;
+      color: var(--federal-cool-gray);
+    }
+
+    /* Query toggle button — 508-compliant secondary outline */
+    .btn-query {
+      --bs-btn-color: #3d4551;
+      --bs-btn-border-color: #c9c9c9;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #5a6472;
+      --bs-btn-hover-border-color: #5a6472;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #5a6472;
+      --bs-btn-active-border-color: #5a6472;
+      --bs-btn-disabled-color: #71767a;
+      --bs-btn-disabled-border-color: #c9c9c9;
+      font-size: 11px;
+      color: #3d4551 !important;
+      border-color: #c9c9c9 !important;
+    }
+    .btn-query:hover, .btn-query:active, .btn-query.active {
+      background-color: #5a6472 !important;
+      border-color: #5a6472 !important;
+      color: #fff !important;
+    }
+
+    /* Provenance block */
+    .provenance-block {
+      background: #fff;
+      border: 1px solid var(--catalog-border);
+      border-radius: 6px;
+      padding: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .provenance-block pre {
+      background: #1b1f23;
+      color: #e6edf3;
+      border-radius: 4px;
+      font-size: 12px;
+      padding: 1rem;
+      margin: 0;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Footer */
+    .catalog-footer {
+      background: var(--federal-navy);
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 12px;
+      margin-top: 2rem;
+    }
+
+    .catalog-footer a {
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .stat-cards-row { grid-template-columns: repeat(2, 1fr); }
+      .compliance-grid { grid-template-columns: 1fr; }
+      .kb-grid { grid-template-columns: 1fr; }
+      .erd-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .catalog-hero h1 { font-size: 1.4rem; }
+      .stat-cards-row { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Skip navigation -->
+  <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+
+  <!-- Government banner -->
+  <div class="gov-banner" role="banner">
+    <div class="banner-inner">
+      <span class="flag-icon" aria-hidden="true">&#127482;&#127480;</span>
+      <span>An official application of the U.S. Equal Employment Opportunity Commission</span>
+    </div>
+  </div>
+
+  <!-- Navy navbar -->
+  <nav class="catalog-navbar" aria-label="Site navigation">
+    <div class="navbar-inner">
+      <a href="#main-content" class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
+        </div>
+        EEOC Enterprise Data Catalog
+      </a>
+      <a href="index.html" class="back-link">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        Back to Platform
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="catalog-hero" role="region" aria-label="Data catalog overview">
+    <div class="hero-inner">
+      <h1 id="main-content">EEOC Enterprise Data Catalog</h1>
+      <p class="subtitle">
+        Complete inventory of EEOC agency data assets across all operational schemas.
+        Meets OMB M-19-18 data inventory requirements, the OPEN Government Data Act,
+        OMB Circular A-130, and Federal Data Strategy data stewardship obligations.
+      </p>
+      <div class="stat-cards-row" role="list" aria-label="Catalog summary statistics">
+        <div class="stat-card" role="listitem">
+          <div class="stat-value counter" data-target="331" aria-label="331 tables">331</div>
+          <div class="stat-label">Tables</div>
+        </div>
+        <div class="stat-card" role="listitem">
+          <div class="stat-value counter" data-target="8" aria-label="8 schemas">8</div>
+          <div class="stat-label">Schemas</div>
+        </div>
+        <div class="stat-card" role="listitem">
+          <div class="stat-value counter" data-target="8241" aria-label="8,241 columns">8,241</div>
+          <div class="stat-label">Columns</div>
+        </div>
+        <div class="stat-card" role="listitem">
+          <div class="stat-value counter" data-target="35" aria-label="35 knowledge rules">35</div>
+          <div class="stat-label">Knowledge Rules</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main id="main-content-body" class="catalog-body">
+
+    <!-- OMB Compliance section -->
+    <section aria-labelledby="compliance-heading">
+      <h2 class="section-heading" id="compliance-heading">
+        <i class="bi bi-patch-check-fill" aria-hidden="true" style="color:var(--federal-navy);"></i>
+        Federal Data Strategy Compliance
+      </h2>
+      <p class="section-subheading">How this catalog satisfies six federal data governance requirements.</p>
+
+      <div class="compliance-grid">
+
+        <div class="compliance-card">
+          <div class="status-badge">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            Compliant
+          </div>
+          <div class="req-label">OMB M-19-18</div>
+          <p class="req-text">"Agencies must maintain a comprehensive data inventory."</p>
+          <p class="how-text">331 tables across 8 schemas with column-level metadata, grain documentation, and foreign key relationships cataloged — 8,241 columns in total.</p>
+        </div>
+
+        <div class="compliance-card">
+          <div class="status-badge">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            Compliant
+          </div>
+          <div class="req-label">OPEN Government Data Act</div>
+          <p class="req-text">"Publish machine-readable data catalog."</p>
+          <p class="how-text">Structured YAML definitions compiled to a searchable JSON index. All schema definitions are version-controlled and programmatically accessible.</p>
+        </div>
+
+        <div class="compliance-card">
+          <div class="status-badge">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            Compliant
+          </div>
+          <div class="req-label">OMB Circular A-130</div>
+          <p class="req-text">"Manage information as a strategic resource."</p>
+          <p class="how-text">Metadata routing, grain documentation, PII classification, and access controls applied at the column level across all 8 operational schemas.</p>
+        </div>
+
+        <div class="compliance-card">
+          <div class="status-badge">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            Compliant
+          </div>
+          <div class="req-label">NIST 800-53 CM-8</div>
+          <p class="req-text">"Maintain a component inventory."</p>
+          <p class="how-text">Schemas, tables, columns, foreign keys, and ERDs cataloged with full provenance — source system, extraction method, and last-validated timestamp.</p>
+        </div>
+
+        <div class="compliance-card">
+          <div class="status-badge">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            Compliant
+          </div>
+          <div class="req-label">FISMA / FedRAMP Classification</div>
+          <p class="req-text">"Classify data by sensitivity level."</p>
+          <p class="how-text">Three-tier PII classification (None / Limited / Full) with Row-Level Security enforcement. All Tier 2 and Tier 3 tables require elevated role assignment.</p>
+        </div>
+
+        <div class="compliance-card">
+          <div class="status-badge">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            Compliant
+          </div>
+          <div class="req-label">OMB M-23-22 Data Governance</div>
+          <p class="req-text">"Designate data stewards and access policies."</p>
+          <p class="how-text">Role-based access maps stewards, analysts, and admins to schemas and PII tiers. Steward assignments documented per schema with quarterly review cadence.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Schema Overview -->
+    <section aria-labelledby="schema-overview-heading">
+      <h2 class="section-heading" id="schema-overview-heading">
+        <i class="bi bi-diagram-2-fill" aria-hidden="true" style="color:var(--federal-navy);"></i>
+        Schema Overview
+      </h2>
+      <p class="section-subheading">Eight schemas spanning 331 tables and 8,241 columns. Each schema serves a distinct operational domain.</p>
+
+      <div class="schema-table-wrap">
+        <table class="table table-hover mb-0">
+          <caption class="visually-hidden">Schema inventory: name, table count, column count, and description</caption>
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Schema</th>
+              <th scope="col">Tables</th>
+              <th scope="col">Columns</th>
+              <th scope="col">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="schema-pill schema-pill-accessory">accessory</span></td>
+              <td>40</td>
+              <td>671</td>
+              <td>Analytical and reporting layer — pre-joined views optimized for charge inquiry and RLS-enforced reporting</td>
+            </tr>
+            <tr>
+              <td><span class="schema-pill schema-pill-admin">admin</span></td>
+              <td>12</td>
+              <td>167</td>
+              <td>Access control and system configuration — role definitions, office mappings, email activity, and admin reference data</td>
+            </tr>
+            <tr>
+              <td><span class="schema-pill schema-pill-adr">adr</span></td>
+              <td>6</td>
+              <td>90</td>
+              <td>ADR benefit and allegation tracking — mediation outcomes, charge benefits, and ADR program data</td>
+            </tr>
+            <tr>
+              <td><span class="schema-pill schema-pill-dbo">dbo</span></td>
+              <td>122</td>
+              <td>2,834</td>
+              <td>Core application tables — outreach events, EEO-1 employer data, federal sector appeals, litigation tracking, systemic investigations</td>
+            </tr>
+            <tr>
+              <td><span class="schema-pill schema-pill-eeo">eeo</span></td>
+              <td>12</td>
+              <td>1,260</td>
+              <td>EEO program operational data — complaint processing, hearings, and federal sector case management</td>
+            </tr>
+            <tr>
+              <td><span class="schema-pill schema-pill-private">private</span></td>
+              <td>74</td>
+              <td>1,793</td>
+              <td>Core operational data — charge events, case folders, respondents, complainants, and resolution records. Highest PII classification tier.</td>
+            </tr>
+            <tr>
+              <td><span class="schema-pill schema-pill-retro">retro</span></td>
+              <td>58</td>
+              <td>1,327</td>
+              <td>Retrospective and legacy data — historical charge records, archived case data, and migration artifacts</td>
+            </tr>
+            <tr>
+              <td><span class="schema-pill schema-pill-retroadr">retroadr</span></td>
+              <td>7</td>
+              <td>99</td>
+              <td>Historical ADR data — archived mediation benefits and allegation records</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Detailed Table Registry -->
+    <section aria-labelledby="registry-heading">
+      <h2 class="section-heading" id="registry-heading">
+        <i class="bi bi-table" aria-hidden="true" style="color:var(--federal-navy);"></i>
+        Detailed Table Registry
+      </h2>
+      <p class="section-subheading">Representative subset of 331 tables across 8 schemas. Expand each schema to view column counts, primary keys, and description.</p>
+
+      <!-- accessory schema -->
+      <details class="registry-section">
+        <summary>
+          <span class="schema-pill schema-pill-accessory" aria-hidden="true">accessory</span>
+          <span>accessory schema &mdash; 40 tables (top 8 shown)</span>
+          <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+        </summary>
+        <div class="registry-body">
+          <table class="table table-sm table-hover mb-0" style="font-size:13px;">
+            <caption class="visually-hidden">accessory schema table registry — top 8 tables by column count</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Table Name</th>
+                <th scope="col">Columns</th>
+                <th scope="col">PKs</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row"><code>hearing_case</code></th>
+                <td>55</td>
+                <td>0</td>
+                <td>Consolidated hearing case view joining case folder, hearing dates, and assigned ALJ information.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>litigation_appeal</code></th>
+                <td>68</td>
+                <td>0</td>
+                <td>Litigation and appeal tracking view. Links case folder to appeal outcomes and court record references.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>ChargeInquiryTransform1</code></th>
+                <td>52</td>
+                <td>1</td>
+                <td>Primary charge inquiry transform. Pre-joins charge, complainant, respondent, and district data for reporting queries.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>user_detail</code></th>
+                <td>35</td>
+                <td>1</td>
+                <td>User detail reference view. Joins staff identity and office assignment data for role-resolved queries.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>hearing_claims</code></th>
+                <td>28</td>
+                <td>0</td>
+                <td>Hearing-stage claim detail. Lists allegations and basis codes for each hearing case.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>SCD_ProtoClosureCodes</code></th>
+                <td>24</td>
+                <td>1</td>
+                <td>Slowly-changing dimension prototype for closure code history. Used in trend and cohort reporting.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>hearing_benefit</code></th>
+                <td>22</td>
+                <td>1</td>
+                <td>Hearing-stage benefit outcomes. Records monetary and non-monetary relief at the hearing level.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>user_office_domain_role</code></th>
+                <td>19</td>
+                <td>1</td>
+                <td>Maps users to office, domain, and role for RLS enforcement across all office-scoped views.</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="registry-note">Showing 8 of 40 accessory tables. Full catalog available in the YAML schema definitions.</div>
+        </div>
+      </details>
+
+      <!-- admin schema -->
+      <details class="registry-section">
+        <summary>
+          <span class="schema-pill schema-pill-admin" aria-hidden="true">admin</span>
+          <span>admin schema &mdash; 12 tables (all)</span>
+          <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+        </summary>
+        <div class="registry-body">
+          <table class="table table-sm table-hover mb-0" style="font-size:13px;">
+            <caption class="visually-hidden">admin schema table registry — all 12 tables</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Table Name</th>
+                <th scope="col">Columns</th>
+                <th scope="col">PKs</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row"><code>user_detail</code></th>
+                <td>38</td>
+                <td>1</td>
+                <td>Canonical user record. Stores staff identity, contact, and employment status used across all access-control lookups.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>user_office_domain_role_membership</code></th>
+                <td>19</td>
+                <td>1</td>
+                <td>Membership mapping for user-to-office-domain-role assignments. Drives RLS across office-scoped objects.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>email_activity_log</code></th>
+                <td>19</td>
+                <td>1</td>
+                <td>Records all system-generated email activity — recipient, template, sent timestamp, and delivery status.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>email_activity_log_Archive22</code></th>
+                <td>19</td>
+                <td>1</td>
+                <td>FY2022 archive of email_activity_log. Retained for audit retrieval; read-only after archive date.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>access_role</code></th>
+                <td>11</td>
+                <td>1</td>
+                <td>Role definitions with permission levels, schema access grants, and PII tier restrictions.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>email_recipient</code></th>
+                <td>9</td>
+                <td>1</td>
+                <td>Recipient list for system-generated emails. Links to email_activity_log for delivery tracking.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>email_recipient_Archive22</code></th>
+                <td>9</td>
+                <td>1</td>
+                <td>FY2022 archive of email_recipient. Retained for compliance audit retrieval.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>access_office</code></th>
+                <td>8</td>
+                <td>1</td>
+                <td>Maps roles to permitted office codes. Drives RLS filters across all office-scoped views.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>access_domain</code></th>
+                <td>8</td>
+                <td>1</td>
+                <td>Access domain definitions. Top-level grouping for role and office access assignments.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>access_office_domain_membership</code></th>
+                <td>7</td>
+                <td>1</td>
+                <td>Bridge table linking offices to access domains for multi-domain role resolution.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>access_role_group</code></th>
+                <td>7</td>
+                <td>1</td>
+                <td>Role-to-group assignments for batch permission management. Supports district-level role groups.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>admin_code</code></th>
+                <td>13</td>
+                <td>1</td>
+                <td>System-wide administrative codes. Maps short codes to descriptions used across configuration tables.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <!-- adr schema -->
+      <details class="registry-section">
+        <summary>
+          <span class="schema-pill schema-pill-adr" aria-hidden="true">adr</span>
+          <span>adr schema &mdash; 6 tables (all)</span>
+          <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+        </summary>
+        <div class="registry-body">
+          <table class="table table-sm table-hover mb-0" style="font-size:13px;">
+            <caption class="visually-hidden">adr schema table registry — all 6 tables</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Table Name</th>
+                <th scope="col">Columns</th>
+                <th scope="col">PKs</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row"><code>charge_benefit_detail</code></th>
+                <td>20</td>
+                <td>1</td>
+                <td>Line-item detail for each charge benefit record — individual relief amounts and benefit code descriptions.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>charge_benefit_detail_Archive23</code></th>
+                <td>20</td>
+                <td>1</td>
+                <td>FY2023 archive of charge_benefit_detail. Retained for historical benefit reporting.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>charge_benefit</code></th>
+                <td>17</td>
+                <td>1</td>
+                <td>ADR benefit outcomes per charge. Records monetary relief, non-monetary relief, and mediation benefit type.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>charge_benefit_Archive23</code></th>
+                <td>17</td>
+                <td>1</td>
+                <td>FY2023 archive of charge_benefit. Retained for multi-year ADR trend analysis.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>charge_benefit_allegation_assc</code></th>
+                <td>8</td>
+                <td>1</td>
+                <td>Associates allegation codes with ADR charge benefit records. Supports ADR-specific allegation tracking.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>charge_benefit_allegation_assc_Archive23</code></th>
+                <td>8</td>
+                <td>1</td>
+                <td>FY2023 archive of charge_benefit_allegation_assc.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <!-- dbo schema -->
+      <details class="registry-section">
+        <summary>
+          <span class="schema-pill schema-pill-dbo" aria-hidden="true">dbo</span>
+          <span>dbo schema &mdash; 122 tables (top 10 shown)</span>
+          <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+        </summary>
+        <div class="registry-body">
+          <table class="table table-sm table-hover mb-0" style="font-size:13px;">
+            <caption class="visually-hidden">dbo schema table registry — top 10 tables by column count</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Table Name</th>
+                <th scope="col">Columns</th>
+                <th scope="col">PKs</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row"><code>BRIO_FA_APPEALS</code></th>
+                <td>54</td>
+                <td>0</td>
+                <td>Federal sector appeals. Tracks EEOC appellate decisions, case references, and appeal disposition codes.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>BRIO_AOS_EVENT</code></th>
+                <td>32</td>
+                <td>0</td>
+                <td>Outreach events. Records event details, attendance, geographic data, and sponsor associations.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>BRIO_EEO1_DATA</code></th>
+                <td>31</td>
+                <td>0</td>
+                <td>EEO-1 employer data. Employer workforce composition counts by job category, race, sex, and establishment.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>BRIO_FA_GROUP_ACTION</code></th>
+                <td>26</td>
+                <td>0</td>
+                <td>Group complaint actions in the federal sector. Associates group action codes and disposition details to case records.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>BRIO_FA_INDIVIDUAL</code></th>
+                <td>25</td>
+                <td>0</td>
+                <td>Individual federal sector complaints. Links complainant identity, agency, and complaint status.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>APPLICATION_EVENT_LOG</code></th>
+                <td>23</td>
+                <td>1</td>
+                <td>Application-level event log. Records system events, user actions, and integration callbacks with timestamps.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>APPLICATION_EVENT_LOG_ARCHIVE</code></th>
+                <td>23</td>
+                <td>1</td>
+                <td>Archive of APPLICATION_EVENT_LOG. Retained per NARA 7-year audit record requirement.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>BRIO_FA_ACCESS</code></th>
+                <td>21</td>
+                <td>0</td>
+                <td>Case access control for federal sector records. Maps staff members to accessible case records by role and office.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>BRIO_AOS_INITIATIVE</code></th>
+                <td>19</td>
+                <td>0</td>
+                <td>Outreach initiatives. Tracks program-level outreach campaigns, objectives, and associated events.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>BRIO_AOS_SPONSOR</code></th>
+                <td>19</td>
+                <td>0</td>
+                <td>Event sponsors. Stores sponsor organization details and links to outreach events.</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="registry-note">Showing 10 of 122 dbo tables. This schema contains the full IMS operational data model including FEPA charge history, shared institution data, litigation case management, and EEO-1 survey records. 112 additional tables available in the YAML schema definitions.</div>
+        </div>
+      </details>
+
+      <!-- eeo schema -->
+      <details class="registry-section">
+        <summary>
+          <span class="schema-pill schema-pill-eeo" aria-hidden="true">eeo</span>
+          <span>eeo schema &mdash; 12 tables (all)</span>
+          <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+        </summary>
+        <div class="registry-body">
+          <table class="table table-sm table-hover mb-0" style="font-size:13px;">
+            <caption class="visually-hidden">eeo schema table registry — all 12 tables</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Table Name</th>
+                <th scope="col">Columns</th>
+                <th scope="col">PKs</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row"><code>EEO1_Data_Multi</code></th>
+                <td>334</td>
+                <td>4</td>
+                <td>Multi-establishment EEO-1 workforce data. Full survey response table covering all job categories, demographic counts, and filing cycles.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>EEO1_Data_Multi_PREPARED</code></th>
+                <td>334</td>
+                <td>4</td>
+                <td>Prepared/staged copy of EEO1_Data_Multi. Used during data preparation and validation cycles before promotion to production.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>Preview_EEO1_Data_2022_2024</code></th>
+                <td>248</td>
+                <td>4</td>
+                <td>Preview dataset covering EEO-1 survey cycles 2022 through 2024. Used for pre-release analysis and quality checks.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>Preview_EEO1_Data_2019_2021</code></th>
+                <td>215</td>
+                <td>0</td>
+                <td>Preview dataset covering EEO-1 survey cycles 2019 through 2021. Historical reference for multi-year trend comparisons.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>Preview_EEO1_SMS_Company_Details</code></th>
+                <td>36</td>
+                <td>2</td>
+                <td>Company detail records from the EEO-1 submission management system. Contains filer registration and establishment metadata.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>Preview_EEO1_SMS_HelpDesk_Tickets</code></th>
+                <td>17</td>
+                <td>2</td>
+                <td>Help desk ticket records from the EEO-1 submission management system. Tracks filer support requests and resolution status.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>Preview_EEO1_SMS_Company_Contacts</code></th>
+                <td>16</td>
+                <td>2</td>
+                <td>Contact records for EEO-1 filing companies. Links contacts to company detail for correspondence and notification tracking.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>Preview_EEO1_SMS_Email_AbridgedColStore</code></th>
+                <td>15</td>
+                <td>4</td>
+                <td>Column-store format of abridged EEO-1 email records. Optimized for aggregate reporting queries.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>Preview_EEO1_SMS_Email_AbridgedRowStore</code></th>
+                <td>15</td>
+                <td>4</td>
+                <td>Row-store format of abridged EEO-1 email records. Used for record-level lookups and individual filer correspondence.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>Preview_EEO1_SMS_Email_Messages</code></th>
+                <td>15</td>
+                <td>2</td>
+                <td>Full email message records from the EEO-1 submission management system. Stores message body, recipients, and send timestamps.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>Preview_EEO1_SMS_HelpDesk_Ticket_Messages</code></th>
+                <td>9</td>
+                <td>0</td>
+                <td>Individual messages within help desk tickets. Links to Preview_EEO1_SMS_HelpDesk_Tickets for thread reconstruction.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>Preview_EEO1_ReportStatus</code></th>
+                <td>6</td>
+                <td>1</td>
+                <td>Report status codes for EEO-1 submissions. Reference table mapping status codes to descriptions and workflow states.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <!-- private schema -->
+      <details class="registry-section">
+        <summary>
+          <span class="schema-pill schema-pill-private" aria-hidden="true">private</span>
+          <span>private schema &mdash; 74 tables (top 10 shown)</span>
+          <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+        </summary>
+        <div class="registry-body">
+          <table class="table table-sm table-hover mb-0" style="font-size:13px;">
+            <caption class="visually-hidden">private schema table registry — top 10 of 74 tables by column count</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Table Name</th>
+                <th scope="col">Columns</th>
+                <th scope="col">PKs</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row"><code>charging_party</code></th>
+                <td>55</td>
+                <td>1</td>
+                <td>Charging party records. Name, contact, protected class indicators. PII Tier 3 — highest restriction level.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>charging_party_Archive23</code></th>
+                <td>54</td>
+                <td>1</td>
+                <td>FY2023 archive of charging_party. Read-only after archive date; retained per NARA schedule.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>respondent</code></th>
+                <td>61</td>
+                <td>1</td>
+                <td>Respondent (employer) records. Contains identifying information, industry codes, and size classification. PII Tier 2.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>respondent_Archive23</code></th>
+                <td>60</td>
+                <td>1</td>
+                <td>FY2023 archive of respondent. Retained for multi-year employer tracking and audit retrieval.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>additional_address</code></th>
+                <td>47</td>
+                <td>1</td>
+                <td>Additional address records for charging parties and respondents. Supports multi-address contact resolution.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>charge_allegation</code></th>
+                <td>40</td>
+                <td>1</td>
+                <td>Allegation codes and basis details for each charge. Central reference for basis-of-discrimination reporting.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>charge_allegation_Archive23</code></th>
+                <td>40</td>
+                <td>1</td>
+                <td>FY2023 archive of charge_allegation. Retained for historical allegation trend analysis.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>fepa_credit_request</code></th>
+                <td>33</td>
+                <td>1</td>
+                <td>FEPA dual-file credit requests. Tracks co-filed charges, credit status, and FEPA agency assignment.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>fepa_credit_request_Archive23</code></th>
+                <td>33</td>
+                <td>1</td>
+                <td>FY2023 archive of fepa_credit_request. Retained for FEPA reconciliation and audit.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>shared_document_type</code></th>
+                <td>33</td>
+                <td>1</td>
+                <td>Document type reference. Classifies document types used across charge, investigation, and litigation records.</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="registry-note">Showing 10 of 74 private tables. This schema contains the highest-sensitivity operational data. Access requires Tier 3 PII clearance and RLS enforcement. Remaining 64 tables cover intake interviews, investigation milestones, FEPA dual-file tracking, enforcement interviews, systemic case management, and FOIA requests.</div>
+        </div>
+      </details>
+
+      <!-- retro schema -->
+      <details class="registry-section">
+        <summary>
+          <span class="schema-pill schema-pill-retro" aria-hidden="true">retro</span>
+          <span>retro schema &mdash; 58 tables (top 10 shown)</span>
+          <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+        </summary>
+        <div class="registry-body">
+          <table class="table table-sm table-hover mb-0" style="font-size:13px;">
+            <caption class="visually-hidden">retro schema table registry — top 10 of 58 tables by column count</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Table Name</th>
+                <th scope="col">Columns</th>
+                <th scope="col">PKs</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row"><code>charge_inquiry</code></th>
+                <td>87</td>
+                <td>2</td>
+                <td>Retrospective charge inquiry snapshot. Historical point-in-time charge records prior to IMS migration cutover.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>respondent</code></th>
+                <td>62</td>
+                <td>2</td>
+                <td>Historical respondent records from the legacy system. Retained for pre-migration employer lookups and reconciliation.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>charging_party</code></th>
+                <td>56</td>
+                <td>2</td>
+                <td>Historical charging party records from the legacy system. PII Tier 3 — access restricted to authorized roles.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>ChargeInquiryTransform1</code></th>
+                <td>52</td>
+                <td>2</td>
+                <td>Retrospective version of the charge inquiry transform. Supports historical cross-period reporting against legacy data.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>additional_address</code></th>
+                <td>48</td>
+                <td>2</td>
+                <td>Historical additional address records. Covers pre-migration address data for charging parties and respondents.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>charge_allegation</code></th>
+                <td>41</td>
+                <td>2</td>
+                <td>Historical allegation records. Basis codes and allegation details from legacy charge data.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>user_detail</code></th>
+                <td>39</td>
+                <td>2</td>
+                <td>Historical staff user detail. Retained for audit attribution on legacy case actions.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>shared_document_type</code></th>
+                <td>34</td>
+                <td>2</td>
+                <td>Historical document type reference from the legacy system. Used for document classification in archived records.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>fepa_credit_request</code></th>
+                <td>34</td>
+                <td>2</td>
+                <td>Historical FEPA dual-file credit requests. Covers pre-migration FEPA co-filing records.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>shared_dualfile_charge</code></th>
+                <td>27</td>
+                <td>2</td>
+                <td>Historical dual-file charge associations. Maps legacy charge numbers to FEPA agency dual-file records.</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="registry-note">Showing 10 of 58 retro tables. This schema contains read-only historical data migrated from the legacy IMS system. All tables carry 2 PKs reflecting the composite key structure of the source system. 48 additional tables available in the YAML schema definitions.</div>
+        </div>
+      </details>
+
+      <!-- retroadr schema -->
+      <details class="registry-section">
+        <summary>
+          <span class="schema-pill schema-pill-retroadr" aria-hidden="true">retroadr</span>
+          <span>retroadr schema &mdash; 7 tables (all)</span>
+          <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+        </summary>
+        <div class="registry-body">
+          <table class="table table-sm table-hover mb-0" style="font-size:13px;">
+            <caption class="visually-hidden">retroadr schema table registry — all 7 tables</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Table Name</th>
+                <th scope="col">Columns</th>
+                <th scope="col">PKs</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row"><code>charge_benefit_detail</code></th>
+                <td>21</td>
+                <td>2</td>
+                <td>Historical ADR benefit detail. Line-item relief records from legacy mediation data prior to IMS migration.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>charge_benefit</code></th>
+                <td>18</td>
+                <td>2</td>
+                <td>Historical ADR charge benefit outcomes. Legacy mediation benefit records retained for multi-year trend analysis.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>BRIO_IMS_BENEFIT_DETAIL</code></th>
+                <td>16</td>
+                <td>1</td>
+                <td>BRIO-sourced IMS benefit detail records. Legacy extraction used for pre-migration ADR benefit reporting.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>BRIO_FEPA_BENEFIT_DETAIL</code></th>
+                <td>15</td>
+                <td>0</td>
+                <td>BRIO-sourced FEPA benefit detail records. Historical FEPA mediation benefit data from the legacy reporting layer.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>BRIO_FEPA_BENEFIT_HEADER</code></th>
+                <td>10</td>
+                <td>0</td>
+                <td>BRIO-sourced FEPA benefit header records. Summary-level FEPA mediation outcomes from the legacy reporting layer.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>BRIO_IMS_BENEFIT_HEADER</code></th>
+                <td>10</td>
+                <td>1</td>
+                <td>BRIO-sourced IMS benefit header records. Summary-level IMS mediation outcomes used for legacy period comparisons.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>charge_benefit_allegation_assc</code></th>
+                <td>9</td>
+                <td>2</td>
+                <td>Historical ADR allegation associations. Maps allegation codes to legacy charge benefit records.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <!-- knowledge_base schema -->
+      <details class="registry-section">
+        <summary>
+          <span class="schema-pill schema-pill-kb" aria-hidden="true">knowledge_base</span>
+          <span>knowledge_base schema &mdash; 1 table (all)</span>
+          <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+        </summary>
+        <div class="registry-body">
+          <table class="table table-sm table-hover mb-0" style="font-size:13px;">
+            <caption class="visually-hidden">knowledge_base schema table registry — 1 table</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Table Name</th>
+                <th scope="col">Columns</th>
+                <th scope="col">PKs</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row"><code>ims_sql_knowledge_base</code></th>
+                <td>9</td>
+                <td>0</td>
+                <td>Curated SQL patterns and business rules for the natural language query engine. Stores confirmed table references, join patterns, and business rule text with rule type classification and active flag.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <!-- Knowledge Base Rules -->
+    <section aria-labelledby="kb-heading">
+      <h2 class="section-heading" id="kb-heading">
+        <i class="bi bi-lightbulb-fill" aria-hidden="true" style="color:var(--federal-navy);"></i>
+        Knowledge Base Rules
+      </h2>
+      <p class="section-subheading">Representative sample of 35 rules stored in <code>ims_sql_knowledge_base</code>. The query engine applies these before generating SQL.</p>
+
+      <div class="kb-grid">
+
+        <div class="kb-card">
+          <div class="kb-type">Confirmed Tables</div>
+          <h3>Verified Query-Safe Tables</h3>
+          <p>These tables are confirmed query-safe and available for natural language queries from all authorized roles.</p>
+          <pre>-- confirmed_tables rule
+-- accessory: ChargeInquiryTransform1, District, Office,
+--   Fed_Hearings_RLS, CASE_RLS, hearing_case, hearing_claims
+-- admin: access_role, access_office
+-- adr: charge_benefit, mediation_session
+-- private: charge_resolution (read-only, RLS enforced)</pre>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-type">Join Pattern</div>
+          <h3>Charge to District Join</h3>
+          <p>Standard join from ChargeInquiryTransform1 to the District reference table using the accountability district code.</p>
+          <pre>SELECT c.*, d.DistrictName
+FROM accessory.ChargeInquiryTransform1 c
+JOIN accessory.District d
+  ON c.AccountabilityDistrictCode = d.DistrictCode</pre>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-type">Join Pattern</div>
+          <h3>Charge to Office Join</h3>
+          <p>Joins charges to the receiving office for intake and routing queries. Use <code>ReceivingOfficeCode</code> for intake location.</p>
+          <pre>SELECT c.*, o.OfficeName, o.OfficeType
+FROM accessory.ChargeInquiryTransform1 c
+JOIN accessory.Office o
+  ON c.ReceivingOfficeCode = o.OfficeCode</pre>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-type">Join Pattern</div>
+          <h3>ADR Charge Benefits Join</h3>
+          <p>Links charge records to ADR benefit outcomes. Use this pattern for settlement amount and non-monetary relief queries.</p>
+          <pre>SELECT c.ChargeNumber, b.BenefitType,
+       b.MonetaryAmount, b.NonMonetaryCode
+FROM accessory.ChargeInquiryTransform1 c
+JOIN adr.charge_benefit b
+  ON c.ChargeNumber = b.charge_number
+WHERE b.is_active = 1</pre>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-type">Join Pattern</div>
+          <h3>Case Folder to Resolution</h3>
+          <p>Joins case folder to final resolution outcome. Required for all close basis and resolution date queries.</p>
+          <pre>SELECT cf.CaseFolderID, cf.OpenDate,
+       cr.CloseBasis, cr.ResolutionDate,
+       cr.MonetaryRelief
+FROM private.case_folder cf
+JOIN private.charge_resolution cr
+  ON cf.CaseFolderID = cr.case_folder_id</pre>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-type">Business Rule</div>
+          <h3>Fiscal Year Boundary</h3>
+          <p>EEOC fiscal year runs October 1 through September 30. All FY-based queries must use this boundary definition.</p>
+          <pre>-- FY boundary rule
+-- FY start: October 1  (month 10, day 1)
+-- FY end:   September 30  (month 9, day 30)
+-- Example: FY2025 = 2024-10-01 to 2025-09-30
+WHERE IntakeDate >= '2024-10-01'
+  AND IntakeDate &lt;  '2025-10-01'</pre>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-type">Business Rule</div>
+          <h3>Open Charge Definition</h3>
+          <p>A charge is considered open when its close date is NULL and close basis code is not set. Use this filter to avoid counting resolved charges in active caseload queries.</p>
+          <pre>-- Open charge filter rule
+WHERE c.CloseDate IS NULL
+  AND c.CloseBasisCode IS NULL
+  AND c.ChargeStatusCode NOT IN ('CL', 'WD', 'DS')
+-- 'CL' = closed, 'WD' = withdrawn, 'DS' = dismissed</pre>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-type">Schema Rule</div>
+          <h3>Historical Data via retro Schema</h3>
+          <p>Queries spanning pre-migration periods must join retro schema tables. The retro schema mirrors private schema structure with an added historical period column.</p>
+          <pre>-- Use retro schema for pre-migration charge data
+-- retro.charge_inquiry covers charges prior to IMS cutover
+-- Join key: charge_number (composite with period_id)
+SELECT * FROM retro.charge_inquiry
+WHERE period_id = 'LEGACY'
+  AND charge_number = :charge_number</pre>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Example Queries -->
+    <section aria-labelledby="queries-heading">
+      <h2 class="section-heading" id="queries-heading">
+        <i class="bi bi-terminal-fill" aria-hidden="true" style="color:var(--federal-navy);"></i>
+        Example Queries
+      </h2>
+      <p class="section-subheading">14 validated query patterns. Expand any row to view the generated SQL.</p>
+
+      <div class="query-table-wrap">
+        <table class="table table-hover mb-0" style="font-size:13px;">
+          <caption class="visually-hidden">Example natural language queries with tables used and SQL</caption>
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Question</th>
+              <th scope="col">Tables Used</th>
+              <th scope="col" style="width:60px;">SQL</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr>
+              <th scope="row">How many charges were filed last fiscal year?</th>
+              <td><code>ChargeInquiryTransform1</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q1')"
+                        aria-expanded="false"
+                        aria-controls="q1">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q1" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT COUNT(*) AS charge_count
+FROM accessory.ChargeInquiryTransform1
+WHERE IntakeDate >= '2024-10-01'
+  AND IntakeDate &lt;  '2025-10-01';</pre>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">How many inquiries are currently open?</th>
+              <td><code>ChargeInquiryTransform1</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q2')"
+                        aria-expanded="false"
+                        aria-controls="q2">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q2" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT COUNT(*) AS open_inquiries
+FROM accessory.ChargeInquiryTransform1
+WHERE CloseDate IS NULL
+  AND CloseBasisCode IS NULL
+  AND ChargeStatusCode NOT IN ('CL', 'WD', 'DS');</pre>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">What is the accountability district for each charge?</th>
+              <td><code>ChargeInquiryTransform1</code>, <code>District</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q3')"
+                        aria-expanded="false"
+                        aria-controls="q3">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q3" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT c.ChargeNumber, d.DistrictName AS AccountabilityDistrict
+FROM accessory.ChargeInquiryTransform1 c
+JOIN accessory.District d
+  ON c.AccountabilityDistrictCode = d.DistrictCode
+ORDER BY c.ChargeNumber;</pre>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">What is the receiving district for each charge?</th>
+              <td><code>ChargeInquiryTransform1</code>, <code>District</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q4')"
+                        aria-expanded="false"
+                        aria-controls="q4">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q4" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT c.ChargeNumber, d.DistrictName AS ReceivingDistrict
+FROM accessory.ChargeInquiryTransform1 c
+JOIN accessory.District d
+  ON c.ReceivingDistrictCode = d.DistrictCode
+ORDER BY c.ChargeNumber;</pre>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">When was the intake interview held for each charge?</th>
+              <td><code>ChargeInquiryTransform1</code>, <code>charge_event_log</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q5')"
+                        aria-expanded="false"
+                        aria-controls="q5">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q5" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT c.ChargeNumber, e.EventDate AS IntakeInterviewDate
+FROM accessory.ChargeInquiryTransform1 c
+JOIN private.charge_event_log e
+  ON c.ChargeNumber = e.charge_number
+WHERE e.EventTypeCode = 'INTAKE_INTERVIEW'
+ORDER BY c.ChargeNumber;</pre>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">What is the settlement rate by district this fiscal year?</th>
+              <td><code>ChargeInquiryTransform1</code>, <code>District</code>, <code>charge_resolution</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q6')"
+                        aria-expanded="false"
+                        aria-controls="q6">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q6" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT d.DistrictName,
+       COUNT(*) AS total_closed,
+       SUM(CASE WHEN cr.CloseBasisCode = 'SET' THEN 1 ELSE 0 END) AS settled,
+       ROUND(100.0 * SUM(CASE WHEN cr.CloseBasisCode = 'SET' THEN 1 ELSE 0 END)
+             / COUNT(*), 1) AS settlement_rate_pct
+FROM private.charge_resolution cr
+JOIN private.case_folder cf ON cr.case_folder_id = cf.CaseFolderID
+JOIN accessory.ChargeInquiryTransform1 c ON cf.ChargeNumber = c.ChargeNumber
+JOIN accessory.District d ON c.AccountabilityDistrictCode = d.DistrictCode
+WHERE cr.ResolutionDate >= '2025-10-01'
+  AND cr.ResolutionDate &lt;  '2026-10-01'
+GROUP BY d.DistrictName
+ORDER BY settlement_rate_pct DESC;</pre>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">How many ADR mediations reached settlement last quarter?</th>
+              <td><code>mediation_session</code>, <code>charge_benefit</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q7')"
+                        aria-expanded="false"
+                        aria-controls="q7">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q7" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT COUNT(DISTINCT ms.charge_benefit_id) AS settled_mediations
+FROM adr.mediation_session ms
+JOIN adr.charge_benefit cb ON ms.charge_benefit_id = cb.id
+WHERE ms.SessionOutcomeCode = 'SETTLED'
+  AND ms.SessionDate >= DATEADD(quarter, -1, GETDATE());</pre>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">List all charges by basis code for a given office.</th>
+              <td><code>ChargeInquiryTransform1</code>, <code>Office</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q8')"
+                        aria-expanded="false"
+                        aria-controls="q8">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q8" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT c.ChargeNumber, c.BasisCode, c.BasisDescription, o.OfficeName
+FROM accessory.ChargeInquiryTransform1 c
+JOIN accessory.Office o ON c.ReceivingOfficeCode = o.OfficeCode
+WHERE o.OfficeCode = :office_code   -- bind param
+ORDER BY c.IntakeDate DESC;</pre>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">What is the average days-to-close by resolution type?</th>
+              <td><code>case_folder</code>, <code>charge_resolution</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q9')"
+                        aria-expanded="false"
+                        aria-controls="q9">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q9" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT cr.CloseBasisCode,
+       AVG(DATEDIFF(day, cf.OpenDate, cr.ResolutionDate)) AS avg_days_to_close,
+       COUNT(*) AS case_count
+FROM private.case_folder cf
+JOIN private.charge_resolution cr ON cf.CaseFolderID = cr.case_folder_id
+WHERE cr.ResolutionDate IS NOT NULL
+GROUP BY cr.CloseBasisCode
+ORDER BY avg_days_to_close;</pre>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">How many systemic investigations are currently active?</th>
+              <td><code>systemic_case_charge</code>, <code>case_folder</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q10')"
+                        aria-expanded="false"
+                        aria-controls="q10">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q10" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT COUNT(DISTINCT scc.systemic_case_number) AS active_systemic
+FROM private.systemic_case_charge scc
+JOIN private.case_folder cf ON scc.case_folder_id = cf.CaseFolderID
+WHERE cf.CloseDate IS NULL
+  AND scc.is_active = 1;</pre>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">What roles have access to the private schema?</th>
+              <td><code>access_role</code>, <code>access_domain</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q11')"
+                        aria-expanded="false"
+                        aria-controls="q11">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q11" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT ar.RoleName, ar.PermissionLevel,
+       ar.PIITierAccess, ad.DomainName
+FROM admin.access_role ar
+JOIN admin.access_domain ad ON ar.domain_id = ad.id
+WHERE ar.SchemaGrants LIKE '%private%'
+ORDER BY ar.PermissionLevel DESC;</pre>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">List total monetary relief awarded by fiscal year.</th>
+              <td><code>charge_resolution</code>, <code>ChargeInquiryTransform1</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q12')"
+                        aria-expanded="false"
+                        aria-controls="q12">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q12" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT YEAR(cr.ResolutionDate) AS fiscal_year_end,
+       SUM(cr.MonetaryRelief) AS total_monetary_relief,
+       COUNT(*) AS resolutions_with_relief
+FROM private.charge_resolution cr
+WHERE cr.MonetaryRelief > 0
+GROUP BY YEAR(cr.ResolutionDate)
+ORDER BY fiscal_year_end DESC;</pre>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">Which FEPA offices filed the most charges last year?</th>
+              <td><code>ChargeInquiryTransform1</code>, <code>Office</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q13')"
+                        aria-expanded="false"
+                        aria-controls="q13">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q13" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT o.OfficeName, o.OfficeType, COUNT(*) AS charges_filed
+FROM accessory.ChargeInquiryTransform1 c
+JOIN accessory.Office o ON c.ReceivingOfficeCode = o.OfficeCode
+WHERE o.OfficeType = 'FEPA'
+  AND c.IntakeDate >= '2024-10-01'
+  AND c.IntakeDate &lt;  '2025-10-01'
+GROUP BY o.OfficeName, o.OfficeType
+ORDER BY charges_filed DESC;</pre>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">What is the case load per mediator by district?</th>
+              <td><code>mediator_roster</code>, <code>mediation_session</code>, <code>District</code></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary btn-query"
+                        onclick="toggleQuery('q14')"
+                        aria-expanded="false"
+                        aria-controls="q14">
+                  SQL
+                </button>
+              </td>
+            </tr>
+            <tr id="q14" class="query-row-detail" hidden>
+              <td colspan="3" class="query-sql p-3">
+                <pre>SELECT d.DistrictName,
+       COUNT(DISTINCT mr.MediatorID) AS mediator_count,
+       COUNT(DISTINCT ms.charge_benefit_id) AS active_cases,
+       ROUND(1.0 * COUNT(DISTINCT ms.charge_benefit_id)
+             / NULLIF(COUNT(DISTINCT mr.MediatorID), 0), 1) AS cases_per_mediator
+FROM adr.mediator_roster mr
+JOIN adr.mediation_session ms ON mr.MediatorID = ms.MediatorID
+JOIN accessory.District d ON mr.DistrictCode = d.DistrictCode
+WHERE mr.is_active = 1
+  AND ms.SessionOutcomeCode = 'OPEN'
+GROUP BY d.DistrictName
+ORDER BY cases_per_mediator DESC;</pre>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ERD References -->
+    <section aria-labelledby="erd-heading">
+      <h2 class="section-heading" id="erd-heading">
+        <i class="bi bi-share-fill" aria-hidden="true" style="color:var(--federal-navy);"></i>
+        ERD References
+      </h2>
+      <p class="section-subheading">10 entity-relationship diagrams covering all operational schema groups.</p>
+
+      <div class="erd-grid">
+        <div class="erd-card">
+          <i class="bi bi-diagram-2 erd-icon" aria-hidden="true"></i>
+          <div class="erd-name">Charge Core</div>
+          <div class="erd-schema">accessory + private</div>
+        </div>
+        <div class="erd-card">
+          <i class="bi bi-diagram-2 erd-icon" aria-hidden="true"></i>
+          <div class="erd-name">Case Folder</div>
+          <div class="erd-schema">private</div>
+        </div>
+        <div class="erd-card">
+          <i class="bi bi-diagram-2 erd-icon" aria-hidden="true"></i>
+          <div class="erd-name">ADR Program</div>
+          <div class="erd-schema">adr + retroadr</div>
+        </div>
+        <div class="erd-card">
+          <i class="bi bi-diagram-2 erd-icon" aria-hidden="true"></i>
+          <div class="erd-name">Respondent</div>
+          <div class="erd-schema">private + retro</div>
+        </div>
+        <div class="erd-card">
+          <i class="bi bi-diagram-2 erd-icon" aria-hidden="true"></i>
+          <div class="erd-name">EEO-1 Survey</div>
+          <div class="erd-schema">eeo + dbo</div>
+        </div>
+        <div class="erd-card">
+          <i class="bi bi-diagram-2 erd-icon" aria-hidden="true"></i>
+          <div class="erd-name">Office + District</div>
+          <div class="erd-schema">accessory</div>
+        </div>
+        <div class="erd-card">
+          <i class="bi bi-diagram-2 erd-icon" aria-hidden="true"></i>
+          <div class="erd-name">Access Control</div>
+          <div class="erd-schema">admin</div>
+        </div>
+        <div class="erd-card">
+          <i class="bi bi-diagram-2 erd-icon" aria-hidden="true"></i>
+          <div class="erd-name">Federal Sector</div>
+          <div class="erd-schema">dbo</div>
+        </div>
+        <div class="erd-card">
+          <i class="bi bi-diagram-2 erd-icon" aria-hidden="true"></i>
+          <div class="erd-name">Outreach Events</div>
+          <div class="erd-schema">dbo</div>
+        </div>
+        <div class="erd-card">
+          <i class="bi bi-diagram-2 erd-icon" aria-hidden="true"></i>
+          <div class="erd-name">Historical Records</div>
+          <div class="erd-schema">retro + retroadr</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Provenance -->
+    <section aria-labelledby="provenance-heading">
+      <h2 class="section-heading" id="provenance-heading">
+        <i class="bi bi-fingerprint" aria-hidden="true" style="color:var(--federal-navy);"></i>
+        Provenance
+      </h2>
+      <p class="section-subheading">Sample provenance record attached to each cataloged table. Machine-readable JSON, stored in the YAML schema definition and compiled to the catalog index.</p>
+
+      <div class="provenance-block">
+        <pre>{
+  "table": "accessory.ChargeInquiryTransform1",
+  "catalog_version": "2026-05-26",
+  "source_system": "IMS (Integrated Mission System)",
+  "extraction_method": "Azure Data Factory delta-copy pipeline",
+  "extraction_schedule": "nightly, 02:00 ET",
+  "last_validated": "2026-05-25T02:14:37Z",
+  "grain": "one row per charge per status snapshot",
+  "pii_classification": "tier_2",
+  "rls_enforced": true,
+  "steward": "OCIO Data Governance Team",
+  "access_roles": ["analyst", "district_admin", "national_admin"],
+  "column_count": 52,
+  "foreign_keys": [
+    { "column": "AccountabilityDistrictCode", "references": "accessory.District.DistrictCode" },
+    { "column": "ReceivingOfficeCode",        "references": "accessory.Office.OfficeCode" },
+    { "column": "ReceivingDistrictCode",      "references": "accessory.District.DistrictCode" },
+    { "column": "ChargeNumber",               "references": "private.case_folder.ChargeNumber" }
+  ],
+  "compliance_tags": ["OMB-M-19-18", "OPEN-DATA-ACT", "NIST-CM-8"]
+}</pre>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="toast-container"
+       role="region"
+       aria-live="polite"
+       aria-label="Catalog notifications"
+       data-toasts='[
+         {"type":"data","title":"OMB M-19-18","text":"331 tables cataloged across 8 schemas — 8,241 columns with column-level metadata and PII classification.","delay":2000,"duration":9000},
+         {"type":"info","title":"Federal Data Strategy","text":"OPEN Government Data Act compliance: all schema definitions available as machine-readable YAML.","delay":6000,"duration":9000},
+         {"type":"","title":"AI-Ready Knowledge Base","text":"35 query rules and 14 validated SQL patterns loaded into the natural language query engine.","delay":12000,"duration":9000}
+       ]'>
+  </div>
+
+  <!-- Footer -->
+  <footer class="catalog-footer" role="contentinfo">
+    <p>U.S. Equal Employment Opportunity Commission &mdash; Office of the Chief Information Officer</p>
+    <p style="margin-top:0.25rem;">This catalog is an internal platform tool. Data is for authorized EEOC staff only. Access is governed by role-based controls and FISMA High data handling requirements.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmY19UFhFKhxtuQFBTzAIiL5FsDq" crossorigin="anonymous"></script>
+  <script src="js/demo.js"></script>
+  <script>
+    // Toggle SQL rows in the example queries table
+    function toggleQuery(id) {
+      const row = document.getElementById(id);
+      if (!row) return;
+      const isHidden = row.hidden;
+      row.hidden = !isHidden;
+      // Update aria-expanded on the triggering button
+      const btn = document.querySelector(`[aria-controls="${id}"]`);
+      if (btn) btn.setAttribute('aria-expanded', String(isHidden));
+    }
+  </script>
+</body>
+</html>

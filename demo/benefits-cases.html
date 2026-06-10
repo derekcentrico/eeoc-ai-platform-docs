@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Overpayment Cases — EEOC OCHCO Benefits Validation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        rel="stylesheet">
+  <link href="css/demo.css" rel="stylesheet">
+  <style>
+    /* ===== EEOC 508 contrast overrides (mirrors app.css) ===== */
+    :root {
+      --bs-border-color: #737373;
+      --bs-danger-rgb: 176, 42, 55;
+      --bs-danger: #b02a37;
+      --bs-success-rgb: 20, 108, 67;
+      --bs-success: #146c43;
+      --bs-secondary-rgb: 90, 100, 114;
+      --bs-secondary: #5a6472;
+    }
+
+    .text-primary  { color: #0a58ca !important; }
+    .text-info     { color: #087990 !important; }
+    .text-warning  { color: #7f6500 !important; }
+    .text-danger   { color: #b02a37 !important; }
+    .text-success  { color: #146c43 !important; }
+    .text-muted    { color: #5a6472 !important; }
+
+    .badge.bg-info,
+    .badge.bg-warning { color: #000 !important; }
+
+    .navbar-dark .navbar-text,
+    .navbar-dark .navbar-text a { color: #fff !important; }
+
+    .btn-primary {
+      --bs-btn-bg: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-bg: #084298;
+      --bs-btn-hover-border-color: #084298;
+      --bs-btn-active-bg: #084298;
+      --bs-btn-active-border-color: #063773;
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-primary:hover,
+    .btn-primary:active,
+    .btn-primary.active {
+      background-color: #084298 !important;
+      border-color: #084298 !important;
+      color: #fff !important;
+    }
+
+    .btn-outline-primary {
+      --bs-btn-color: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #0a58ca;
+      --bs-btn-hover-border-color: #0a58ca;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #0a58ca;
+      --bs-btn-active-border-color: #0a58ca;
+      color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-outline-primary:hover,
+    .btn-outline-primary:active,
+    .btn-outline-primary.active {
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+      color: #fff !important;
+    }
+
+    .btn-outline-secondary {
+      --bs-btn-color: #5a6472;
+      --bs-btn-border-color: #5a6472;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #5a6472;
+      --bs-btn-hover-border-color: #5a6472;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #5a6472;
+      --bs-btn-active-border-color: #5a6472;
+      color: #5a6472 !important;
+      border-color: #5a6472 !important;
+    }
+    .btn-outline-secondary:hover,
+    .btn-outline-secondary:active,
+    .btn-outline-secondary.active {
+      background-color: #5a6472 !important;
+      border-color: #5a6472 !important;
+      color: #fff !important;
+    }
+
+    /* Focus indicators */
+    .btn:focus-visible,
+    a:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible,
+    .nav-link:focus-visible,
+    .btn-close:focus-visible,
+    .dropdown-item:focus-visible,
+    .page-link:focus-visible,
+    details > summary:focus-visible {
+      outline: 2px solid #0a58ca !important;
+      outline-offset: 2px !important;
+    }
+    .btn:focus, .nav-link:focus, .btn-close:focus, .dropdown-item:focus,
+    .page-link:focus, .form-control:focus, .form-select:focus,
+    .form-check-input:focus {
+      box-shadow: none !important;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #0a58ca;
+      color: #fff;
+      padding: 8px;
+      z-index: 9999;
+      transition: top 0.3s;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* Badge classes from real app.css */
+    .badge-detected    { background-color: #7f6500 !important; color: #fff !important; }
+    .badge-confirmed   { background-color: #b02a37 !important; color: #fff !important; }
+    .badge-corrective  { background-color: #087990 !important; color: #fff !important; }
+    .badge-resolved    { background-color: #146c43 !important; color: #fff !important; }
+    .badge-waiver      { background-color: #5a6472 !important; color: #fff !important; }
+
+    body { overflow: auto; }
+    .app-shell { display: block !important; height: auto !important; overflow: visible !important; }
+
+    .footer-text { font-size: 0.8rem; }
+
+    /* Summary metric cards */
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 900px) {
+      .summary-cards { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 576px) {
+      .summary-cards { grid-template-columns: 1fr; }
+    }
+
+    .summary-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+    }
+    .summary-card .sc-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #5a6472;
+      margin-bottom: 0.25rem;
+    }
+    .summary-card .sc-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .summary-card .sc-sub {
+      font-size: 12px;
+      color: #5a6472;
+      margin-top: 0.25rem;
+    }
+
+    /* Amount column */
+    .amount-col { font-variant-numeric: tabular-nums; }
+
+    /* Audit mono */
+    .audit-mono {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Skip link — WCAG 2.4.1 -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- SR status region -->
+  <div id="sr-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ======================== NAVBAR ======================== -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Primary navigation">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="benefits.html">
+        <i class="fa-solid fa-shield-check me-2" aria-hidden="true"></i>Benefits Validation
+      </a>
+      <button class="navbar-toggler" type="button"
+              data-bs-toggle="collapse" data-bs-target="#mainNav"
+              aria-controls="mainNav" aria-expanded="false"
+              aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="benefits-validate.html">
+              <i class="fa-solid fa-clipboard-check me-1" aria-hidden="true"></i>Validate Action
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="benefits-cases.html">
+              <i class="fa-solid fa-folder-open me-1" aria-hidden="true"></i>Overpayment Cases
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="benefits.html">
+              <i class="fa-solid fa-chart-line me-1" aria-hidden="true"></i>Dashboard
+            </a>
+          </li>
+        </ul>
+        <span class="navbar-text me-3" style="color:#fff !important;">
+          <i class="fa-solid fa-user me-1" aria-hidden="true"></i>L. Martinez
+        </span>
+        <a href="index.html" class="btn btn-outline-light btn-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ======================== MAIN CONTENT ======================== -->
+  <main id="main-content" class="container-fluid py-4 px-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumb mb-1" style="font-size:12px;">
+        <li class="breadcrumb-item"><a href="benefits.html">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Overpayment Cases</li>
+      </ol>
+    </nav>
+
+    <!-- Page header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <h1 class="h4 mb-0 fw-bold">Overpayment Cases</h1>
+      <button type="button" class="btn btn-outline-secondary btn-sm"
+              aria-label="Export case list to CSV">
+        <i class="fa-solid fa-download me-1" aria-hidden="true"></i>Export CSV
+      </button>
+    </div>
+
+    <!-- ---- Summary cards ---- -->
+    <div class="summary-cards" role="region" aria-label="Case summary metrics">
+
+      <div class="summary-card" style="border-left:3px solid #b02a37;">
+        <div class="sc-label">Total Open</div>
+        <div class="sc-value" style="color:#b02a37;">12</div>
+        <div class="sc-sub">Awaiting specialist review</div>
+      </div>
+
+      <div class="summary-card" style="border-left:3px solid #7f6500;">
+        <div class="sc-label">Under Review</div>
+        <div class="sc-value" style="color:#7f6500;">8</div>
+        <div class="sc-sub">Confirmed, corrective pending</div>
+      </div>
+
+      <div class="summary-card" style="border-left:3px solid #146c43;">
+        <div class="sc-label">Resolved YTD</div>
+        <div class="sc-value" style="color:#146c43;">43</div>
+        <div class="sc-sub">FY 2026 closed cases</div>
+      </div>
+
+      <div class="summary-card" style="border-left:3px solid #0a58ca;">
+        <div class="sc-label">Total Recovery</div>
+        <div class="sc-value" style="color:#0a58ca;font-size:1.4rem;">$127,430</div>
+        <div class="sc-sub">FY 2026 recovered to date</div>
+      </div>
+
+    </div>
+
+    <!-- ---- Filter bar ---- -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h2 class="h5 mb-0">
+          <i class="fa-solid fa-filter me-1" aria-hidden="true"></i>Filters
+        </h2>
+      </div>
+      <div class="card-body">
+        <form id="filterForm" class="row g-3 align-items-end" novalidate>
+
+          <div class="col-md-3">
+            <label for="filter_status" class="form-label">Status</label>
+            <select class="form-select" id="filter_status" name="status">
+              <option value="">All Statuses</option>
+              <option value="open">Open</option>
+              <option value="under_review">Under Review</option>
+              <option value="resolved">Resolved</option>
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label for="filter_date_from" class="form-label">Opened From</label>
+            <input type="date" class="form-control" id="filter_date_from" name="date_from"
+                   value="2026-01-01" aria-label="Filter by opening date, from">
+          </div>
+
+          <div class="col-md-3">
+            <label for="filter_date_to" class="form-label">Opened To</label>
+            <input type="date" class="form-control" id="filter_date_to" name="date_to"
+                   value="2026-05-21" aria-label="Filter by opening date, to">
+          </div>
+
+          <div class="col-md-2">
+            <label for="filter_amount" class="form-label">Min Amount ($)</label>
+            <input type="number" class="form-control" id="filter_amount" name="amount_min"
+                   placeholder="0" min="0" step="100"
+                   aria-describedby="filter_amount_help"
+                   aria-label="Minimum overpayment amount in dollars">
+            <div id="filter_amount_help" class="form-text">Threshold in dollars</div>
+          </div>
+
+          <div class="col-md-1">
+            <button type="submit" class="btn btn-primary w-100"
+                    aria-label="Apply filters to case list">
+              <i class="fa-solid fa-search me-1" aria-hidden="true"></i>Filter
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- ---- Case table ---- -->
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover mb-0">
+            <caption class="visually-hidden">
+              Overpayment cases — 8 cases displayed. Columns: Case number, employee,
+              action type, discrepancy, amount, status, date opened.
+            </caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Case #</th>
+                <th scope="col">Employee</th>
+                <th scope="col">Action Type</th>
+                <th scope="col">Discrepancy</th>
+                <th scope="col" class="amount-col">Amount</th>
+                <th scope="col">Status</th>
+                <th scope="col">Opened</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <tr>
+                <td>
+                  <a href="benefits-case-detail.html"
+                     aria-label="View case OVP-2026-0034">OVP-2026-0034</a>
+                </td>
+                <th scope="row">J. Thompson</th>
+                <td>Retirement (702)</td>
+                <td>FERS coded instead of CSRS Offset</td>
+                <td class="amount-col" style="color:#b02a37;font-weight:600;">$28,080</td>
+                <td>
+                  <span class="badge badge-confirmed" role="status">
+                    <i class="fa-solid fa-circle-exclamation me-1" aria-hidden="true"></i>Under Review
+                  </span>
+                </td>
+                <td>2026-05-19</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <a href="benefits-case-detail.html"
+                     aria-label="View case OVP-2026-0033">OVP-2026-0033</a>
+                </td>
+                <th scope="row">D. Wilson</th>
+                <td>FEGLI Change (882)</td>
+                <td>Option A coded instead of Option B</td>
+                <td class="amount-col" style="color:#b02a37;font-weight:600;">$2,830</td>
+                <td>
+                  <span class="badge badge-confirmed" role="status">
+                    <i class="fa-solid fa-circle-exclamation me-1" aria-hidden="true"></i>Under Review
+                  </span>
+                </td>
+                <td>2026-05-19</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <a href="benefits-case-detail.html"
+                     aria-label="View case OVP-2026-0031">OVP-2026-0031</a>
+                </td>
+                <th scope="row">R. Patel</th>
+                <td>Appointment (100)</td>
+                <td>FEHB waived — eligibility not confirmed</td>
+                <td class="amount-col" style="color:#b02a37;font-weight:600;">$6,240</td>
+                <td>
+                  <span class="badge badge-detected" role="status">
+                    <i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i>Open
+                  </span>
+                </td>
+                <td>2026-05-12</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <a href="benefits-case-detail.html"
+                     aria-label="View case OVP-2026-0029">OVP-2026-0029</a>
+                </td>
+                <th scope="row">M. Okonkwo</th>
+                <td>Pay Adjustment (550)</td>
+                <td>Step increment effective date error</td>
+                <td class="amount-col" style="color:#b02a37;font-weight:600;">$1,940</td>
+                <td>
+                  <span class="badge badge-detected" role="status">
+                    <i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i>Open
+                  </span>
+                </td>
+                <td>2026-05-08</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <a href="benefits-case-detail.html"
+                     aria-label="View case OVP-2026-0027">OVP-2026-0027</a>
+                </td>
+                <th scope="row">A. Ferreira</th>
+                <td>TSP Change</td>
+                <td>Agency match over-contribution</td>
+                <td class="amount-col" style="color:#b02a37;font-weight:600;">$890</td>
+                <td>
+                  <span class="badge badge-corrective" role="status">
+                    <i class="fa-solid fa-file-pen me-1" aria-hidden="true"></i>Under Review
+                  </span>
+                </td>
+                <td>2026-04-30</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <a href="benefits-case-detail.html"
+                     aria-label="View case OVP-2026-0022">OVP-2026-0022</a>
+                </td>
+                <th scope="row">S. Nakamura</th>
+                <td>Position Change (352)</td>
+                <td>Grade retained incorrectly post-transfer</td>
+                <td class="amount-col" style="color:#b02a37;font-weight:600;">$4,560</td>
+                <td>
+                  <span class="badge badge-detected" role="status">
+                    <i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i>Open
+                  </span>
+                </td>
+                <td>2026-04-14</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <a href="benefits-case-detail.html"
+                     aria-label="View case OVP-2026-0018">OVP-2026-0018</a>
+                </td>
+                <th scope="row">C. Dubois</th>
+                <td>Retirement (702)</td>
+                <td>SCD missing prior federal service period</td>
+                <td class="amount-col" style="color:#b02a37;font-weight:600;">$12,750</td>
+                <td>
+                  <span class="badge badge-resolved" role="status">
+                    <i class="fa-solid fa-circle-check me-1" aria-hidden="true"></i>Resolved
+                  </span>
+                </td>
+                <td>2026-03-22</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <a href="benefits-case-detail.html"
+                     aria-label="View case OVP-2026-0011">OVP-2026-0011</a>
+                </td>
+                <th scope="row">T. Ibrahim</th>
+                <td>Conversion (292)</td>
+                <td>FERS-RAE misclassified as FERS</td>
+                <td class="amount-col" style="color:#b02a37;font-weight:600;">$3,170</td>
+                <td>
+                  <span class="badge badge-resolved" role="status">
+                    <i class="fa-solid fa-circle-check me-1" aria-hidden="true"></i>Resolved
+                  </span>
+                </td>
+                <td>2026-02-11</td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer d-flex justify-content-between align-items-center"
+           style="font-size:0.8rem;">
+        <span class="text-muted">Showing 8 of 63 cases. Use filters to narrow results.</span>
+        <nav aria-label="Case list pagination">
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item disabled" aria-disabled="true">
+              <a class="page-link" href="#" tabindex="-1" aria-label="Previous page">
+                <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                <span class="visually-hidden">Previous</span>
+              </a>
+            </li>
+            <li class="page-item active" aria-current="page">
+              <a class="page-link" href="#" aria-label="Page 1, current">1</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="#" aria-label="Page 2">2</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="#" aria-label="Page 3">3</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="#" aria-label="Next page">
+                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                <span class="visually-hidden">Next</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ======================== FOOTER ======================== -->
+  <footer class="mt-5 py-3 bg-light border-top">
+    <div class="container-fluid text-center">
+      <p class="footer-text text-muted mb-1">
+        U.S. Equal Employment Opportunity Commission &mdash;
+        Office of the Chief Human Capital Officer
+      </p>
+      <p class="footer-text text-muted mb-0">
+        For Official Use Only &mdash; Contains Sensitive PII
+      </p>
+    </div>
+  </footer>
+
+  <!-- ======================== TOAST CONTAINER ======================== -->
+  <div id="toast-container"
+       class="toast-container"
+       role="region"
+       aria-label="System notifications"
+       aria-live="polite"
+       data-toasts='[
+         {"type":"data","title":"Case Data Source","text":"Overpayment cases are auto-generated by the batch validation engine from the NFC payroll feed. Manual cases can be added by benefits specialists once the case creation form is available.","delay":2500,"duration":10000},
+         {"type":"info","title":"Recovery Tracking","text":"$127,430 recovered in FY 2026 across 43 resolved cases. The 12 open cases represent an estimated $56,230 in pending recovery.","delay":5000,"duration":10000}
+       ]'>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          crossorigin="anonymous"></script>
+  <script src="js/demo.js"></script>
+  <script>
+    // Demo filter form — refresh SR status on submit
+    document.getElementById('filterForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var srStatus = document.getElementById('sr-status');
+      if (srStatus) { srStatus.textContent = 'Filter applied. Showing 8 matching cases.'; }
+    });
+  </script>
+</body>
+</html>
