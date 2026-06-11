@@ -341,9 +341,33 @@ $ grep -rn --include='*.java' 'csrf.*disable\|csrf()\.disable' . | wc -l
 
 **Why it's a problem:** only 259 of 1,177 endpoints (2.2) carry a method-level
 authorization annotation, leaving 918 without one. 46 `permitAll` declarations
-open routes outright, 8 CORS wildcards allow any origin, and CSRF is disabled at
-25 sites across 8 browser-facing services. This is the broken-access-control
-core. Runbook P0-05 (CORS), P0-11 (CSRF), Phase 2 (per-endpoint authz).
+open routes outright, CORS wildcards allow any origin (see correction below),
+and CSRF is disabled at 25 sites across 8 browser-facing services. This is the
+broken-access-control core. Runbook P0-05 (CORS), P0-11 (CSRF), Phase 2
+(per-endpoint authz).
+
+**Correction (CORS count).** The single combined pattern above returned 8
+because it matched the annotation form `@CrossOrigin(...)` but missed the
+config form `setAllowedOrigins(List.of("*"))`. Run as two patterns, the wildcard
+appears in **five services**, not the four the single pattern implied:
+
+```text
+$ sed -n '75p' FederalHearings-ims-aks/.../config/SecurityConfig.java
+        configuration.setAllowedOrigins(List.of("*"));     # missed by the combined pattern
+$ sed -n '45p' EmployerWebService-.../EmployerElasticResource.java
+@CrossOrigin(origins = "*")
+$ sed -n '39p' SearchDataWebService-.../HearingSearchResource.java
+@CrossOrigin("*")
+$ sed -n '56p' ECMService-.../ContentManagementResource.java
+@CrossOrigin(origins = "*")
+$ sed -n '31p' AzureAdService-.../AzureAdResource.java
+@CrossOrigin("*")
+```
+
+The five services are FederalHearings, EmployerWebService, SearchDataWebService,
+ECMService, and AzureAdService. Runbook P0-05 already lists all five correctly;
+this count line was the under-report. Lesson: scan annotation-style and
+config-style CORS separately. See `ARC_Phase0_Verification_Audit_2026-06-10.md`.
 
 ### 6.4 Input validation
 

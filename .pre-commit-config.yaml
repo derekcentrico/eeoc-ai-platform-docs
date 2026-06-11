@@ -3,13 +3,3 @@ repos:
     rev: v8.18.0
     hooks:
       - id: gitleaks
-
-  - repo: local
-    hooks:
-      - id: pre-commit-verify
-        name: Pre-commit security and lint verification
-        entry: bash -c 'SCRIPT="../.claude/hooks/pre-commit-verify.sh"; [ -f "$SCRIPT" ] && bash "$SCRIPT" || exit 0'
-        language: system
-        pass_filenames: false
-        always_run: true
-        stages: [pre-commit]

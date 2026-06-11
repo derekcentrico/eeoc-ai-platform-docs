@@ -51,11 +51,13 @@ function addToast(type, title, text, duration) {
   el.innerHTML = `
     <i class="bi ${icons[type] || icons['']} toast-icon"></i>
     <div class="toast-body">
-      <div class="toast-title">${title}</div>
-      <div class="toast-text">${text}</div>
+      <div class="toast-title"></div>
+      <div class="toast-text"></div>
     </div>
     <button class="toast-close" aria-label="Dismiss">&times;</button>
   `;
+  el.querySelector('.toast-title').textContent = title;
+  el.querySelector('.toast-text').textContent = text;
 
   el.querySelector('.toast-close').addEventListener('click', () => {
     el.style.opacity = '0';

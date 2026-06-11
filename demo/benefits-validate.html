@@ -695,9 +695,10 @@
       if (!code) return;
       el.innerHTML =
         '<div class="alert alert-info" style="font-size:0.875rem;">' +
-        '<strong>' + code + '</strong> — Code reference data would be fetched from the ' +
+        '<strong class="code-placeholder"></strong> — Code reference data would be fetched from the ' +
         'OPM benefits code registry via the benefits.explain_code MCP tool.' +
         '</div>';
+      el.querySelector('.code-placeholder').textContent = code;
     });
   </script>
 </body>
