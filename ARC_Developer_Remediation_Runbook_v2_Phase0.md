@@ -131,6 +131,7 @@ read path stays open until the parsers are fixed.
    an XXE-safe `SAXSource` instead of unmarshalling the stream directly:
    ```java
    SAXParserFactory spf = SAXParserFactory.newInstance();
+   spf.setNamespaceAware(true);   // MD-715 XML is namespaced; JAXB needs this to map elements
    spf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
    spf.setFeature("http://xml.org/sax/features/external-general-entities", false);
    spf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
@@ -239,7 +240,7 @@ method-level or profile guard, exposing process-control endpoints
 **Verify**
 ```bash
 grep -n '@Profile\|@PreAuthorize' \
-  IntakeCollectionsService-main/.../controller/DevController.java   # both present
+  IntakeCollectionsService-main/src/main/java/gov/eeoc/foi/controller/DevController.java   # both present
 ```
 
 ### P0-17 - Rotate the ADR_PORTAL Login.gov key and scrub PEM from docs

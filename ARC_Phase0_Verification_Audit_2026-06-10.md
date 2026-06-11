@@ -194,7 +194,7 @@ FepaGateway, MessagingPoc, FederalHearings." FederalHearings does not disable
 CSRF, and four services that do are absent.
 
 ```text
-$ grep -rln --include='*.java' 'csrf.*disable\|csrf()\.disable' . | repo
+$ grep -rln --include='*.java' 'csrf.*disable\|csrf()\.disable' . | sed 's|^\./||;s|/.*||' | sort -u
 ContentGeneratorWebService-ims-aks     <- missing from card
 EmailWebService-ims-aks-test           (listed)
 FepaGateway-ims-aks                    (listed)
@@ -289,7 +289,7 @@ method-level or profile-level guard.
 
 ```text
 $ grep -n 'PreAuthorize\|Secured\|RolesAllowed\|@Profile' \
-    IntakeCollectionsService-main/.../controller/DevController.java
+    IntakeCollectionsService-main/src/main/java/gov/eeoc/foi/controller/DevController.java
 (no output)
 ```
 
