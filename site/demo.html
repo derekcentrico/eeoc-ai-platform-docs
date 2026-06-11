@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Platform Demo — EEOC AI Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/site.css">
+    <style>
+        /* ---- Demo page — page-level additions only ---- */
+
+        /* Focus overrides — WCAG 2.4.7 */
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        .tab-btn:focus-visible {
+            outline: 2px solid #0a58ca;
+            outline-offset: 2px;
+            box-shadow: none !important;
+        }
+
+        /* Bootstrap focus box-shadow suppression */
+        .btn:focus, .nav-link:focus, .btn-close:focus, .form-control:focus,
+        .form-select:focus, .form-check-input:focus {
+            box-shadow: none !important;
+        }
+
+        /* ---- Demo tab strip ---- */
+        .demo-tab-strip {
+            display: flex;
+            gap: 0;
+            border-bottom: 3px solid var(--eeoc-navy);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 180px;
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            border: none;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -3px;
+            cursor: pointer;
+            transition: all 150ms ease;
+            background: var(--surface);
+            color: var(--text-secondary);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            background: var(--surface-alt);
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--eeoc-navy);
+            color: #fff;
+            border-bottom-color: var(--eeoc-gold);
+        }
+
+        /* ---- Two-panel triage layout ---- */
+        .triage-layout {
+            display: grid;
+            grid-template-columns: 60% 40%;
+            min-height: 560px;
+        }
+
+        .triage-left {
+            padding: 1.5rem;
+            border-right: 1px solid var(--border);
+            background: #fff;
+        }
+
+        .triage-right {
+            padding: 1.5rem;
+            background: var(--surface);
+        }
+
+        /* Charge form styling */
+        .charge-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .charge-number {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+
+        .charge-field {
+            margin-bottom: 1rem;
+        }
+
+        .charge-field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .charge-field .field-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .charge-field .pii-note {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .charge-narrative {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 1.25rem;
+        }
+
+        .basis-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+
+        .basis-check {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .basis-check input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--eeoc-navy);
+        }
+
+        /* AI results panel */
+        .ai-result-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .ai-result-header {
+            background: var(--eeoc-navy);
+            color: #fff;
+            padding: 10px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-result-body {
+            padding: 1rem;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 13px;
+        }
+
+        .result-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            min-width: 110px;
+        }
+
+        .result-value {
+            text-align: right;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            background: #ecfdf5;
+            color: var(--success);
+            font-weight: 700;
+            font-size: 12px;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .confidence-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .confidence-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: var(--border);
+            width: 100px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 4px;
+        }
+
+        .review-banner {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            border-radius: var(--radius);
+            padding: 10px 14px;
+            margin-top: 1rem;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--warning);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .audit-trail-line {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 10px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        /* ---- Trial tool layout ---- */
+        .trial-layout {
+            display: grid;
+            grid-template-columns: 25% 75%;
+            min-height: 560px;
+        }
+
+        .trial-sidebar {
+            background: var(--eeoc-navy-dark);
+            padding: 1rem;
+            border-right: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .trial-sidebar-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 0.75rem;
+        }
+
+        .trial-sidebar-case {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--eeoc-gold-light);
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            line-height: 1.4;
+        }
+
+        .doc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .doc-list li {
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .doc-list li:last-child {
+            border-bottom: none;
+        }
+
+        .doc-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .doc-item:hover {
+            color: #fff;
+        }
+
+        .doc-item .doc-icon {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
+
+        .doc-item .doc-meta {
+            font-size: 10px;
+            color: rgba(255,255,255,0.35);
+            margin-top: 1px;
+        }
+
+        .doc-search {
+            width: 100%;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: var(--radius);
+            padding: 7px 10px;
+            font-size: 12px;
+            color: #fff;
+            font-family: inherit;
+            margin-top: 0.75rem;
+        }
+
+        .doc-search::placeholder {
+            color: rgba(255,255,255,0.35);
+        }
+
+        .doc-search:focus {
+            outline: 2px solid #0a58ca;
+            outline-offset: 2px;
+            box-shadow: none;
+            background: rgba(255,255,255,0.12);
+        }
+
+        /* Trial main content */
+        .trial-main {
+            background: var(--surface);
+            padding: 1.25rem;
+        }
+
+        .analysis-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .analysis-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 1rem;
+        }
+
+        .analysis-tab {
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border: none;
+            background: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            font-family: inherit;
+            transition: color 150ms ease;
+        }
+
+        .analysis-tab.active {
+            color: var(--eeoc-navy);
+            border-bottom-color: var(--eeoc-navy);
+        }
+
+        .analysis-tab:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
+        .key-facts-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .key-facts-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 13px;
+            color: var(--text-primary);
+            line-height: 1.55;
+        }
+
+        .key-facts-list li:last-child {
+            border-bottom: none;
+        }
+
+        .key-facts-list .fact-bullet {
+            width: 20px;
+            height: 20px;
+            background: var(--eeoc-navy);
+            border-radius: 50%;
+            color: var(--eeoc-gold);
+            font-size: 10px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .fact-citation {
+            font-size: 11px;
+            color: var(--eeoc-blue-dark);
+            font-style: italic;
+            margin-left: 4px;
+        }
+
+        .analysis-disclaimer {
+            margin-top: 1rem;
+            padding: 10px 14px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--eeoc-gold);
+            border-radius: var(--radius);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ---- Benefits validation layout ---- */
+        .benefits-layout {
+            padding: 1.25rem;
+            background: var(--surface);
+        }
+
+        .benefits-toolbar {
+            background: var(--eeoc-navy);
+            padding: 10px 1.25rem;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .benefits-batch-id {
+            color: var(--eeoc-gold-light);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12px;
+        }
+
+        .benefit-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .benefit-metric {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+        }
+
+        .benefit-metric .bm-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .benefit-metric .bm-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .benefit-metric .bm-sub {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .benefit-metric.metric-warn .bm-value {
+            color: var(--warning);
+        }
+
+        .benefit-metric.metric-danger .bm-value {
+            color: var(--danger);
+        }
+
+        /* Discrepancy detail card */
+        .discrepancy-card {
+            background: #fff;
+            border: 1px solid #fcd34d;
+            border-left: 4px solid var(--warning);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-top: 1.25rem;
+        }
+
+        .discrepancy-card h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .discrepancy-detail-row {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 8px;
+            font-size: 13px;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .discrepancy-detail-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .dd-label {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Value statement strip */
+        .value-strip {
+            background: var(--eeoc-navy);
+            color: rgba(255,255,255,0.85);
+            padding: 1.25rem 1.75rem;
+            border-radius: var(--radius);
+            font-size: 14px;
+            line-height: 1.7;
+            margin-top: 1.5rem;
+        }
+
+        .value-strip strong {
+            color: var(--eeoc-gold-light);
+        }
+
+        /* Status icon cells */
+        .status-valid {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .status-discrepancy {
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        /* Run button */
+        .btn-run-ai {
+            background: var(--eeoc-navy);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius);
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 150ms ease;
+        }
+
+        .btn-run-ai:hover {
+            background: var(--eeoc-navy-light);
+        }
+
+        /* Recommended track block */
+        .track-block {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: var(--radius);
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+
+        .track-block .track-name {
+            font-weight: 700;
+            color: #0284c7;
+        }
+
+        /* Summary hero */
+        .demo-hero {
+            background: linear-gradient(135deg, var(--eeoc-navy) 0%, var(--eeoc-navy-light) 60%, #2d4a7a 100%);
+            color: #fff;
+            padding: 3.5rem 2rem 3rem;
+            text-align: center;
+        }
+
+        .demo-hero h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+
+        .demo-hero h1 span {
+            color: var(--eeoc-gold);
+        }
+
+        .demo-hero .subtitle {
+            font-size: 1.05rem;
+            color: rgba(255,255,255,0.72);
+            max-width: 560px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* Tab panel section */
+        .demo-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem 3rem;
+        }
+
+        /* Responsive collapse */
+        @media (max-width: 900px) {
+            .triage-layout { grid-template-columns: 1fr; }
+            .trial-layout { grid-template-columns: 1fr; }
+            .trial-sidebar { display: none; }
+            .benefit-metrics { grid-template-columns: repeat(2, 1fr); }
+            .tab-btn { min-width: 130px; font-size: 13px; padding: 12px 14px; }
+        }
+
+        @media (max-width: 600px) {
+            .benefit-metrics { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- Navigation -->
+<nav class="site-nav" aria-label="Site navigation">
+    <a href="index.html" class="brand" aria-label="EEOC AI Platform home">
+        <div class="brand-icon" aria-hidden="true">EE</div>
+        <div class="brand-text">EEOC <span>AI Platform</span></div>
+    </a>
+    <ul class="nav-links" role="list">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="demo.html" class="active">Demo</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="applications.html">Applications</a></li>
+        <li><a href="analytics.html">Analytics</a></li>
+        <li><a href="integration.html">Integration</a></li>
+        <li><a href="security.html">Security</a></li>
+    </ul>
+</nav>
+
+<main id="main-content" class="page-content">
+
+    <!-- Hero -->
+    <section class="demo-hero" aria-labelledby="demo-hero-heading">
+        <div class="hero-content">
+            <div class="hero-badge">Live Platform Demo</div>
+            <h1 id="demo-hero-heading">See the Platform <span>in Action</span></h1>
+            <p class="subtitle">
+                Walk through each application as your staff will use it. Each panel shows a real workflow
+                with realistic case data.
+            </p>
+        </div>
+    </section>
+
+    <!-- Tab strip + panels -->
+    <div class="demo-section">
+
+        <!-- Tab navigation -->
+        <div role="tablist" aria-label="Application demos" class="demo-tab-strip">
+            <button role="tab"
+                    id="tab-btn-triage"
+                    class="tab-btn active"
+                    aria-selected="true"
+                    aria-controls="tab-triage"
+                    onclick="showDemoTab('triage')">
+                <i class="bi bi-funnel" aria-hidden="true"></i>
+                Charge Triage
+            </button>
+            <button role="tab"
+                    id="tab-btn-trial"
+                    class="tab-btn"
+                    aria-selected="false"
+                    aria-controls="tab-trial"
+                    onclick="showDemoTab('trial')">
+                <i class="bi bi-briefcase" aria-hidden="true"></i>
+                Trial Preparation
+            </button>
+            <button role="tab"
+                    id="tab-btn-benefits"
+                    class="tab-btn"
+                    aria-selected="false"
+                    aria-controls="tab-benefits"
+                    onclick="showDemoTab('benefits')">
+                <i class="bi bi-calculator" aria-hidden="true"></i>
+                Benefits Validation
+            </button>
+            <button role="tab"
+                    id="tab-btn-analytics"
+                    class="tab-btn"
+                    aria-selected="false"
+                    aria-controls="tab-analytics"
+                    onclick="showDemoTab('analytics')">
+                <i class="bi bi-graph-up" aria-hidden="true"></i>
+                Analytics Dashboard
+            </button>
+        </div>
+
+        <!-- ============================================================
+             TAB 1: Charge Triage
+        ============================================================ -->
+        <div role="tabpanel"
+             id="tab-triage"
+             aria-labelledby="tab-btn-triage">
+
+            <div class="demo-window" aria-label="OFS Triage application demo">
+                <!-- Browser chrome -->
+                <div class="demo-titlebar" aria-hidden="true">
+                    <span class="demo-dot red"></span>
+                    <span class="demo-dot yellow"></span>
+                    <span class="demo-dot green"></span>
+                    <span class="demo-url">https://triage.eeoc.gov/charges/520-2026-01847</span>
+                </div>
+
+                <!-- App content -->
+                <div class="demo-body">
+                    <div class="triage-layout">
+
+                        <!-- Left: Charge intake -->
+                        <section class="triage-left" aria-labelledby="charge-intake-heading">
+                            <div class="charge-header">
+                                <div>
+                                    <div class="charge-number">Charge #520-2026-01847</div>
+                                    <h2 id="charge-intake-heading" style="font-size:1.05rem; font-weight:700; margin-top:4px;">
+                                        New Charge Review
+                                    </h2>
+                                </div>
+                                <span class="status-badge status-progress">Pending Review</span>
+                            </div>
+
+                            <div class="charge-field">
+                                <label>Respondent</label>
+                                <div class="field-value">National Electronics Corp.</div>
+                            </div>
+
+                            <div class="charge-field">
+                                <label>Charging Party</label>
+                                <div class="field-value">
+                                    M. S.
+                                    <span class="pii-note">&nbsp;— PII masked per policy</span>
+                                </div>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                                <div class="charge-field">
+                                    <label>Date Filed</label>
+                                    <div class="field-value">May 14, 2026</div>
+                                </div>
+                                <div class="charge-field">
+                                    <label>Jurisdiction</label>
+                                    <div class="field-value">District 5 — Philadelphia</div>
+                                </div>
+                            </div>
+
+                            <div class="charge-field">
+                                <label>Basis (select all that apply)</label>
+                                <div class="basis-row" role="group" aria-label="Discrimination basis checkboxes">
+                                    <div class="basis-check">
+                                        <input type="checkbox" id="basis-race" checked aria-checked="true"
+                                               aria-label="Race basis selected">
+                                        <label for="basis-race">Race</label>
+                                    </div>
+                                    <div class="basis-check">
+                                        <input type="checkbox" id="basis-color" aria-label="Color basis">
+                                        <label for="basis-color">Color</label>
+                                    </div>
+                                    <div class="basis-check">
+                                        <input type="checkbox" id="basis-sex" aria-label="Sex basis">
+                                        <label for="basis-sex">Sex</label>
+                                    </div>
+                                    <div class="basis-check">
+                                        <input type="checkbox" id="basis-age" aria-label="Age basis">
+                                        <label for="basis-age">Age</label>
+                                    </div>
+                                    <div class="basis-check">
+                                        <input type="checkbox" id="basis-disability" aria-label="Disability basis">
+                                        <label for="basis-disability">Disability</label>
+                                    </div>
+                                    <div class="basis-check">
+                                        <input type="checkbox" id="basis-retaliation" checked aria-checked="true"
+                                               aria-label="Retaliation basis selected">
+                                        <label for="basis-retaliation">Retaliation</label>
+                                    </div>
+                                    <div class="basis-check">
+                                        <input type="checkbox" id="basis-national-origin" aria-label="National Origin basis">
+                                        <label for="basis-national-origin">National Origin</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="charge-field">
+                                <label>Charge Narrative (Excerpt)</label>
+                                <div class="charge-narrative" role="region" aria-label="Charge narrative excerpt">
+                                    The charging party, a Senior Analyst employed since March 2019, states that she
+                                    was passed over for the Director of Operations position on February 3, 2026,
+                                    despite holding qualifications exceeding those of the selected candidate.
+                                    She filed an internal EEO complaint on January 12, 2026, alleging racially
+                                    disparate performance evaluations. Within 14 days of filing that complaint,
+                                    her supervisor removed her from two high-visibility project assignments and
+                                    cited "restructuring" as the basis for her eventual termination effective
+                                    March 15, 2026.
+                                </div>
+                            </div>
+
+                            <div>
+                                <button class="btn-run-ai"
+                                        id="run-ai-btn"
+                                        onclick="revealAiResults()"
+                                        aria-expanded="false"
+                                        aria-controls="ai-results-panel">
+                                    <i class="bi bi-cpu" aria-hidden="true"></i>
+                                    Run AI Classification
+                                </button>
+                            </div>
+                        </section>
+
+                        <!-- Right: AI Classification Results -->
+                        <section class="triage-right" aria-labelledby="ai-results-heading">
+                            <h3 id="ai-results-heading" style="font-size:13px; font-weight:700; text-transform:uppercase;
+                                letter-spacing:0.08em; color:var(--text-muted); margin-bottom:1rem;">
+                                AI Classification Results
+                            </h3>
+
+                            <div id="ai-results-panel"
+                                 role="region"
+                                 aria-label="AI classification output"
+                                 aria-live="polite">
+
+                                <div class="ai-result-card">
+                                    <div class="ai-result-header">
+                                        <i class="bi bi-cpu-fill" aria-hidden="true"></i>
+                                        GPT-4o Classification &mdash; May 14, 2026 09:42 EDT
+                                    </div>
+                                    <div class="ai-result-body">
+
+                                        <div class="result-row">
+                                            <span class="result-label">Priority</span>
+                                            <span class="result-value">
+                                                <span class="priority-badge">
+                                                    A &mdash; Full Investigation Recommended
+                                                </span>
+                                            </span>
+                                        </div>
+
+                                        <div class="result-row">
+                                            <span class="result-label">Confidence</span>
+                                            <span class="result-value">
+                                                <div class="confidence-bar-wrap">
+                                                    <div class="confidence-bar" role="img"
+                                                         aria-label="Confidence 94 percent">
+                                                        <div class="confidence-fill" style="width:94%;"></div>
+                                                    </div>
+                                                    <span style="font-weight:700; font-size:13px;">94%</span>
+                                                </div>
+                                            </span>
+                                        </div>
+
+                                        <div class="result-row">
+                                            <span class="result-label">Basis Detected</span>
+                                            <span class="result-value">
+                                                Race
+                                                <span style="font-size:11px; color:var(--text-muted);">(primary)</span>,
+                                                Retaliation
+                                                <span style="font-size:11px; color:var(--text-muted);">(secondary)</span>
+                                            </span>
+                                        </div>
+
+                                        <div class="result-row">
+                                            <span class="result-label">Statutes</span>
+                                            <span class="result-value" style="font-size:12px;">
+                                                Title VII &sect;703(a)(1), &sect;704(a)
+                                            </span>
+                                        </div>
+
+                                        <div class="result-row" style="display:block; padding-bottom:0;">
+                                            <div class="result-label" style="margin-bottom:6px;">
+                                                Recommended Track
+                                            </div>
+                                            <div class="track-block">
+                                                <div class="track-name">Mediation</div>
+                                                <div style="font-size:12px; color:var(--text-secondary); margin-top:4px; line-height:1.5;">
+                                                    Respondent has participated in 4 prior EEOC mediations with a 75%
+                                                    settlement rate. Charging party indicated willingness to mediate.
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="review-banner" role="alert">
+                                            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                                            <div>
+                                                <strong>Human Review Required</strong><br>
+                                                A supervisor must approve this classification before the case is routed.
+                                            </div>
+                                        </div>
+
+                                        <div class="audit-trail-line" aria-label="Audit record information">
+                                            <i class="bi bi-shield-check" aria-hidden="true"></i>
+                                            Classification logged &bull; HMAC-SHA256 verified &bull;
+                                            Audit ID: clf-8a2e4b7c
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                    </div><!-- /triage-layout -->
+                </div><!-- /demo-body -->
+            </div><!-- /demo-window -->
+
+            <div class="value-strip" aria-label="Program efficiency statistics">
+                <strong>Triage officers process an average of 40 new charges per week.</strong>
+                AI classification reduces initial review time from 25 minutes to under 5 minutes
+                while maintaining full human oversight before any case action is taken.
+            </div>
+
+        </div><!-- /tab-triage -->
+
+        <!-- ============================================================
+             TAB 2: Trial Preparation
+        ============================================================ -->
+        <div role="tabpanel"
+             id="tab-trial"
+             aria-labelledby="tab-btn-trial"
+             hidden>
+
+            <div class="demo-window" aria-label="OGC Trial Tool application demo">
+                <!-- Browser chrome -->
+                <div class="demo-titlebar" aria-hidden="true">
+                    <span class="demo-dot red"></span>
+                    <span class="demo-dot yellow"></span>
+                    <span class="demo-dot green"></span>
+                    <span class="demo-url">https://trial-tool.eeoc.gov/cases/EEOC-v-NEC</span>
+                </div>
+
+                <div class="demo-body">
+                    <div class="trial-layout">
+
+                        <!-- Left sidebar: case file -->
+                        <aside class="trial-sidebar" aria-labelledby="casefile-heading">
+                            <div class="trial-sidebar-title" id="casefile-heading">Case File</div>
+                            <div class="trial-sidebar-case">EEOC v. National Electronics Corp.</div>
+
+                            <ul class="doc-list" aria-label="Case documents">
+                                <li>
+                                    <a href="#" class="doc-item" aria-label="Complaint, PDF, 12 pages">
+                                        <i class="bi bi-file-earmark-pdf-fill doc-icon" aria-hidden="true"></i>
+                                        <div>
+                                            <div>Complaint</div>
+                                            <div class="doc-meta">PDF &bull; 12 pages</div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="doc-item" aria-label="Respondent's Answer, PDF, 8 pages">
+                                        <i class="bi bi-file-earmark-pdf-fill doc-icon" aria-hidden="true"></i>
+                                        <div>
+                                            <div>Respondent's Answer</div>
+                                            <div class="doc-meta">PDF &bull; 8 pages</div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="doc-item" aria-label="Deposition J. Williams, PDF, 45 pages">
+                                        <i class="bi bi-file-earmark-pdf-fill doc-icon" aria-hidden="true"></i>
+                                        <div>
+                                            <div>Deposition &mdash; J. Williams</div>
+                                            <div class="doc-meta">PDF &bull; 45 pages</div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="doc-item" aria-label="Deposition R. Chen, PDF, 32 pages">
+                                        <i class="bi bi-file-earmark-pdf-fill doc-icon" aria-hidden="true"></i>
+                                        <div>
+                                            <div>Deposition &mdash; R. Chen</div>
+                                            <div class="doc-meta">PDF &bull; 32 pages</div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="doc-item" aria-label="Exhibit A: Email Chain, PDF, 3 pages">
+                                        <i class="bi bi-file-earmark-pdf-fill doc-icon" aria-hidden="true"></i>
+                                        <div>
+                                            <div>Exhibit A: Email Chain</div>
+                                            <div class="doc-meta">PDF &bull; 3 pages</div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="doc-item" aria-label="Exhibit B: Performance Reviews, PDF, 15 pages">
+                                        <i class="bi bi-file-earmark-pdf-fill doc-icon" aria-hidden="true"></i>
+                                        <div>
+                                            <div>Exhibit B: Performance Reviews</div>
+                                            <div class="doc-meta">PDF &bull; 15 pages</div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="doc-item" aria-label="Exhibit C: Termination Letter, PDF, 1 page">
+                                        <i class="bi bi-file-earmark-pdf-fill doc-icon" aria-hidden="true"></i>
+                                        <div>
+                                            <div>Exhibit C: Termination Letter</div>
+                                            <div class="doc-meta">PDF &bull; 1 page</div>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+
+                            <label for="doc-search-input" class="visually-hidden">Search all documents</label>
+                            <input type="search"
+                                   id="doc-search-input"
+                                   class="doc-search"
+                                   placeholder="Search all documents..."
+                                   aria-label="Search all case documents">
+                        </aside>
+
+                        <!-- Main: AI analysis panel -->
+                        <section class="trial-main" aria-labelledby="case-analysis-heading">
+                            <div class="analysis-header">
+                                <h2 id="case-analysis-heading"
+                                    style="font-size:1.05rem; font-weight:700; color:var(--text-primary); margin:0;">
+                                    Case Analysis &mdash; AI-Assisted Research
+                                </h2>
+                                <span class="status-badge status-live">Analysis Complete</span>
+                            </div>
+
+                            <div class="analysis-tabs" role="tablist" aria-label="Case analysis sections">
+                                <button role="tab"
+                                        class="analysis-tab active"
+                                        id="analysis-tab-facts"
+                                        aria-selected="true"
+                                        aria-controls="analysis-panel-facts">
+                                    Key Facts
+                                </button>
+                                <button role="tab"
+                                        class="analysis-tab"
+                                        id="analysis-tab-timeline"
+                                        aria-selected="false"
+                                        aria-controls="analysis-panel-timeline"
+                                        aria-label="Timeline tab — click to switch">
+                                    Timeline
+                                </button>
+                                <button role="tab"
+                                        class="analysis-tab"
+                                        id="analysis-tab-witness"
+                                        aria-selected="false"
+                                        aria-controls="analysis-panel-witness"
+                                        aria-label="Witness Summary tab — click to switch">
+                                    Witness Summary
+                                </button>
+                            </div>
+
+                            <div id="analysis-panel-facts"
+                                 role="tabpanel"
+                                 aria-labelledby="analysis-tab-facts">
+                                <ul class="key-facts-list" aria-label="Extracted key facts with source citations">
+                                    <li>
+                                        <span class="fact-bullet" aria-hidden="true">1</span>
+                                        <span>
+                                            Charging party employed since March 2019.
+                                            <span class="fact-citation">(Complaint, p.2)</span>
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="fact-bullet" aria-hidden="true">2</span>
+                                        <span>
+                                            Promoted to Senior Analyst in July 2022.
+                                            <span class="fact-citation">(Exhibit B, p.3)</span>
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="fact-bullet" aria-hidden="true">3</span>
+                                        <span>
+                                            Internal EEO complaint filed January 12, 2026.
+                                            <span class="fact-citation">(Complaint, p.5)</span>
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="fact-bullet" aria-hidden="true">4</span>
+                                        <span>
+                                            Passed over for Director position February 3, 2026 &mdash; position
+                                            given to an external hire with two years less experience.
+                                            <span class="fact-citation">(Complaint, p.7; Exhibit B, p.12)</span>
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="fact-bullet" aria-hidden="true">5</span>
+                                        <span>
+                                            Termination effective March 15, 2026, cited as "restructuring."
+                                            <span class="fact-citation">(Exhibit C)</span>
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="fact-bullet" aria-hidden="true">6</span>
+                                        <span>
+                                            Three other employees in protected class were also passed over for
+                                            promotion during the same period.
+                                            <span class="fact-citation">(Deposition &mdash; J. Williams, p.18)</span>
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div id="analysis-panel-timeline"
+                                 role="tabpanel"
+                                 aria-labelledby="analysis-tab-timeline"
+                                 hidden>
+                                <p style="font-size:13px; color:var(--text-muted); padding:1rem 0;">
+                                    Timeline view is available in the full application.
+                                </p>
+                            </div>
+
+                            <div id="analysis-panel-witness"
+                                 role="tabpanel"
+                                 aria-labelledby="analysis-tab-witness"
+                                 hidden>
+                                <p style="font-size:13px; color:var(--text-muted); padding:1rem 0;">
+                                    Witness summary view is available in the full application.
+                                </p>
+                            </div>
+
+                            <div class="analysis-disclaimer">
+                                All citations link to source documents in the case file. AI findings require
+                                attorney verification before use in proceedings.
+                            </div>
+
+                        </section>
+
+                    </div><!-- /trial-layout -->
+                </div><!-- /demo-body -->
+            </div><!-- /demo-window -->
+
+            <div class="value-strip" aria-label="Trial preparation efficiency statistics">
+                <strong>Attorneys spend 60% of trial preparation time on document review.</strong>
+                AI-assisted extraction surfaces key facts and contradictions across hundreds of pages
+                in minutes, with every finding linked to its source document for verification.
+            </div>
+
+        </div><!-- /tab-trial -->
+
+        <!-- ============================================================
+             TAB 3: Benefits Validation
+        ============================================================ -->
+        <div role="tabpanel"
+             id="tab-benefits"
+             aria-labelledby="tab-btn-benefits"
+             hidden>
+
+            <div class="demo-window" aria-label="OCHCO Benefits Validation application demo">
+                <!-- Browser chrome -->
+                <div class="demo-titlebar" aria-hidden="true">
+                    <span class="demo-dot red"></span>
+                    <span class="demo-dot yellow"></span>
+                    <span class="demo-dot green"></span>
+                    <span class="demo-url">https://benefits.eeoc.gov/batch/2026-05-19</span>
+                </div>
+
+                <div class="demo-body">
+
+                    <!-- App toolbar -->
+                    <div class="benefits-toolbar">
+                        <span>
+                            <i class="bi bi-shield-check" aria-hidden="true"></i>
+                            Benefits Coding Validation
+                        </span>
+                        <span class="benefits-batch-id">Batch Review #2026-05-19</span>
+                    </div>
+
+                    <section class="benefits-layout" aria-labelledby="benefits-review-heading">
+                        <h2 id="benefits-review-heading" class="visually-hidden">Benefits Batch Review Results</h2>
+
+                        <!-- Metric strip -->
+                        <div class="benefit-metrics" role="region" aria-label="Batch review summary metrics">
+                            <div class="benefit-metric">
+                                <div class="bm-label">Actions Reviewed</div>
+                                <div class="bm-value">847</div>
+                                <div class="bm-sub">FY2026 Q2</div>
+                            </div>
+                            <div class="benefit-metric">
+                                <div class="bm-label">Valid</div>
+                                <div class="bm-value" style="color:var(--success);">831</div>
+                                <div class="bm-sub" style="color:var(--success);">98.1%</div>
+                            </div>
+                            <div class="benefit-metric metric-warn">
+                                <div class="bm-label">Discrepancies</div>
+                                <div class="bm-value">12</div>
+                                <div class="bm-sub">1.4% of actions</div>
+                            </div>
+                            <div class="benefit-metric metric-danger">
+                                <div class="bm-label">Potential Overpayment</div>
+                                <div class="bm-value">$47,230</div>
+                                <div class="bm-sub">annualized risk</div>
+                            </div>
+                        </div>
+
+                        <!-- Results table -->
+                        <div style="overflow-x:auto;">
+                            <table class="data-table" aria-label="Personnel action validation results">
+                                <caption class="visually-hidden">
+                                    Personnel action coding validation results for batch 2026-05-19.
+                                    Eight sample rows shown; two rows flagged as discrepancies.
+                                </caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Action Code</th>
+                                        <th scope="col">Employee ID</th>
+                                        <th scope="col">Code Applied</th>
+                                        <th scope="col">Expected</th>
+                                        <th scope="col">Actual</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Potential Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">502 &mdash; Conversion</th>
+                                        <td>EMP-4412</td>
+                                        <td>FEGLI Opt</td>
+                                        <td>Option B</td>
+                                        <td>Option B</td>
+                                        <td>
+                                            <span class="status-valid" aria-label="Valid">
+                                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                                Valid
+                                            </span>
+                                        </td>
+                                        <td>&mdash;</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">352 &mdash; Position Change</th>
+                                        <td>EMP-2287</td>
+                                        <td>Pay Plan</td>
+                                        <td>GS-13</td>
+                                        <td>GS-13</td>
+                                        <td>
+                                            <span class="status-valid" aria-label="Valid">
+                                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                                Valid
+                                            </span>
+                                        </td>
+                                        <td>&mdash;</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">702 &mdash; Retirement</th>
+                                        <td>EMP-0891</td>
+                                        <td>Retirement Plan</td>
+                                        <td>Code K (CSRS Offset)</td>
+                                        <td>Code C (FERS)</td>
+                                        <td>
+                                            <span class="status-discrepancy" aria-label="Discrepancy detected">
+                                                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                                                Discrepancy
+                                            </span>
+                                        </td>
+                                        <td style="color:var(--danger); font-weight:700;">$28,080/yr</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">471 &mdash; Separation</th>
+                                        <td>EMP-3341</td>
+                                        <td>TSP Election</td>
+                                        <td>3% contrib.</td>
+                                        <td>3% contrib.</td>
+                                        <td>
+                                            <span class="status-valid" aria-label="Valid">
+                                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                                Valid
+                                            </span>
+                                        </td>
+                                        <td>&mdash;</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">721 &mdash; Disability Ret.</th>
+                                        <td>EMP-5508</td>
+                                        <td>FEGLI Code</td>
+                                        <td>Code B</td>
+                                        <td>Code A</td>
+                                        <td>
+                                            <span class="status-discrepancy" aria-label="Discrepancy detected">
+                                                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                                                Discrepancy
+                                            </span>
+                                        </td>
+                                        <td style="color:var(--danger); font-weight:700;">$19,150/yr</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">100 &mdash; Appointment</th>
+                                        <td>EMP-7723</td>
+                                        <td>Leave Accrual</td>
+                                        <td>8 hrs/pp</td>
+                                        <td>8 hrs/pp</td>
+                                        <td>
+                                            <span class="status-valid" aria-label="Valid">
+                                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                                Valid
+                                            </span>
+                                        </td>
+                                        <td>&mdash;</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">352 &mdash; Position Change</th>
+                                        <td>EMP-6104</td>
+                                        <td>FEHB Plan</td>
+                                        <td>Self+Family</td>
+                                        <td>Self+Family</td>
+                                        <td>
+                                            <span class="status-valid" aria-label="Valid">
+                                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                                Valid
+                                            </span>
+                                        </td>
+                                        <td>&mdash;</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">502 &mdash; Conversion</th>
+                                        <td>EMP-1996</td>
+                                        <td>Pay Plan</td>
+                                        <td>GS-12</td>
+                                        <td>GS-12</td>
+                                        <td>
+                                            <span class="status-valid" aria-label="Valid">
+                                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                                Valid
+                                            </span>
+                                        </td>
+                                        <td>&mdash;</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Discrepancy detail (expandable) -->
+                        <details class="discrepancy-card" aria-label="Discrepancy detail for action 702">
+                            <summary style="font-size:14px; font-weight:700; cursor:pointer; color:var(--warning);">
+                                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                                Discrepancy Detail &mdash; Action 702 (EMP-0891)
+                            </summary>
+
+                            <div style="margin-top:1rem;">
+                                <h4>Action 702 &mdash; Retirement: Employee J. Thompson (EMP-0891)</h4>
+
+                                <div class="discrepancy-detail-row">
+                                    <span class="dd-label">Expected</span>
+                                    <span>
+                                        CSRS Offset (Code K) &mdash; based on hire date 1987 and
+                                        prior service credit recorded in the Employee Data Record
+                                    </span>
+                                </div>
+                                <div class="discrepancy-detail-row">
+                                    <span class="dd-label">Actual</span>
+                                    <span>
+                                        FERS (Code C) &mdash; CSRS eligibility determination
+                                        is absent from the NFC personnel record
+                                    </span>
+                                </div>
+                                <div class="discrepancy-detail-row">
+                                    <span class="dd-label">Overpayment Risk</span>
+                                    <span style="color:var(--danger); font-weight:700;">
+                                        $2,340/month ($28,080/year) if benefits compute at FERS
+                                        rate instead of CSRS Offset
+                                    </span>
+                                </div>
+                                <div class="discrepancy-detail-row">
+                                    <span class="dd-label">Recommended Action</span>
+                                    <span>
+                                        Refer to Benefits Officer for manual review of service computation
+                                        date and CSRS eligibility under 5 U.S.C. &sect;8347
+                                    </span>
+                                </div>
+
+                                <div class="audit-trail-line" style="margin-top:1rem;"
+                                     aria-label="Validation audit record">
+                                    <i class="bi bi-shield-check" aria-hidden="true"></i>
+                                    Validation logged &bull; HMAC-SHA256 verified &bull;
+                                    Audit ID: val-3c9f1d2a
+                                </div>
+                            </div>
+                        </details>
+
+                    </section>
+                </div><!-- /demo-body -->
+            </div><!-- /demo-window -->
+
+            <div class="value-strip" aria-label="OCHCO program impact statistics">
+                <strong>In FY2025, OCHCO identified $3.2M in potential benefit overpayments through
+                manual review.</strong>
+                Automated validation catches coding discrepancies at the source &mdash; before they
+                compound into years of incorrect payments.
+            </div>
+
+        </div><!-- /tab-benefits -->
+
+        <!-- ============================================================
+             TAB 4: Analytics Dashboard
+        ============================================================ -->
+        <div role="tabpanel"
+             id="tab-analytics"
+             aria-labelledby="tab-btn-analytics"
+             hidden>
+
+            <!-- SR-only chat announcer outside the chat log (WCAG 4.1.3) -->
+            <div id="analytics-chat-sr-announcer"
+                 class="visually-hidden"
+                 role="status"
+                 aria-live="polite"
+                 aria-atomic="true"></div>
+
+            <div class="demo-window" aria-label="Analytics dashboard application demo">
+                <!-- Browser chrome -->
+                <div class="demo-titlebar" aria-hidden="true">
+                    <span class="demo-dot red"></span>
+                    <span class="demo-dot yellow"></span>
+                    <span class="demo-dot green"></span>
+                    <span class="demo-url">https://analytics.eeoc.gov/dashboard</span>
+                </div>
+
+                <div class="demo-body">
+                    <!-- App layout: sidebar + main -->
+                    <div style="display:grid; grid-template-columns:200px 1fr; min-height:680px;">
+
+                        <!-- Sidebar -->
+                        <nav style="background:var(--eeoc-navy-dark); padding:1rem 0; border-right:1px solid rgba(255,255,255,0.05);"
+                             aria-label="Analytics application navigation">
+                            <div style="padding:0.5rem 1rem 1rem; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:0.5rem;">
+                                <h2 style="color:#fff; font-size:13px; font-weight:700; margin:0;">
+                                    <i class="bi bi-graph-up" aria-hidden="true"></i> UDAP
+                                </h2>
+                                <span style="color:var(--eeoc-gold); font-size:10px;">Unified Data Analytics</span>
+                            </div>
+
+                            <div style="padding:10px 16px 4px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.3);">Main</div>
+                            <ul style="list-style:none; padding:0; margin:0;" role="list">
+                                <li>
+                                    <a href="#" style="display:flex; align-items:center; gap:10px; padding:8px 16px; color:var(--eeoc-gold-light); text-decoration:none; font-size:13px; font-weight:500; background:rgba(197,165,86,0.15); border-right:2px solid var(--eeoc-gold);" aria-current="page">
+                                        <i class="bi bi-speedometer2" aria-hidden="true" style="width:18px; text-align:center;"></i>
+                                        Dashboard
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" style="display:flex; align-items:center; gap:10px; padding:8px 16px; color:rgba(255,255,255,0.6); text-decoration:none; font-size:13px; font-weight:500;">
+                                        <i class="bi bi-graph-up-arrow" aria-hidden="true" style="width:18px; text-align:center;"></i>
+                                        Charge Trends
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" style="display:flex; align-items:center; gap:10px; padding:8px 16px; color:rgba(255,255,255,0.6); text-decoration:none; font-size:13px; font-weight:500;">
+                                        <i class="bi bi-people" aria-hidden="true" style="width:18px; text-align:center;"></i>
+                                        Mediation Outcomes
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" style="display:flex; align-items:center; gap:10px; padding:8px 16px; color:rgba(255,255,255,0.6); text-decoration:none; font-size:13px; font-weight:500;">
+                                        <i class="bi bi-building" aria-hidden="true" style="width:18px; text-align:center;"></i>
+                                        Office Performance
+                                    </a>
+                                </li>
+                            </ul>
+
+                            <div style="padding:10px 16px 4px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.3);">Tools</div>
+                            <ul style="list-style:none; padding:0; margin:0;" role="list">
+                                <li>
+                                    <a href="#analytics-demo-assistant" style="display:flex; align-items:center; gap:10px; padding:8px 16px; color:rgba(255,255,255,0.6); text-decoration:none; font-size:13px; font-weight:500;">
+                                        <i class="bi bi-stars" aria-hidden="true" style="width:18px; text-align:center;"></i>
+                                        AI Assistant
+                                        <span style="margin-left:auto; background:#0a58ca; color:#fff; font-size:10px; font-weight:700; padding:1px 6px; border-radius:8px;" aria-label="3 suggested queries">3</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" style="display:flex; align-items:center; gap:10px; padding:8px 16px; color:rgba(255,255,255,0.6); text-decoration:none; font-size:13px; font-weight:500;">
+                                        <i class="bi bi-file-earmark-text" aria-hidden="true" style="width:18px; text-align:center;"></i>
+                                        Reports
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+
+                        <!-- Main content -->
+                        <main style="background:var(--surface); overflow-y:auto;" aria-label="Dashboard main content">
+
+                            <!-- Toolbar -->
+                            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:#fff; border-bottom:1px solid var(--border);">
+                                <div>
+                                    <div style="font-size:14px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                                        <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                                        Executive Dashboard
+                                    </div>
+                                    <div style="font-size:11px; color:#5a6472;">FY2025 &bull; Data as of May 21, 2026 06:00 UTC</div>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <button type="button"
+                                            style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; background:var(--surface); border:1px solid var(--border); border-radius:5px; font-size:12px; font-weight:600; color:var(--text-secondary); cursor:pointer; font-family:inherit;"
+                                            aria-label="Export dashboard as PDF">
+                                        <i class="bi bi-download" aria-hidden="true"></i> Export
+                                    </button>
+                                    <button type="button"
+                                            style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; background:var(--surface); border:1px solid var(--border); border-radius:5px; font-size:12px; font-weight:600; color:var(--text-secondary); cursor:pointer; font-family:inherit;"
+                                            aria-label="Refresh dashboard data">
+                                        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Refresh
+                                    </button>
+                                    <span style="width:8px; height:8px; border-radius:50%; background:#146c43; display:inline-block;"
+                                          aria-label="Data pipeline status: healthy"></span>
+                                </div>
+                            </div>
+
+                            <div style="padding:16px;">
+
+                                <!-- Metric cards -->
+                                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px;"
+                                     role="region" aria-label="Key performance indicators">
+
+                                    <article style="background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;"
+                                             aria-label="National Settlement Rate metric">
+                                        <div style="font-size:10px; font-weight:700; color:#5a6472; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+                                            National Settlement Rate
+                                        </div>
+                                        <div style="font-size:1.5rem; font-weight:800; color:var(--text-primary); letter-spacing:-0.02em; line-height:1.1;"
+                                             aria-label="72.3 percent">72.3%</div>
+                                        <div style="font-size:11px; font-weight:600; margin-top:3px; color:#146c43; display:flex; align-items:center; gap:3px;"
+                                             aria-label="Up 4.1 percentage points from last quarter">
+                                            <i class="bi bi-arrow-up-short" aria-hidden="true"></i>
+                                            +4.1 pp from last quarter
+                                        </div>
+                                    </article>
+
+                                    <article style="background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;"
+                                             aria-label="Average Resolution Time metric">
+                                        <div style="font-size:10px; font-weight:700; color:#5a6472; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+                                            Avg Resolution Time
+                                        </div>
+                                        <div style="font-size:1.5rem; font-weight:800; color:var(--text-primary); letter-spacing:-0.02em; line-height:1.1;"
+                                             aria-label="41 days">41 days</div>
+                                        <div style="font-size:11px; font-weight:600; margin-top:3px; color:#146c43; display:flex; align-items:center; gap:3px;"
+                                             aria-label="Down from 47 days — improved">
+                                            <i class="bi bi-arrow-down-short" aria-hidden="true"></i>
+                                            Down from 47 days
+                                        </div>
+                                    </article>
+
+                                    <article style="background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;"
+                                             aria-label="Active Mediations metric">
+                                        <div style="font-size:10px; font-weight:700; color:#5a6472; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+                                            Active Mediations
+                                        </div>
+                                        <div style="font-size:1.5rem; font-weight:800; color:var(--text-primary); letter-spacing:-0.02em; line-height:1.1;"
+                                             aria-label="2,847">2,847</div>
+                                        <div style="font-size:11px; font-weight:600; margin-top:3px; color:#5a6472; display:flex; align-items:center; gap:3px;"
+                                             aria-label="Across all offices">
+                                            <i class="bi bi-building" aria-hidden="true"></i>
+                                            Across all offices
+                                        </div>
+                                    </article>
+
+                                    <article style="background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;"
+                                             aria-label="Charges Filed Year to Date metric">
+                                        <div style="font-size:10px; font-weight:700; color:#5a6472; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+                                            Charges Filed YTD
+                                        </div>
+                                        <div style="font-size:1.5rem; font-weight:800; color:var(--text-primary); letter-spacing:-0.02em; line-height:1.1;"
+                                             aria-label="14,392">14,392</div>
+                                        <div style="font-size:11px; font-weight:600; margin-top:3px; color:#5a6472; display:flex; align-items:center; gap:3px;"
+                                             aria-label="FY2025 year to date">
+                                            <i class="bi bi-calendar3" aria-hidden="true"></i>
+                                            FY2025 YTD
+                                        </div>
+                                    </article>
+
+                                </div>
+                                <!-- /metric cards -->
+
+                                <!-- Charts row -->
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;"
+                                     role="region" aria-label="Performance charts">
+
+                                    <!-- Bar chart: Settlement rate by office -->
+                                    <div style="background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:14px;">
+                                        <div style="font-size:12px; font-weight:700; color:var(--text-primary); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;">
+                                            Settlement Rate by Office
+                                            <span style="font-size:10px; font-weight:600; color:#5a6472; background:var(--surface); padding:2px 8px; border-radius:4px;">FY2025 Q3</span>
+                                        </div>
+                                        <canvas id="demoOfficeBarChart"
+                                                role="img"
+                                                aria-label="Horizontal bar chart showing FY2025 Q3 settlement rate by EEOC office: Philadelphia 81.2%, Chicago 79.8%, Dallas 78.4%, New York 74.1%, Atlanta 71.3%, Houston 68.9%, Los Angeles 66.4%, Phoenix 63.2%"
+                                                style="max-height:230px;"></canvas>
+                                        <details style="font-size:11px; margin-top:8px;">
+                                            <summary style="font-size:11px; color:#5a6472; cursor:pointer; padding:4px 0;">Chart data is available in the table below.</summary>
+                                            <table class="data-table" style="font-size:11px; margin-top:6px;">
+                                                <caption class="visually-hidden">Settlement rate by EEOC office, FY2025 Q3</caption>
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Office</th>
+                                                        <th scope="col">Settlement Rate</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><th scope="row">Philadelphia</th><td>81.2%</td></tr>
+                                                    <tr><th scope="row">Chicago</th><td>79.8%</td></tr>
+                                                    <tr><th scope="row">Dallas</th><td>78.4%</td></tr>
+                                                    <tr><th scope="row">New York</th><td>74.1%</td></tr>
+                                                    <tr><th scope="row">Atlanta</th><td>71.3%</td></tr>
+                                                    <tr><th scope="row">Houston</th><td>68.9%</td></tr>
+                                                    <tr><th scope="row">Los Angeles</th><td>66.4%</td></tr>
+                                                    <tr><th scope="row">Phoenix</th><td>63.2%</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </details>
+                                    </div>
+
+                                    <!-- Line chart: Monthly charge filings -->
+                                    <div style="background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:14px;">
+                                        <div style="font-size:12px; font-weight:700; color:var(--text-primary); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;">
+                                            Monthly Charge Filings
+                                            <span style="font-size:10px; font-weight:600; color:#5a6472; background:var(--surface); padding:2px 8px; border-radius:4px;">FY2025 Oct &ndash; May</span>
+                                        </div>
+                                        <canvas id="demoFilingsLineChart"
+                                                role="img"
+                                                aria-label="Line chart showing monthly charge filings in FY2025: October 1,820; November 1,750; December 1,690; January 1,840; February 1,920; March 1,780; April 1,850; May 1,910"
+                                                style="max-height:230px;"></canvas>
+                                        <details style="font-size:11px; margin-top:8px;">
+                                            <summary style="font-size:11px; color:#5a6472; cursor:pointer; padding:4px 0;">Chart data is available in the table below.</summary>
+                                            <table class="data-table" style="font-size:11px; margin-top:6px;">
+                                                <caption class="visually-hidden">Monthly charge filings, FY2025 October through May</caption>
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Month</th>
+                                                        <th scope="col">Charges Filed</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><th scope="row">October</th><td>1,820</td></tr>
+                                                    <tr><th scope="row">November</th><td>1,750</td></tr>
+                                                    <tr><th scope="row">December</th><td>1,690</td></tr>
+                                                    <tr><th scope="row">January</th><td>1,840</td></tr>
+                                                    <tr><th scope="row">February</th><td>1,920</td></tr>
+                                                    <tr><th scope="row">March</th><td>1,780</td></tr>
+                                                    <tr><th scope="row">April</th><td>1,850</td></tr>
+                                                    <tr><th scope="row">May</th><td>1,910</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </details>
+                                    </div>
+
+                                </div>
+                                <!-- /charts row -->
+
+                                <!-- AI Analytics Assistant -->
+                                <div id="analytics-demo-assistant"
+                                     class="chat-panel"
+                                     data-chat-id="analytics"
+                                     role="region"
+                                     aria-label="AI Analytics Assistant"
+                                     style="background:#fff; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column; height:360px;">
+
+                                    <!-- Header -->
+                                    <div style="padding:10px 14px; background:var(--eeoc-navy); display:flex; align-items:center; justify-content:space-between;">
+                                        <h3 style="margin:0; font-size:13px; font-weight:600; color:#fff; display:flex; align-items:center; gap:8px;">
+                                            <span style="width:8px; height:8px; border-radius:50%; background:#22c55e; animation:pulse 2s infinite; flex-shrink:0;"
+                                                  role="presentation" aria-hidden="true"></span>
+                                            Ask a question about EEOC data
+                                        </h3>
+                                        <span style="font-size:10px; color:rgba(255,255,255,0.5);">
+                                            <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                                            HMAC-SHA256 &bull; Human review required before action
+                                        </span>
+                                    </div>
+
+                                    <!-- Chat log -->
+                                    <div class="chat-messages"
+                                         role="log"
+                                         aria-live="polite"
+                                         aria-atomic="false"
+                                         aria-label="AI Analytics Assistant conversation"
+                                         style="flex:1; padding:12px 14px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">
+
+                                        <!-- Pre-populated user query -->
+                                        <div class="chat-msg user" role="article" aria-label="User query">
+                                            Which offices have the lowest settlement rates and what's driving it?
+                                        </div>
+
+                                        <!-- Pre-populated AI response (rendered, not typed) -->
+                                        <div class="chat-msg ai" role="article" aria-label="AI response">
+                                            <span class="ai-content">Phoenix (63.2%) and Los Angeles (66.4%) are the two
+                                            offices below the national average of 72.3%. Phoenix has seen a 28% increase
+                                            in caseload this quarter without additional mediator staff — the per-mediator
+                                            load is 34 cases versus the national average of 22. Los Angeles has a higher
+                                            proportion of multi-basis charges (41% vs 28% nationally) which historically
+                                            take longer to resolve and settle at lower rates. Recommendation: Consider
+                                            temporary mediator reassignment from offices with capacity (Denver at 68%
+                                            utilization, Seattle at 71%) to reduce Phoenix backlog.</span>
+                                            <div style="margin-top:7px; padding-top:6px; border-top:1px solid var(--border); font-size:10px; color:#5a6472; display:flex; flex-wrap:wrap; gap:10px;"
+                                                 aria-label="Audit metadata">
+                                                <span>
+                                                    <i class="bi bi-patch-check" aria-hidden="true"></i>
+                                                    HMAC-SHA256 verified
+                                                </span>
+                                                <span>Audit ID: ana-5d8e2f1c</span>
+                                                <span>Human review required before action</span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <!-- /chat log -->
+
+                                    <!-- Suggested queries -->
+                                    <div style="padding:8px 14px; display:flex; gap:6px; flex-wrap:wrap; border-top:1px solid var(--border); background:var(--surface);"
+                                         role="group" aria-label="Suggested queries">
+                                        <button type="button" class="chat-suggest"
+                                                style="padding:4px 10px; border:1px solid var(--border); border-radius:12px; font-size:11px; font-weight:500; color:var(--text-secondary); background:#fff; cursor:pointer; font-family:inherit;">
+                                            Top 5 offices by caseload
+                                        </button>
+                                        <button type="button" class="chat-suggest"
+                                                style="padding:4px 10px; border:1px solid var(--border); border-radius:12px; font-size:11px; font-weight:500; color:var(--text-secondary); background:#fff; cursor:pointer; font-family:inherit;">
+                                            Charges by protected basis YTD
+                                        </button>
+                                        <button type="button" class="chat-suggest"
+                                                style="padding:4px 10px; border:1px solid var(--border); border-radius:12px; font-size:11px; font-weight:500; color:var(--text-secondary); background:#fff; cursor:pointer; font-family:inherit;">
+                                            Mediator utilization rates
+                                        </button>
+                                    </div>
+
+                                    <!-- Input row -->
+                                    <div style="padding:10px 14px; border-top:1px solid var(--border); display:flex; gap:8px; background:#fff;">
+                                        <label for="analytics-demo-chat-input" class="visually-hidden">Query the AI Analytics Assistant</label>
+                                        <input type="text"
+                                               id="analytics-demo-chat-input"
+                                               class="chat-input"
+                                               placeholder="Ask about charges, outcomes, offices, or trends..."
+                                               aria-label="Query the AI Analytics Assistant"
+                                               autocomplete="off"
+                                               style="flex:1; padding:7px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; font-family:inherit; color:var(--text-primary);">
+                                        <button type="button"
+                                                class="chat-send"
+                                                aria-label="Send query to AI Analytics Assistant"
+                                                style="padding:7px 14px; background:var(--eeoc-navy); color:#fff; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;">
+                                            Send
+                                        </button>
+                                    </div>
+
+                                </div>
+                                <!-- /AI Analytics Assistant -->
+
+                            </div><!-- /padding wrapper -->
+
+                        </main>
+
+                    </div><!-- /grid layout -->
+                </div><!-- /demo-body -->
+            </div><!-- /demo-window -->
+
+            <!-- Value statement -->
+            <div style="margin-top:1.5rem; padding:1.25rem 1.5rem; background:var(--surface); border-left:4px solid var(--eeoc-gold); border-radius:0 var(--radius) var(--radius) 0; font-size:15px; color:var(--text-secondary); line-height:1.65;">
+                Leadership decisions backed by real-time data from every EEOC office. Natural language
+                queries replace manual report requests &mdash; answers in seconds instead of days.
+            </div>
+
+        </div><!-- /tab-analytics -->
+
+    </div><!-- /demo-section -->
+
+</main><!-- /page-content -->
+
+<!-- Footer -->
+<footer class="site-footer">
+    <strong>U.S. Equal Employment Opportunity Commission</strong> &mdash; Office of the Chief Information Officer<br>
+    AI-Enabled Case Management Platform &bull; FedRAMP High &bull; NIST 800-53 Rev5 &bull; WCAG 2.1 AA
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/site.js"></script>
+<script>
+/* ---- Demo tab switching ---- */
+(function () {
+    'use strict';
+
+    var TABS = ['triage', 'trial', 'benefits', 'analytics'];
+
+    /* Track whether analytics charts have been initialized */
+    var analyticsChartsInit = false;
+
+    function showDemoTab(id) {
+        TABS.forEach(function (t) {
+            var panel = document.getElementById('tab-' + t);
+            var btn   = document.getElementById('tab-btn-' + t);
+            var isActive = (t === id);
+
+            if (panel) {
+                if (isActive) {
+                    panel.removeAttribute('hidden');
+                } else {
+                    panel.setAttribute('hidden', '');
+                }
+            }
+
+            if (btn) {
+                btn.classList.toggle('active', isActive);
+                btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            }
+        });
+
+        /* Initialize charts only when analytics tab first becomes visible */
+        if (id === 'analytics') {
+            initAnalyticsCharts();
+        }
+    }
+
+    /* Expose to inline onclick handlers */
+    window.showDemoTab = showDemoTab;
+
+    /* ---- Triage: reveal AI results panel on button click ---- */
+    window.revealAiResults = function () {
+        var btn = document.getElementById('run-ai-btn');
+        if (btn) {
+            btn.setAttribute('aria-expanded', 'true');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-check-circle-fill" aria-hidden="true"></i> Classification Complete';
+            btn.style.background = 'var(--success)';
+        }
+    };
+
+    /* ---- Analytics charts ---- */
+    function initAnalyticsCharts() {
+        if (analyticsChartsInit) return;
+        analyticsChartsInit = true;
+
+        /* Bar chart — settlement rate by office (horizontal) */
+        var barCtx = document.getElementById('demoOfficeBarChart');
+        if (barCtx) {
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        'Philadelphia', 'Chicago', 'Dallas', 'New York',
+                        'Atlanta', 'Houston', 'Los Angeles', 'Phoenix'
+                    ],
+                    datasets: [
+                        {
+                            label: 'Settlement Rate (%)',
+                            data: [81.2, 79.8, 78.4, 74.1, 71.3, 68.9, 66.4, 63.2],
+                            /*
+                             * Solid rgb() — no rgba. WCAG 1.4.11 requires >=3:1 on white.
+                             * #1a2744 (--eeoc-navy) vs white: ~14:1 — passes.
+                             */
+                            backgroundColor: 'rgb(26, 39, 68)',
+                            borderColor: 'rgb(26, 39, 68)',
+                            borderWidth: 1,
+                            borderRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    return ' ' + ctx.parsed.x + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            min: 55,
+                            max: 90,
+                            grid: { color: 'rgb(226, 232, 240)' },
+                            ticks: {
+                                font: { family: 'Inter', size: 10 },
+                                callback: function (val) { return val + '%'; }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Settlement Rate (%)',
+                                font: { family: 'Inter', size: 10 }
+                            }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Inter', size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        /* Line chart — monthly charge filings FY2025 */
+        var lineCtx = document.getElementById('demoFilingsLineChart');
+        if (lineCtx) {
+            new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
+                    datasets: [
+                        {
+                            label: 'Charges Filed',
+                            data: [1820, 1750, 1690, 1840, 1920, 1780, 1850, 1910],
+                            /* Solid rgb — no rgba. #1a2744 vs white: ~14:1 — passes. */
+                            borderColor: 'rgb(26, 39, 68)',
+                            backgroundColor: 'rgb(26, 39, 68)',
+                            pointBackgroundColor: 'rgb(26, 39, 68)',
+                            tension: 0.3,
+                            borderWidth: 2,
+                            pointRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    return ' ' + ctx.parsed.y.toLocaleString() + ' charges';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgb(226, 232, 240)' },
+                            ticks: { font: { family: 'Inter', size: 10 } }
+                        },
+                        y: {
+                            min: 1600,
+                            grid: { color: 'rgb(226, 232, 240)' },
+                            ticks: {
+                                font: { family: 'Inter', size: 10 },
+                                callback: function (val) { return val.toLocaleString(); }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Charges Filed',
+                                font: { family: 'Inter', size: 10 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    /* ---- SR announcer wiring for analytics chat (WCAG 4.1.3) ---- */
+    (function wireAnnouncer() {
+        var announcer = document.getElementById('analytics-chat-sr-announcer');
+        var chatLog   = document.querySelector('[data-chat-id="analytics"] .chat-messages');
+        if (!announcer || !chatLog) return;
+
+        var observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                mutation.addedNodes.forEach(function (node) {
+                    if (node.nodeType !== 1) return;
+                    if (!node.classList.contains('chat-msg')) return;
+
+                    var contentEl = node.querySelector('.ai-content') || node;
+                    var text = contentEl.textContent.trim();
+                    if (!text) return;
+
+                    /* Clear first so identical text still re-fires the live region */
+                    announcer.textContent = '';
+                    setTimeout(function () {
+                        announcer.textContent = text;
+                    }, 120);
+                });
+            });
+        });
+
+        observer.observe(chatLog, { childList: true });
+    }());
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decision Letter Review — EEOC AI Triage System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="css/demo.css" rel="stylesheet">
+  <style>
+    /* =========================================================================
+       EEOC AI Triage System — Page overrides
+       Mirrors eeoc-ofs-triage/triage_webapp/static/css/eeoc-ai-triage-custom.css
+       Section 508 / WCAG 2.1 AA verified 2026-05-21
+       ========================================================================= */
+
+    :root {
+      --bs-danger-rgb:    176, 42, 55;
+      --bs-danger:        #b02a37;
+      --bs-success-rgb:   20, 108, 67;
+      --bs-success:       #146c43;
+      --bs-secondary-rgb: 90, 100, 114;
+      --bs-secondary:     #5a6472;
+      --bs-info-rgb:      8, 121, 144;
+      --bs-info:          #087990;
+      --bs-warning-rgb:   127, 101, 0;
+      --bs-warning:       #7f6500;
+      --bs-border-color:  #737373;
+    }
+
+    .text-muted   { color: #5a6472 !important; }
+    .text-danger  { color: #b02a37 !important; }
+    .text-success { color: #146c43 !important; }
+    .text-info    { color: #087990 !important; }
+    .text-warning { color: #7f6500 !important; }
+    .text-primary { color: #0a58ca !important; }
+
+    .navbar-dark .navbar-text,
+    .navbar-dark .navbar-text a { color: #fff !important; }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      text-decoration: none;
+      z-index: 1100;
+      border-radius: 0 0 4px 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    [tabindex]:focus-visible,
+    .btn:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible,
+    .nav-link:focus-visible,
+    .btn-close:focus-visible,
+    .dropdown-item:focus-visible,
+    .page-link:focus-visible {
+      outline: 2px solid #0a58ca !important;
+      outline-offset: 2px !important;
+      box-shadow: none !important;
+    }
+
+    .btn:focus, a:focus, button:focus, input:focus, select:focus, textarea:focus,
+    [tabindex]:focus, .form-control:focus, .form-select:focus,
+    .form-check-input:focus, .nav-link:focus, .btn-close:focus,
+    .dropdown-item:focus, .page-link:focus {
+      box-shadow: none !important;
+    }
+
+    body {
+      background-color: #f8f9fa;
+      color: #212529;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+                   "Noto Sans", "Liberation Sans", Arial, sans-serif;
+    }
+
+    .container { max-width: 1140px; }
+
+    .navbar .btn-outline-light[aria-current="page"] {
+      background-color: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+
+    .btn-outline-light {
+      --bs-btn-color:               #f8f9fa;
+      --bs-btn-border-color:        #f8f9fa;
+      --bs-btn-hover-color:         #212529;
+      --bs-btn-hover-bg:            #f8f9fa;
+      --bs-btn-hover-border-color:  #f8f9fa;
+      --bs-btn-active-color:        #212529;
+      --bs-btn-active-bg:           #f8f9fa;
+      --bs-btn-active-border-color: #f8f9fa;
+    }
+
+    .btn-outline-warning {
+      --bs-btn-color:               #7f6500;
+      --bs-btn-border-color:        #7f6500;
+      --bs-btn-hover-color:         #fff;
+      --bs-btn-hover-bg:            #7f6500;
+      --bs-btn-hover-border-color:  #7f6500;
+      --bs-btn-active-color:        #fff;
+      --bs-btn-active-bg:           #7f6500;
+      --bs-btn-active-border-color: #7f6500;
+      color: #7f6500 !important;
+      border-color: #7f6500 !important;
+    }
+    .btn-outline-warning:hover,
+    .btn-outline-warning:active,
+    .btn-outline-warning.active {
+      background-color: #7f6500 !important;
+      border-color:     #7f6500 !important;
+      color:            #fff !important;
+    }
+
+    /* btn-success — EEOC override */
+    .btn-success {
+      --bs-btn-bg:           #146c43;
+      --bs-btn-border-color: #146c43;
+      --bs-btn-hover-bg:     #0f5233;
+      --bs-btn-hover-border-color: #0f5233;
+      --bs-btn-active-bg:    #0f5233;
+      background-color: #146c43 !important;
+      border-color: #146c43 !important;
+      color: #fff !important;
+    }
+
+    /* btn-outline-danger — EEOC override */
+    .btn-outline-danger {
+      --bs-btn-color:               #b02a37;
+      --bs-btn-border-color:        #b02a37;
+      --bs-btn-hover-color:         #fff;
+      --bs-btn-hover-bg:            #b02a37;
+      --bs-btn-hover-border-color:  #b02a37;
+      --bs-btn-active-color:        #fff;
+      --bs-btn-active-bg:           #b02a37;
+      --bs-btn-active-border-color: #b02a37;
+      color: #b02a37 !important;
+      border-color: #b02a37 !important;
+    }
+    .btn-outline-danger:hover,
+    .btn-outline-danger:active,
+    .btn-outline-danger.active {
+      background-color: #b02a37 !important;
+      border-color:     #b02a37 !important;
+      color:            #fff !important;
+    }
+
+    /* ---- Letter viewer ---- */
+    .letter-frame {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 2rem 2.5rem;
+      font-size: 13px;
+      line-height: 1.75;
+      color: #212529;
+    }
+
+    .letter-frame .letterhead {
+      border-bottom: 2px solid #0a58ca;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .letter-frame .letterhead-agency {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0a58ca;
+    }
+
+    .letter-frame .letterhead-office {
+      font-size: 12px;
+      color: #5a6472;
+    }
+
+    /* Tracked changes — additions */
+    .ins {
+      background: #d1fae5;
+      color: #0f5233;
+      text-decoration: underline;
+      text-decoration-color: #146c43;
+    }
+
+    /* Tracked changes — deletions */
+    .del {
+      background: #fde8ea;
+      color: #7f1d1d;
+      text-decoration: line-through;
+      text-decoration-color: #b02a37;
+    }
+
+    /* Change legend */
+    .change-legend {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: 12px;
+      margin-bottom: 1rem;
+    }
+    .change-legend .leg-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .leg-ins { background: #d1fae5; color: #0f5233; padding: 0 6px; border-radius: 3px; }
+    .leg-del { background: #fde8ea; color: #7f1d1d; text-decoration: line-through; padding: 0 6px; border-radius: 3px; }
+
+    /* Human review banner */
+    .review-banner {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-left: 4px solid #7f6500;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #7f6500;
+      font-weight: 600;
+    }
+
+    /* AI chip */
+    .ai-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #0a58ca;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Audit trail */
+    .audit-line {
+      font-size: 11px;
+      color: #5a6472;
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    /* Charge number monospace */
+    .charge-num {
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      font-size: 12px;
+      color: #0a58ca;
+      font-weight: 600;
+    }
+
+    footer .text-muted { color: #5a6472 !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Skip navigation — WCAG 2.4.1 -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ===== Navbar ===== -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">EEOC AI Triage System</a>
+      <div class="d-flex align-items-center flex-wrap gap-1">
+        <a href="triage-upload.html" class="btn btn-outline-light btn-sm me-1">Upload</a>
+        <a href="triage.html" class="btn btn-outline-light btn-sm me-1" aria-current="page">Dashboard</a>
+        <a href="triage-analytics.html" class="btn btn-outline-light btn-sm me-1">Analytics</a>
+        <a href="triage-reports.html" class="btn btn-outline-light btn-sm me-1">Reports</a>
+        <a href="triage-library.html" class="btn btn-outline-light btn-sm me-1">Manage Library</a>
+        <a href="triage-admin.html" class="btn btn-outline-warning btn-sm me-2" title="Admin Tools" aria-label="Admin Tools">Admin Tools</a>
+        <span class="navbar-text me-2">Welcome, S. Rodriguez</span>
+        <a href="index.html" class="btn btn-light btn-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Main Content ===== -->
+  <main id="main-content" class="container mt-4" role="main" tabindex="-1">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Page breadcrumb" class="mb-3">
+      <ol class="breadcrumb" style="font-size:12px;">
+        <li class="breadcrumb-item"><a href="triage.html">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Decision Letter Review</li>
+      </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+      <div>
+        <h1 class="mb-1">Decision Letter Review</h1>
+        <p class="mb-0" style="font-size:13px; color:#5a6472;">
+          Charge <span class="charge-num">#2025-01847</span> &mdash;
+          Complainant: J. Martinez &mdash;
+          Respondent: Meridian Logistics Inc.
+        </p>
+      </div>
+      <span class="ai-chip" aria-label="Letter drafted by AI classification engine">AI Drafted</span>
+    </div>
+
+    <!-- Flash / alert region -->
+    <div role="alert" aria-live="assertive"></div>
+
+    <!-- Human review banner -->
+    <div class="review-banner mb-3" role="note">
+      All AI-drafted letters require triage officer review and approval before transmission. The draft shown below has not been sent.
+    </div>
+
+    <div class="row g-4">
+
+      <!-- ===== Letter Panel ===== -->
+      <div class="col-lg-8">
+
+        <!-- Tracked change legend -->
+        <div class="change-legend" aria-label="Tracked change key">
+          <div class="leg-item">
+            <span class="leg-ins">Inserted text</span>
+            <span style="font-size:11px; color:#5a6472;">— added by reviewer</span>
+          </div>
+          <div class="leg-item">
+            <span class="leg-del">Deleted text</span>
+            <span style="font-size:11px; color:#5a6472;">— removed by reviewer</span>
+          </div>
+        </div>
+
+        <div class="letter-frame" aria-label="AI-drafted decision letter with tracked reviewer changes">
+
+          <!-- Letterhead -->
+          <div class="letterhead">
+            <div class="letterhead-agency">U.S. Equal Employment Opportunity Commission</div>
+            <div class="letterhead-office">Office of Field Programs — District Office</div>
+          </div>
+
+          <p class="mb-1"><strong>Date:</strong> May 21, 2026</p>
+          <p class="mb-1"><strong>Charge No.:</strong> <span class="charge-num">2025-01847</span></p>
+          <p class="mb-3"><strong>Re:</strong> Notice of <ins class="ins">Right-to-Sue</ins><del class="del">Dismissal</del> — J. Martinez v. Meridian Logistics Inc.</p>
+
+          <p>Dear Mr. Martinez:</p>
+
+          <p>
+            The Equal Employment Opportunity Commission has completed its review of the
+            above-referenced charge of employment discrimination. Based on the information
+            provided, the Commission has determined that <ins class="ins">there is reasonable cause to
+            believe that unlawful employment practices have occurred</ins><del class="del">it is unable to conclude
+            that the information obtained establishes violations of the statutes</del>.
+          </p>
+
+          <p>
+            Your charge alleges discrimination based on <strong>national origin</strong> in violation
+            of Title VII of the Civil Rights Act of 1964. The investigation reviewed
+            records covering the period <strong>March 2025 through August 2025</strong>.
+          </p>
+
+          <p>
+            <ins class="ins">The Commission's findings indicate a pattern consistent with differential treatment
+            based on national origin in assignment of route territories during the review
+            period. This matter is being referred to the Office of Federal Operations for
+            further consideration.</ins>
+          </p>
+
+          <p>
+            This notice does not certify that the respondent is in compliance with the
+            statutes. No finding is made as to any other issues that might be construed
+            as having been raised by this charge.
+          </p>
+
+          <p>Sincerely,</p>
+          <p>
+            <strong>S. Rodriguez</strong><br>
+            <span style="color:#5a6472; font-size:12px;">Triage Officer — Office of Field Programs</span>
+          </p>
+
+          <div class="audit-line" aria-label="Letter audit metadata">
+            AUDIT &bull; Draft generated: 2026-05-21T13:47:02Z &bull; Reviewed by: s.rodriguez &bull;
+            HMAC: a4f9c2d1&hellip; &bull; Log ID: triage-letter-2025-01847-v3
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ===== Action Panel ===== -->
+      <div class="col-lg-4">
+
+        <div class="card mb-3">
+          <div class="card-header">
+            <h2 class="h6 mb-0">Review Actions</h2>
+          </div>
+          <div class="card-body">
+            <p style="font-size:12px; color:#5a6472;" class="mb-3">
+              Actions are disabled in the demo environment. In production, Approve sends the letter via the case management system. Return routes the draft back to the assigned officer queue.
+            </p>
+            <div class="d-grid gap-2">
+              <button type="button" class="btn btn-success" disabled aria-disabled="true">
+                Approve and Send
+              </button>
+              <button type="button" class="btn btn-outline-danger" disabled aria-disabled="true">
+                Return for Revision
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header">
+            <h2 class="h6 mb-0">Charge Summary</h2>
+          </div>
+          <div class="card-body" style="font-size:12px;">
+            <dl class="mb-0">
+              <dt class="text-muted" style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">Charge Number</dt>
+              <dd class="charge-num mb-2">2025-01847</dd>
+
+              <dt class="text-muted" style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">AI Classification</dt>
+              <dd class="mb-2">Rank B — Refer to ADR <span style="color:#5a6472;">(94% confidence)</span></dd>
+
+              <dt class="text-muted" style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">Protected Basis</dt>
+              <dd class="mb-2">National Origin (Title VII)</dd>
+
+              <dt class="text-muted" style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">Officer Override</dt>
+              <dd class="mb-2">Rank A — Cause finding</dd>
+
+              <dt class="text-muted" style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">Letter Version</dt>
+              <dd class="mb-0">v3 — 2 tracked changes</dd>
+            </dl>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== Audit Trail ===== -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <h2 class="h5 mb-0">Letter Audit Trail</h2>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm mb-0">
+            <caption class="visually-hidden">Audit trail for decision letter on charge 2025-01847, showing version history, editor, action, and timestamp</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Version</th>
+                <th scope="col">Editor</th>
+                <th scope="col">Action</th>
+                <th scope="col">Timestamp (UTC)</th>
+                <th scope="col">Signature</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <tr>
+                <th scope="row" style="font-weight:500; font-size:12px;">v1</th>
+                <td style="font-size:12px;">system (AI draft)</td>
+                <td style="font-size:12px;">Initial draft generated</td>
+                <td class="ts">2026-05-21 13:44:58</td>
+                <td class="ts">a4f9c2d1&hellip;</td>
+              </tr>
+
+              <tr>
+                <th scope="row" style="font-weight:500; font-size:12px;">v2</th>
+                <td style="font-size:12px;">m.chen</td>
+                <td style="font-size:12px;">Changed disposition — dismissal to cause</td>
+                <td class="ts">2026-05-21 13:46:11</td>
+                <td class="ts">b71e4a09&hellip;</td>
+              </tr>
+
+              <tr>
+                <th scope="row" style="font-weight:500; font-size:12px;">v3</th>
+                <td style="font-size:12px;">s.rodriguez</td>
+                <td style="font-size:12px;">Added findings paragraph, corrected heading</td>
+                <td class="ts">2026-05-21 13:47:02</td>
+                <td class="ts">c9d0f3e7&hellip;</td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="py-4 mt-5 bg-light" role="contentinfo">
+    <div class="container text-center text-muted" style="font-size:0.8rem;">
+      <p class="mb-1">This U.S. government system is to be used by authorized users only. Information from this system resides on computer systems funded by the government.</p>
+      <p class="mb-1">The data and documents on this system include Federal records that contain sensitive information protected by various Federal statutes, including the Privacy Act, 5 U.S.C. &sect; 552a.</p>
+      <p class="mb-1">All access or use of this system constitutes user understanding and acceptance of these terms and constitutes unconditional consent to review, monitor, record, audit and take action by all authorized government and law enforcement personnel.</p>
+      <p class="mb-0">Unauthorized user attempts or acts to (1) access, view, upload, change, or delete information on this system, (2) modify this system, (3) deny access to this system, (4) accrue resources for unauthorized use or (5) otherwise misuse this system are strictly prohibited. Such attempts or acts are subject to action that may result in criminal, civil, or administrative penalties.</p>
+    </div>
+  </footer>
+
+  <!-- ===== Toast Container ===== -->
+  <div id="toast-container"
+       class="toast-container"
+       role="status"
+       aria-live="polite"
+       aria-atomic="false"
+       data-toasts='[
+         {"type":"mcp","title":"Letter Generation","text":"The draft letter was generated by Azure OpenAI using the charge summary and classification rank as context. Stop sequences prevent any legal conclusions in the raw draft — the triage officer supplies the legal determination.","delay":3000,"duration":12000},
+         {"type":"info","title":"Tracked Changes","text":"Changes are stored as JSON diffs against each version snapshot. Every edit is signed and appended to the WORM audit log. The final approved version is transmitted to the case management system via the ARC Integration API.","delay":5000,"duration":10000},
+         {"type":"data","title":"Human Oversight","text":"No AI-drafted letter is transmitted without explicit officer approval. The Approve button is disabled until the reviewing officer confirms all tracked changes have been evaluated.","delay":7000,"duration":10000}
+       ]'>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmY19UFhFBKhxtuQFBTzAIiL5FsDq" crossorigin="anonymous"></script>
+  <script src="js/demo.js"></script>
+</body>
+</html>

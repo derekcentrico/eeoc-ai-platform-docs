@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sync History — ARC Integration Gateway — EEOC AI Platform</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    /* ===== EEOC 508 color overrides — Bootstrap 5.3.3 dangerous-defaults fix ===== */
+    :root {
+      --bs-border-color: #737373;
+      --bs-danger-rgb: 176, 42, 55;
+      --bs-danger: #b02a37;
+      --bs-success-rgb: 20, 108, 67;
+      --bs-success: #146c43;
+      --bs-secondary-rgb: 90, 100, 114;
+      --bs-secondary: #5a6472;
+    }
+
+    .text-primary   { color: #0a58ca !important; }
+    .text-info      { color: #087990 !important; }
+    .text-warning   { color: #7f6500 !important; }
+    .text-danger    { color: #b02a37 !important; }
+    .text-success   { color: #146c43 !important; }
+    .text-muted     { color: #5a6472 !important; }
+
+    /* Navbar text contrast — Bootstrap rgba(255,255,255,0.55) = ~3.2:1, fails 4.5:1 */
+    .navbar-dark .navbar-text,
+    .navbar-dark .navbar-text a { color: #fff !important; }
+
+    /* Badge fixes */
+    .badge.bg-info,
+    .badge.bg-warning { color: #000 !important; }
+
+    /* btn-outline-primary full override */
+    .btn-outline-primary {
+      --bs-btn-color: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #0a58ca;
+      --bs-btn-hover-border-color: #0a58ca;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #0a58ca;
+      --bs-btn-active-border-color: #0a58ca;
+      --bs-btn-disabled-color: #0a58ca;
+      --bs-btn-disabled-border-color: #0a58ca;
+      color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-outline-primary:hover,
+    .btn-outline-primary:active,
+    .btn-outline-primary.active {
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+      color: #fff !important;
+    }
+
+    .btn-primary {
+      --bs-btn-bg: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-bg: #084298;
+      --bs-btn-hover-border-color: #084298;
+      --bs-btn-active-bg: #084298;
+      --bs-btn-active-border-color: #063773;
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-primary:hover,
+    .btn-primary:active,
+    .btn-primary.active {
+      background-color: #084298 !important;
+      border-color: #084298 !important;
+      color: #fff !important;
+    }
+
+    /* btn-outline-secondary full override */
+    .btn-outline-secondary {
+      --bs-btn-color: #5a6472;
+      --bs-btn-border-color: #5a6472;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #5a6472;
+      --bs-btn-hover-border-color: #5a6472;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #5a6472;
+      --bs-btn-active-border-color: #5a6472;
+      --bs-btn-disabled-color: #5a6472;
+      --bs-btn-disabled-border-color: #5a6472;
+      color: #5a6472 !important;
+      border-color: #5a6472 !important;
+    }
+    .btn-outline-secondary:hover,
+    .btn-outline-secondary:active,
+    .btn-outline-secondary.active {
+      background-color: #5a6472 !important;
+      border-color: #5a6472 !important;
+      color: #fff !important;
+    }
+
+    /* Focus indicators — solid 2px, no box-shadow (WCAG 2.4.7 + 1.4.11) */
+    .btn:focus-visible,
+    a:focus-visible,
+    .nav-link:focus-visible,
+    .btn-close:focus-visible,
+    .dropdown-item:focus-visible,
+    .page-link:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible {
+      outline: 2px solid #0a58ca !important;
+      outline-offset: 2px !important;
+    }
+
+    .btn:focus, .nav-link:focus, .btn-close:focus, .dropdown-item:focus,
+    .page-link:focus, .form-control:focus, .form-select:focus,
+    .form-check-input:focus {
+      box-shadow: none !important;
+    }
+
+    details summary:focus-visible {
+      outline: 2px solid #0a58ca;
+      outline-offset: 2px;
+    }
+
+    /* ===== Page layout ===== */
+    body {
+      background-color: #f8f9fa;
+    }
+
+    /* ===== Metric cards ===== */
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.1;
+      color: #212529;
+    }
+
+    .metric-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #5a6472;
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-sub {
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+    }
+
+    /* ===== Run ID monospace ===== */
+    .run-id {
+      font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace;
+      font-size: 11px;
+      color: #5a6472;
+    }
+
+    /* ===== Status pills ===== */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-pill-success { background: #d1fae5; color: #146c43; }
+    .status-pill-warning { background: #fff3cd; color: #7f6500; }
+
+    /* ===== Sync dot ===== */
+    .sync-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #146c43;
+      animation: sync-pulse 2s infinite;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+
+    @keyframes sync-pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.25; }
+    }
+
+    /* ===== History table ===== */
+    .history-table td,
+    .history-table th {
+      font-size: 12px;
+      vertical-align: middle;
+    }
+
+    .ts-cell {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* ===== Toast container ===== */
+    .toast-container-custom {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 1090;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 320px;
+    }
+
+    .toast-item {
+      background: #212529;
+      color: #f8f9fa;
+      border-radius: 6px;
+      padding: 12px 14px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      transition: opacity 0.3s;
+    }
+
+    .toast-item-icon { font-size: 1rem; margin-top: 1px; flex-shrink: 0; }
+
+    .toast-item-title {
+      font-weight: 700;
+      margin-bottom: 2px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .toast-item-text { font-size: 12px; color: #ced4da; }
+
+    .toast-item-close {
+      background: none;
+      border: none;
+      color: #adb5bd;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .toast-item-close:focus-visible {
+      outline: 2px solid #0a58ca;
+      outline-offset: 2px;
+    }
+
+    details summary {
+      font-size: 12px;
+      color: #5a6472;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+
+    details .table { font-size: 12px; margin-top: 0.5rem; }
+
+    /* ===== Government footer ===== */
+    .gov-footer {
+      font-size: 0.75rem;
+      color: #5a6472;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Skip navigation (WCAG 2.4.1) -->
+  <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+
+  <!-- ===== Navbar ===== -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-semibold" href="arc-integration.html">ARC Integration Gateway</a>
+
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <a href="arc-integration.html" class="btn btn-outline-light btn-sm">
+          <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Sync Status
+        </a>
+        <a href="arc-staged.html" class="btn btn-outline-light btn-sm">Staged Charges</a>
+        <a href="arc-history.html" class="btn btn-primary btn-sm" aria-current="page">Sync History</a>
+        <a href="arc-integration.html#endpoint-health" class="btn btn-outline-light btn-sm">Endpoint Health</a>
+        <a href="arc-integration.html#error-log" class="btn btn-outline-light btn-sm">Error Log</a>
+
+        <span class="navbar-text ms-3 me-2" aria-label="Signed in as D. Gordon, Platform Admin">
+          D. Gordon &mdash; Platform Admin
+        </span>
+        <a href="index.html" class="btn btn-light btn-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Main content ===== -->
+  <main id="main-content" class="container-fluid py-4 px-4" role="main" tabindex="-1">
+
+    <!-- Page heading -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <nav aria-label="Breadcrumb">
+          <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="index.html">Platform</a></li>
+            <li class="breadcrumb-item"><a href="arc-integration.html">ARC Integration</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Sync History</li>
+          </ol>
+        </nav>
+        <h1 class="h4 mb-0">
+          <span class="sync-dot" aria-hidden="true"></span>
+          Sync Run History
+        </h1>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" type="button">
+          <i class="bi bi-download me-1" aria-hidden="true"></i>Export Log
+        </button>
+        <button class="btn btn-primary btn-sm" type="button">
+          <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Force Sync
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== Summary metrics ===== -->
+    <section aria-labelledby="history-metrics-heading" class="mb-4">
+      <h2 id="history-metrics-heading" class="visually-hidden">Sync History Summary Metrics</h2>
+      <div class="row g-3" role="list">
+
+        <div class="col-6 col-md-3" role="listitem">
+          <div class="card h-100" aria-label="Total syncs today: 96">
+            <div class="card-body">
+              <div class="metric-label">Total Syncs Today</div>
+              <div class="metric-value counter" data-target="96" aria-hidden="true">96</div>
+              <div class="metric-sub text-muted">Every 15 minutes</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3" role="listitem">
+          <div class="card h-100" aria-label="Average sync duration: 4.2 seconds">
+            <div class="card-body">
+              <div class="metric-label">Avg Duration</div>
+              <div class="metric-value counter" data-target="4.2" data-decimals="1" data-suffix="s" aria-hidden="true">4.2s</div>
+              <div class="metric-sub text-muted">Stable</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3" role="listitem">
+          <div class="card h-100" aria-label="Cases staged today: 23">
+            <div class="card-body">
+              <div class="metric-label">Cases Staged Today</div>
+              <div class="metric-value counter" data-target="23" aria-hidden="true">23</div>
+              <div class="metric-sub text-success">
+                <i class="bi bi-arrow-up" aria-hidden="true"></i>
+                <span class="visually-hidden">Increase:</span>
+                4 from yesterday
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3" role="listitem">
+          <div class="card h-100" aria-label="Errors today: 1">
+            <div class="card-body">
+              <div class="metric-label">Errors</div>
+              <div class="metric-value text-warning">1</div>
+              <div class="metric-sub text-warning">
+                <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                <span class="visually-hidden">Warning:</span>
+                1 case skipped
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== Sync duration chart ===== -->
+    <section class="card mb-4" aria-labelledby="duration-chart-heading">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-graph-up text-primary" aria-hidden="true"></i>
+        <h2 class="h6 mb-0" id="duration-chart-heading">Sync Duration — Last 24h (96 Runs)</h2>
+      </div>
+      <div class="card-body">
+        <canvas
+          id="durationChart"
+          role="img"
+          aria-label="Line chart showing sync duration in seconds over 96 runs in the last 24 hours. Most runs complete between 3.8 and 4.8 seconds. One run near cycle 71 took 6.2 seconds and is flagged as a partial sync."
+          style="max-height:200px;"
+        ></canvas>
+
+        <details class="mt-2">
+          <summary>Chart data is available in the table below.</summary>
+          <table class="table table-sm">
+            <caption class="visually-hidden">Sync duration in seconds for each of the 96 sync runs in the last 24 hours, sampled every 4 cycles</caption>
+            <thead>
+              <tr>
+                <th scope="col">Cycle</th>
+                <th scope="col">Approximate Time</th>
+                <th scope="col">Duration (s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">1</th><td>12:00 AM</td><td>4.1</td></tr>
+              <tr><th scope="row">5</th><td>1:00 AM</td><td>3.9</td></tr>
+              <tr><th scope="row">9</th><td>2:00 AM</td><td>4.0</td></tr>
+              <tr><th scope="row">13</th><td>3:00 AM</td><td>3.8</td></tr>
+              <tr><th scope="row">17</th><td>4:00 AM</td><td>4.2</td></tr>
+              <tr><th scope="row">21</th><td>5:00 AM</td><td>4.3</td></tr>
+              <tr><th scope="row">25</th><td>6:00 AM</td><td>4.1</td></tr>
+              <tr><th scope="row">29</th><td>7:00 AM</td><td>4.4</td></tr>
+              <tr><th scope="row">33</th><td>8:00 AM</td><td>4.6</td></tr>
+              <tr><th scope="row">37</th><td>9:00 AM</td><td>4.8</td></tr>
+              <tr><th scope="row">41</th><td>10:00 AM</td><td>4.7</td></tr>
+              <tr><th scope="row">45</th><td>11:00 AM</td><td>4.5</td></tr>
+              <tr><th scope="row">49</th><td>12:00 PM</td><td>4.6</td></tr>
+              <tr><th scope="row">53</th><td>1:00 PM</td><td>4.4</td></tr>
+              <tr><th scope="row">57</th><td>2:00 PM</td><td>4.3</td></tr>
+              <tr><th scope="row">61</th><td>3:00 PM</td><td>4.2</td></tr>
+              <tr><th scope="row">65</th><td>4:00 PM</td><td>4.3</td></tr>
+              <tr><th scope="row">69</th><td>5:00 PM</td><td>4.1</td></tr>
+              <tr><th scope="row">71</th><td>5:30 PM</td><td>6.2 (Partial)</td></tr>
+              <tr><th scope="row">73</th><td>6:00 PM</td><td>4.2</td></tr>
+              <tr><th scope="row">77</th><td>7:00 PM</td><td>4.0</td></tr>
+              <tr><th scope="row">81</th><td>8:00 PM</td><td>3.9</td></tr>
+              <tr><th scope="row">85</th><td>9:00 PM</td><td>4.1</td></tr>
+              <tr><th scope="row">89</th><td>10:00 PM</td><td>4.0</td></tr>
+              <tr><th scope="row">93</th><td>11:00 PM</td><td>3.9</td></tr>
+              <tr><th scope="row">96</th><td>11:45 PM</td><td>4.1</td></tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===== Sync run history table ===== -->
+    <section class="card mb-4" aria-labelledby="run-history-heading">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-clock-history text-primary" aria-hidden="true"></i>
+        <h2 class="h6 mb-0" id="run-history-heading">Last 15 Sync Runs</h2>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive" role="region" aria-label="Sync run history table, scrollable">
+          <table class="table table-hover mb-0 history-table">
+            <caption class="visually-hidden">Last 15 ARC sync runs showing run ID, start time, duration, cases found, cases staged, error count, and status</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Run ID</th>
+                <th scope="col">Started</th>
+                <th scope="col">Duration</th>
+                <th scope="col">Cases Found</th>
+                <th scope="col">Cases Staged</th>
+                <th scope="col">Errors</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-96</span></th>
+                <td class="ts-cell">14:15:00</td>
+                <td>4.1s</td>
+                <td>2</td>
+                <td>2</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-95</span></th>
+                <td class="ts-cell">14:00:00</td>
+                <td>3.9s</td>
+                <td>1</td>
+                <td>1</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-94</span></th>
+                <td class="ts-cell">13:45:00</td>
+                <td>4.3s</td>
+                <td>3</td>
+                <td>3</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-93</span></th>
+                <td class="ts-cell">13:30:00</td>
+                <td>4.0s</td>
+                <td>1</td>
+                <td>1</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-92</span></th>
+                <td class="ts-cell">13:15:00</td>
+                <td>4.2s</td>
+                <td>2</td>
+                <td>2</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-91</span></th>
+                <td class="ts-cell">13:00:00</td>
+                <td>4.4s</td>
+                <td>2</td>
+                <td>2</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-90</span></th>
+                <td class="ts-cell">12:45:00</td>
+                <td>4.1s</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-89</span></th>
+                <td class="ts-cell">12:30:00</td>
+                <td>4.3s</td>
+                <td>1</td>
+                <td>1</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-88</span></th>
+                <td class="ts-cell">12:15:00</td>
+                <td>4.6s</td>
+                <td>3</td>
+                <td>3</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-87</span></th>
+                <td class="ts-cell">12:00:00</td>
+                <td>4.2s</td>
+                <td>2</td>
+                <td>2</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-86</span></th>
+                <td class="ts-cell">11:45:00</td>
+                <td>4.5s</td>
+                <td>1</td>
+                <td>1</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-85</span></th>
+                <td class="ts-cell">11:30:00</td>
+                <td>4.7s</td>
+                <td>1</td>
+                <td>1</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-84</span></th>
+                <td class="ts-cell">11:15:00</td>
+                <td>4.8s</td>
+                <td>2</td>
+                <td>2</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-83</span></th>
+                <td class="ts-cell">11:00:00</td>
+                <td>4.4s</td>
+                <td>1</td>
+                <td>1</td>
+                <td>0</td>
+                <td><span class="status-pill status-pill-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Success</span></td>
+              </tr>
+              <!-- Row 15 — the one partial sync -->
+              <tr>
+                <th scope="row"><span class="run-id">arc-sync-2026-05-21-71</span></th>
+                <td class="ts-cell">17:30:00</td>
+                <td>6.2s</td>
+                <td>2</td>
+                <td>1</td>
+                <td>1</td>
+                <td>
+                  <span class="status-pill status-pill-warning">
+                    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                    Partial
+                  </span>
+                  <span class="d-block text-muted" style="font-size:10px;margin-top:2px;">1 case skipped (duplicate)</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Accessible summary -->
+        <div class="px-3 pb-3 pt-2">
+          <details>
+            <summary>Sync run summary statistics available in the table below.</summary>
+            <table class="table table-sm mt-2">
+              <caption class="visually-hidden">Aggregate statistics for the 15 sync runs shown</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Metric</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Runs shown</th><td>15</td></tr>
+                <tr><th scope="row">Successful</th><td>14</td></tr>
+                <tr><th scope="row">Partial</th><td>1 (duplicate detection)</td></tr>
+                <tr><th scope="row">Failed</th><td>0</td></tr>
+                <tr><th scope="row">Total cases found</th><td>24</td></tr>
+                <tr><th scope="row">Total cases staged</th><td>23</td></tr>
+                <tr><th scope="row">Min duration</th><td>3.9s</td></tr>
+                <tr><th scope="row">Max duration</th><td>6.2s (Partial run)</td></tr>
+              </tbody>
+            </table>
+          </details>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== Government footer ===== -->
+  <footer class="py-4 mt-2 bg-light" role="contentinfo">
+    <div class="container-fluid px-4 gov-footer">
+      <p class="mb-1">This U.S. government system is for use by authorized users only. Information from this system resides on computer systems funded by the government.</p>
+      <p class="mb-1">The data and documents on this system include Federal records that contain sensitive information protected by various Federal statutes, including the Privacy Act, 5 U.S.C. &sect; 552a.</p>
+      <p class="mb-0">Unauthorized user attempts or acts to access, modify, or deny access to this system are strictly prohibited and subject to criminal, civil, or administrative penalties.</p>
+    </div>
+  </footer>
+
+  <!-- ===== Toast container ===== -->
+  <div
+    id="toast-container"
+    class="toast-container-custom"
+    role="status"
+    aria-live="polite"
+    aria-atomic="false"
+    data-toasts='[
+      {"type":"data","title":"15-Minute Sync Cycle","text":"The ARCSyncImporter Azure Function fires every 15 minutes — 96 times per day. Each run uses a watermark so only new charges since the last successful sync are pulled.","delay":3000,"duration":10000},
+      {"type":"info","title":"Duplicate Detection","text":"If ARC returns a charge already present in the staging table, the importer skips it and logs a partial-sync event. No data is overwritten.","delay":5000,"duration":10000},
+      {"type":"mcp","title":"Run ID Format","text":"Run IDs are deterministic: arc-sync-YYYY-MM-DD-N where N is the cycle number (1–96 for a full day). This makes it easy to correlate runs with ARC pull timestamps.","delay":4000,"duration":10000}
+    ]'>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmY19UFhFKhxtuQFBTzAIiL5FsDq" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+  <script src="js/demo.js"></script>
+  <script>
+    /* Sync duration line chart — 96 runs, sampled to representative points */
+    (function () {
+      /* Generate 96 data points — mostly 3.8–4.9s, spike at index 70 (cycle 71) */
+      const base = [
+        4.1,3.9,4.0,3.8,4.1,4.2,4.0,4.3,4.1,4.2,
+        3.9,4.0,4.2,4.3,4.1,4.0,4.2,4.4,4.3,4.2,
+        4.1,4.3,4.4,4.2,4.1,4.3,4.5,4.4,4.3,4.2,
+        4.4,4.3,4.6,4.5,4.3,4.4,4.7,4.8,4.6,4.5,
+        4.7,4.5,4.6,4.4,4.5,4.6,4.5,4.4,4.6,4.5,
+        4.4,4.3,4.5,4.4,4.3,4.2,4.4,4.3,4.2,4.1,
+        4.3,4.2,4.3,4.4,4.3,4.2,4.1,4.3,4.2,4.1,
+        6.2,4.2,4.0,4.1,4.2,4.0,3.9,4.1,4.0,3.9,
+        4.1,4.0,3.9,4.1,4.0,3.9,4.1,4.0,3.9,4.0,
+        4.1,3.9,4.0,4.1,4.0,4.1
+      ];
+
+      const labels = base.map((_, i) => `#${i + 1}`);
+
+      /*
+       * Line color: #1a2744 (navy) — verified > 3:1 on white canvas (WCAG 1.4.11 non-text).
+       * Spike point at cycle 71 uses #b02a37 (danger override) — verified > 3:1.
+       */
+      const lineColor = 'rgb(26, 39, 68)';
+      const pointColors = base.map((v, i) =>
+        i === 70 ? 'rgb(176, 42, 55)' : lineColor
+      );
+      const pointRadius = base.map((v, i) => i === 70 ? 5 : 2);
+
+      const ctx = document.getElementById('durationChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Duration (s)',
+            data: base,
+            borderColor: lineColor,
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            pointBackgroundColor: pointColors,
+            pointRadius: pointRadius,
+            pointHoverRadius: 5,
+            tension: 0.25
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.parsed.y.toFixed(1)}s${ctx.dataIndex === 70 ? ' — Partial (duplicate)' : ''}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                maxTicksLimit: 12,
+                color: '#5a6472',
+                font: { size: 11 }
+              },
+              grid: { color: '#e9ecef' }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Duration (s)',
+                color: '#5a6472',
+                font: { size: 11 }
+              },
+              min: 3.5,
+              max: 7.0,
+              ticks: { color: '#5a6472', font: { size: 11 } },
+              grid: { color: '#e9ecef' }
+            }
+          }
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

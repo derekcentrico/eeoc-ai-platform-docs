@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EEOC AI Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- Navigation -->
+<nav class="site-nav" aria-label="Site navigation">
+    <a href="index.html" class="brand" aria-label="EEOC AI Platform home">
+        <div class="brand-icon" aria-hidden="true">EE</div>
+        <div class="brand-text">EEOC <span>AI Platform</span></div>
+    </a>
+    <ul class="nav-links" role="list">
+        <li><a href="index.html" class="active">Overview</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="applications.html">Applications</a></li>
+        <li><a href="analytics.html">Analytics</a></li>
+        <li><a href="integration.html">Integration</a></li>
+        <li><a href="security.html">Security</a></li>
+    </ul>
+</nav>
+
+<!-- Hero -->
+<main id="main-content" class="page-content">
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">U.S. Equal Employment Opportunity Commission</div>
+        <h1>AI-Enabled Federal<br>Case Management <span>Platform</span></h1>
+        <p class="subtitle">
+            Seven integrated applications transforming how EEOC investigates, mediates,
+            and resolves employment discrimination charges — from intake through disposition.
+        </p>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            <a href="architecture.html" class="btn btn-primary">Platform Architecture</a>
+            <a href="analytics.html" class="btn btn-secondary">Analytics Dashboard</a>
+        </div>
+    </div>
+</section>
+
+<!-- Platform Stats -->
+<section class="section">
+    <div class="metric-row">
+        <div class="metric-card">
+            <div class="metric-label">Applications</div>
+            <div class="metric-value"><span class="counter" data-target="7">0</span></div>
+            <div class="metric-change">Integrated platform</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">EEOC Offices Served</div>
+            <div class="metric-value"><span class="counter" data-target="4">0</span></div>
+            <div class="metric-change">OFS, OGC, OCHCO, OCIO</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Security Scan Sources</div>
+            <div class="metric-value"><span class="counter" data-target="6">0</span></div>
+            <div class="metric-change">Advisory databases per build</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">NIST 800-53 Controls</div>
+            <div class="metric-value"><span class="counter" data-target="47">0</span></div>
+            <div class="metric-change">FedRAMP High mapped</div>
+        </div>
+    </div>
+</section>
+
+<!-- Application Status Dashboard -->
+<section class="section-dark">
+    <div class="section-inner">
+        <div class="section-label">Platform Status</div>
+        <h2 class="section-title">Application Portfolio</h2>
+        <p class="section-desc">Each application serves a distinct EEOC office while sharing authentication,
+            data contracts, security tooling, and the MCP integration layer.</p>
+
+        <div class="card-grid">
+            <!-- ADR -->
+            <div class="card">
+                <div class="card-icon" style="background:#ecfdf5; color:#059669;">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <h3>ADR Portal</h3>
+                    <span class="status-badge status-live">Live</span>
+                </div>
+                <p>Mediation case management for the Office of Federal Operations. AI-assisted
+                    agreement drafting, scheduling, document management, e-signature, and
+                    disposition tracking across district offices.</p>
+                <div class="mt-1" style="font-size:11px; color:var(--text-muted);">
+                    <i class="bi bi-box"></i> App Service + 2 Function Apps &nbsp;
+                    <i class="bi bi-shield-check"></i> FedRAMP High
+                </div>
+            </div>
+
+            <!-- ARC Integration -->
+            <div class="card">
+                <div class="card-icon" style="background:#f0f9ff; color:#0284c7;">
+                    <i class="bi bi-arrow-left-right"></i>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <h3>ARC Integration API</h3>
+                    <span class="status-badge status-ready">Ready</span>
+                </div>
+                <p>Gateway service translating ARC legacy interfaces into authenticated REST endpoints.
+                    All charge data flows through this single service — no application calls ARC directly.</p>
+                <div class="mt-1" style="font-size:11px; color:var(--text-muted);">
+                    <i class="bi bi-box"></i> FastAPI + Service Bus &nbsp;
+                    <i class="bi bi-lock"></i> Managed Identity
+                </div>
+            </div>
+
+            <!-- MCP Hub -->
+            <div class="card">
+                <div class="card-icon" style="background:#fef3c7; color:#d97706;">
+                    <i class="bi bi-diagram-3"></i>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <h3>MCP Hub</h3>
+                    <span class="status-badge status-ready">Ready</span>
+                </div>
+                <p>Azure Functions aggregator implementing the Model Context Protocol. Discovers
+                    and catalogs tools exposed by each spoke application for cross-system
+                    AI agent orchestration.</p>
+                <div class="mt-1" style="font-size:11px; color:var(--text-muted);">
+                    <i class="bi bi-box"></i> Azure Functions + APIM &nbsp;
+                    <i class="bi bi-clock-history"></i> 5-min catalog refresh
+                </div>
+            </div>
+
+            <!-- Triage -->
+            <div class="card">
+                <div class="card-icon" style="background:#fef3c7; color:#d97706;">
+                    <i class="bi bi-funnel"></i>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <h3>OFS Triage</h3>
+                    <span class="status-badge status-progress">In Progress</span>
+                </div>
+                <p>Charge intake and program routing. AI classification determines investigation
+                    priority, identifies statutes, and recommends the optimal resolution track:
+                    mediation, investigation, or conciliation.</p>
+                <div class="mt-1" style="font-size:11px; color:var(--text-muted);">
+                    <i class="bi bi-box"></i> App Service + 3 Function Apps &nbsp;
+                    <i class="bi bi-robot"></i> GPT-4o classification
+                </div>
+            </div>
+
+            <!-- Trial Tool -->
+            <div class="card">
+                <div class="card-icon" style="background:#f0f9ff; color:#0284c7;">
+                    <i class="bi bi-briefcase"></i>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <h3>OGC Trial Tool</h3>
+                    <span class="status-badge status-progress">In Progress</span>
+                </div>
+                <p>Attorney trial preparation for the Office of General Counsel. Document analysis,
+                    case timeline construction, witness management, and AI-assisted legal research
+                    across the full enforcement file.</p>
+                <div class="mt-1" style="font-size:11px; color:var(--text-muted);">
+                    <i class="bi bi-box"></i> App Service + Function App &nbsp;
+                    <i class="bi bi-file-earmark-text"></i> RAG document search
+                </div>
+            </div>
+
+            <!-- OCHCO -->
+            <div class="card">
+                <div class="card-icon" style="background:#faf5ff; color:#7c3aed;">
+                    <i class="bi bi-calculator"></i>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <h3>OCHCO Benefits</h3>
+                    <span class="status-badge status-progress">In Progress</span>
+                </div>
+                <p>Benefits coding validation and overpayment detection. Cross-references OPM rules
+                    against personnel action coding to identify discrepancies before they become
+                    overpayments.</p>
+                <div class="mt-1" style="font-size:11px; color:var(--text-muted);">
+                    <i class="bi bi-box"></i> Flask + MCP Spoke &nbsp;
+                    <i class="bi bi-exclamation-triangle"></i> Anomaly detection
+                </div>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-icon" style="background:#fff7ed; color:#ea580c;">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <h3>Unified Data Analytics Platform (UDAP)</h3>
+                    <span class="status-badge status-progress">In Progress</span>
+                </div>
+                <p>Cross-program analytics combining charge data, mediation outcomes, investigation
+                    metrics, and operational KPIs from all EEOC applications. Natural language query
+                    interface, automated narrative generation, interactive dashboards, and ad-hoc
+                    data analysis notebooks. Aggregates data from ARC, ADR, Triage, and OGC via
+                    the data-middleware ETL pipeline.</p>
+                <div class="mt-1" style="font-size:11px; color:var(--text-muted);">
+                    <i class="bi bi-box"></i> AI Assistant + Superset + JupyterHub + data-middleware &nbsp;
+                    <i class="bi bi-database"></i> PostgreSQL + Azure SQL &nbsp;
+                    <a href="analytics.html" style="color:var(--eeoc-blue); text-decoration:none; font-weight:600;">
+                        View Dashboard Demo <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works (simplified) -->
+<section class="section">
+    <div class="section-label">Integration</div>
+    <h2 class="section-title">End-to-End Charge Lifecycle</h2>
+    <p class="section-desc">From the moment a charge is filed in ARC through final disposition and
+        analytics — every step connected.</p>
+
+    <div class="flow-steps">
+        <div class="flow-step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h4>Charge Filed in ARC</h4>
+                <p>A discrimination charge is filed at an EEOC field office and entered into the
+                    Agency Record Center (ARC), the legacy system of record.</p>
+                <div class="step-detail">ARC stores charge data, investigation records, and enforcement history for all Title VII, ADA, ADEA, EPA, and GINA filings.</div>
+            </div>
+        </div>
+        <div class="flow-step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h4>ARC Integration API Stages the Case</h4>
+                <p>The Integration API pulls eligible cases from ARC every 15 minutes via authenticated REST calls,
+                    translating legacy SOAP/REST interfaces into clean JSON endpoints.</p>
+                <div class="step-detail">GET /arc/v1/mediation/eligible-cases &rarr; watermark-based pagination, SSRF protection, managed identity auth</div>
+            </div>
+        </div>
+        <div class="flow-step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h4>Triage Routes to the Right Track</h4>
+                <p>AI classification analyzes the charge narrative, identifies applicable statutes,
+                    and recommends the optimal resolution path: mediation, investigation, or conciliation.</p>
+                <div class="step-detail">GPT-4o with stop sequences ["Legal Advice:", "Legal Conclusion:"] &rarr; human review required before any action</div>
+            </div>
+        </div>
+        <div class="flow-step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <h4>ADR Manages Mediation</h4>
+                <p>The mediator picks up the case, schedules sessions, manages documents, and uses
+                    AI to draft settlement agreements — all with HMAC-signed audit trails and
+                    7-year WORM retention.</p>
+                <div class="step-detail">HMAC-SHA256 signed audit records &rarr; Azure Blob immutable storage &rarr; NARA-compliant 7-year retention</div>
+            </div>
+        </div>
+        <div class="flow-step">
+            <div class="step-number">5</div>
+            <div class="step-content">
+                <h4>OGC Prepares for Trial (if needed)</h4>
+                <p>If mediation fails and the case proceeds to litigation, attorneys use the Trial Tool
+                    for document analysis, timeline construction, and AI-assisted legal research across
+                    the full case file.</p>
+                <div class="step-detail">RAG-powered document search &rarr; Azure AI Search + GPT-4o vision for scanned documents</div>
+            </div>
+        </div>
+        <div class="flow-step">
+            <div class="step-number">6</div>
+            <div class="step-content">
+                <h4>Analytics Dashboard Aggregates Outcomes</h4>
+                <p>Metrics from every stage flow into UDAP. Leadership sees settlement rates,
+                    time-to-resolution, office performance, and charge trends — queryable in
+                    natural language.</p>
+                <div class="step-detail">Daily metrics push &rarr; data-middleware ETL &rarr; PostgreSQL &rarr; Superset dashboards + AI assistant chat</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MCP Architecture Preview -->
+<section class="section-dark">
+    <div class="section-inner">
+        <div class="section-label">Model Context Protocol</div>
+        <h2 class="section-title">Hub-and-Spoke Tool Orchestration</h2>
+        <p class="section-desc">Every application exposes its capabilities as MCP tools. The Hub
+            discovers and catalogs them, enabling cross-application AI agent workflows.</p>
+
+        <div class="arch-container" style="text-align:center;">
+            <div style="margin-bottom:2rem;">
+                <div class="arch-node" data-component="mcp-hub"
+                     style="background:var(--eeoc-navy); color:#fff; font-size:15px; padding:14px 28px;">
+                    <i class="bi bi-diagram-3"></i> MCP Hub
+                </div>
+            </div>
+            <div style="display:flex; justify-content:center; gap:1rem; flex-wrap:wrap;">
+                <div class="arch-node" data-component="adr" style="background:#ecfdf5; color:#059669;">
+                    <i class="bi bi-people"></i> ADR Portal
+                    <span class="status-badge status-live" style="font-size:9px;">Live</span>
+                </div>
+                <div class="arch-node" data-component="triage" style="background:#fef3c7; color:#92400e;">
+                    <i class="bi bi-funnel"></i> OFS Triage
+                </div>
+                <div class="arch-node" data-component="trial-tool" style="background:#f0f9ff; color:#0369a1;">
+                    <i class="bi bi-briefcase"></i> OGC Trial Tool
+                </div>
+                <div class="arch-node" data-component="ochco" style="background:#faf5ff; color:#6d28d9;">
+                    <i class="bi bi-calculator"></i> OCHCO Benefits
+                </div>
+                <div class="arch-node" data-component="dashboard" style="background:#fff7ed; color:#c2410c;">
+                    <i class="bi bi-graph-up"></i> UDAP Analytics
+                </div>
+            </div>
+            <div style="margin-top:1.5rem;">
+                <div class="arch-node" data-component="arc-api" style="background:#fee2e2; color:#991b1b;">
+                    <i class="bi bi-database"></i> ARC Integration API
+                </div>
+                <span style="margin:0 0.5rem; color:var(--text-muted);">&rarr;</span>
+                <div class="arch-node" data-component="arc" style="background:#f1f5f9; color:#475569; border:2px dashed #cbd5e1;">
+                    <i class="bi bi-server"></i> ARC Legacy System
+                </div>
+            </div>
+            <div id="arch-detail" style="display:none; margin-top:1.5rem; text-align:left; max-width:600px; margin-left:auto; margin-right:auto; padding:1.25rem; background:var(--surface); border-radius:var(--radius); border-left:3px solid var(--eeoc-gold);"></div>
+        </div>
+        <p style="text-align:center; font-size:13px; color:var(--text-muted); margin-top:1rem;">
+            Click any component to see its role, endpoints, and Azure services.
+        </p>
+    </div>
+</section>
+
+<!-- Security Preview -->
+<section class="section">
+    <div class="section-label">Security Posture</div>
+    <h2 class="section-title">Defense in Depth</h2>
+    <p class="section-desc">Every commit runs through 15+ security gates before reaching production.
+        Six advisory databases, static and dynamic testing, supply chain verification, and
+        tamper-evident audit trails.</p>
+
+    <div class="card-grid">
+        <div class="card">
+            <h3 style="font-size:14px;"><i class="bi bi-shield-check text-gold"></i> &nbsp;6-Database SCA</h3>
+            <p>OWASP Dependency-Check, pip-audit, Trivy, Dependabot, OSV-Scanner, and Grype scan
+                every dependency against NVD, PyPI, GitHub Advisory, Google OSV, and Anchore feeds.</p>
+        </div>
+        <div class="card">
+            <h3 style="font-size:14px;"><i class="bi bi-code-slash text-gold"></i> &nbsp;SAST + PII Rules</h3>
+            <p>Bandit and Semgrep with custom PII leak detection rules. Four rule categories catch
+                PII in log statements, API responses, exception messages, and audit records.</p>
+        </div>
+        <div class="card">
+            <h3 style="font-size:14px;"><i class="bi bi-globe text-gold"></i> &nbsp;Authenticated DAST</h3>
+            <p>ZAP active scan with valid credentials tests all authenticated endpoints for
+                injection, XSS, auth bypass, and OWASP Top 10 vulnerabilities.</p>
+        </div>
+        <div class="card">
+            <h3 style="font-size:14px;"><i class="bi bi-key text-gold"></i> &nbsp;Secret Scanning</h3>
+            <p>Gitleaks scans the full git history on every commit. Pre-commit hooks prevent
+                secrets from being committed. CI gates fail the build on any finding.</p>
+        </div>
+        <div class="card">
+            <h3 style="font-size:14px;"><i class="bi bi-fingerprint text-gold"></i> &nbsp;HMAC Audit Trail</h3>
+            <p>Every AI generation is signed with HMAC-SHA256 and stored in immutable Azure Blob
+                storage with 7-year WORM retention. NARA-compliant — verified during 2025 OIG inquiry.</p>
+        </div>
+        <div class="card">
+            <h3 style="font-size:14px;"><i class="bi bi-award text-gold"></i> &nbsp;Supply Chain</h3>
+            <p>CycloneDX SBOM generation, Syft system dependency scanning, ScanCode snippet-level
+                license detection, and SLSA + Cosign container image signing with build provenance.</p>
+        </div>
+    </div>
+    <div style="text-align:center; margin-top:1.5rem;">
+        <a href="security.html" class="btn btn-sm" style="background:var(--eeoc-navy); color:#fff;">
+            Full Security Comparison <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <strong>U.S. Equal Employment Opportunity Commission</strong> &mdash; Office of the Chief Information Officer<br>
+    AI-Enabled Case Management Platform &bull; FedRAMP High &bull; NIST 800-53 Rev5 &bull; WCAG 2.1 AA
+</footer>
+
+</main><!-- /page-content -->
+
+<script src="js/site.js"></script>
+</body>
+</html>

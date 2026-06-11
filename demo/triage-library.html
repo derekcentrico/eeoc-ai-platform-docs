@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Library — EEOC AI Triage System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="css/demo.css" rel="stylesheet">
+  <style>
+    /* =========================================================================
+       EEOC AI Triage System — Page overrides
+       Mirrors eeoc-ofs-triage/triage_webapp/static/css/eeoc-ai-triage-custom.css
+       Section 508 / WCAG 2.1 AA verified 2026-05-21
+       ========================================================================= */
+
+    :root {
+      --bs-danger-rgb:    176, 42, 55;
+      --bs-danger:        #b02a37;
+      --bs-success-rgb:   20, 108, 67;
+      --bs-success:       #146c43;
+      --bs-secondary-rgb: 90, 100, 114;
+      --bs-secondary:     #5a6472;
+      --bs-info-rgb:      8, 121, 144;
+      --bs-info:          #087990;
+      --bs-warning-rgb:   127, 101, 0;
+      --bs-warning:       #7f6500;
+      --bs-border-color:  #737373;
+    }
+
+    .text-muted   { color: #5a6472 !important; }
+    .text-danger  { color: #b02a37 !important; }
+    .text-success { color: #146c43 !important; }
+    .text-info    { color: #087990 !important; }
+    .text-warning { color: #7f6500 !important; }
+    .text-primary { color: #0a58ca !important; }
+
+    .navbar-dark .navbar-text,
+    .navbar-dark .navbar-text a { color: #fff !important; }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      text-decoration: none;
+      z-index: 1100;
+      border-radius: 0 0 4px 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    [tabindex]:focus-visible,
+    .btn:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible,
+    .nav-link:focus-visible,
+    .btn-close:focus-visible,
+    .dropdown-item:focus-visible,
+    .page-link:focus-visible {
+      outline: 2px solid #0a58ca !important;
+      outline-offset: 2px !important;
+      box-shadow: none !important;
+    }
+
+    .btn:focus, a:focus, button:focus, input:focus, select:focus, textarea:focus,
+    [tabindex]:focus, .form-control:focus, .form-select:focus,
+    .form-check-input:focus, .nav-link:focus, .btn-close:focus,
+    .dropdown-item:focus, .page-link:focus {
+      box-shadow: none !important;
+    }
+
+    body {
+      background-color: #f8f9fa;
+      color: #212529;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+                   "Noto Sans", "Liberation Sans", Arial, sans-serif;
+    }
+
+    .container { max-width: 1140px; }
+
+    .navbar .btn-outline-light[aria-current="page"] {
+      background-color: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+
+    .btn-outline-light {
+      --bs-btn-color:               #f8f9fa;
+      --bs-btn-border-color:        #f8f9fa;
+      --bs-btn-hover-color:         #212529;
+      --bs-btn-hover-bg:            #f8f9fa;
+      --bs-btn-hover-border-color:  #f8f9fa;
+      --bs-btn-active-color:        #212529;
+      --bs-btn-active-bg:           #f8f9fa;
+      --bs-btn-active-border-color: #f8f9fa;
+    }
+
+    .btn-outline-warning {
+      --bs-btn-color:               #7f6500;
+      --bs-btn-border-color:        #7f6500;
+      --bs-btn-hover-color:         #fff;
+      --bs-btn-hover-bg:            #7f6500;
+      --bs-btn-hover-border-color:  #7f6500;
+      --bs-btn-active-color:        #fff;
+      --bs-btn-active-bg:           #7f6500;
+      --bs-btn-active-border-color: #7f6500;
+      color: #7f6500 !important;
+      border-color: #7f6500 !important;
+    }
+    .btn-outline-warning:hover,
+    .btn-outline-warning:active,
+    .btn-outline-warning.active {
+      background-color: #7f6500 !important;
+      border-color:     #7f6500 !important;
+      color:            #fff !important;
+    }
+
+    /* Category badges — solid, pass 4.5:1 */
+    .cat-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .cat-statute   { background: #dbeafe; color: #0a58ca; }
+    .cat-guidance  { background: #d1fae5; color: #146c43; }
+    .cat-policy    { background: #fef3c7; color: #7f6500; }
+    .cat-case      { background: #f1f5f9; color: #5a6472; }
+    .cat-cfr       { background: #fde8ea; color: #b02a37; }
+
+    /* Status badges */
+    .status-active    { background: #d1fae5; color: #146c43; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+    .status-review    { background: #fef3c7; color: #7f6500; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+    .status-draft     { background: #f1f5f9; color: #5a6472; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+
+    footer .text-muted { color: #5a6472 !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Skip navigation — WCAG 2.4.1 -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ===== Navbar ===== -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">EEOC AI Triage System</a>
+      <div class="d-flex align-items-center flex-wrap gap-1">
+        <a href="triage-upload.html" class="btn btn-outline-light btn-sm me-1">Upload</a>
+        <a href="triage.html" class="btn btn-outline-light btn-sm me-1">Dashboard</a>
+        <a href="triage-analytics.html" class="btn btn-outline-light btn-sm me-1">Analytics</a>
+        <a href="triage-reports.html" class="btn btn-outline-light btn-sm me-1">Reports</a>
+        <a href="triage-library.html" class="btn btn-outline-light btn-sm me-1" aria-current="page">Manage Library</a>
+        <a href="triage-admin.html" class="btn btn-outline-warning btn-sm me-2" title="Admin Tools" aria-label="Admin Tools">Admin Tools</a>
+        <span class="navbar-text me-2">Welcome, S. Rodriguez</span>
+        <a href="index.html" class="btn btn-light btn-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Main Content ===== -->
+  <main id="main-content" class="container mt-4" role="main" tabindex="-1">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+      <div>
+        <h1 class="mb-1">Knowledge Base Library</h1>
+        <p class="lead mb-0" style="font-size:14px;">Reference articles used by the AI classification engine. Edits and uploads are disabled in the demo environment.</p>
+      </div>
+    </div>
+
+    <!-- Flash / alert region -->
+    <div role="alert" aria-live="assertive"></div>
+
+    <!-- Search bar -->
+    <div class="card mb-3">
+      <div class="card-body py-2">
+        <div class="d-flex align-items-center gap-2">
+          <label for="library-search" class="form-label mb-0 text-nowrap" style="font-size:13px; font-weight:600;">Search articles:</label>
+          <input type="search"
+                 id="library-search"
+                 class="form-control form-control-sm"
+                 placeholder="Article title, category, or keyword…"
+                 aria-label="Search knowledge base articles"
+                 aria-controls="library-table"
+                 style="max-width:360px;">
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="filterTable()">Search</button>
+          <button type="button" class="btn btn-sm btn-link" onclick="clearSearch()" style="color:#0a58ca;">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Article Table ===== -->
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0" id="library-table">
+            <caption class="visually-hidden">Knowledge base articles showing title, category, last updated date, and status</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Article Title</th>
+                <th scope="col">Category</th>
+                <th scope="col">Last Updated</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <tr>
+                <th scope="row" style="font-weight:600; font-size:13px;">Title VII Protected Bases</th>
+                <td><span class="cat-badge cat-statute">Statute</span></td>
+                <td><span style="font-size:12px; color:#5a6472;">Mar 14, 2026</span></td>
+                <td><span class="status-active">Active</span></td>
+              </tr>
+
+              <tr>
+                <th scope="row" style="font-weight:600; font-size:13px;">ADA Reasonable Accommodation Standards</th>
+                <td><span class="cat-badge cat-guidance">Guidance</span></td>
+                <td><span style="font-size:12px; color:#5a6472;">Apr 2, 2026</span></td>
+                <td><span class="status-active">Active</span></td>
+              </tr>
+
+              <tr>
+                <th scope="row" style="font-weight:600; font-size:13px;">ADEA Coverage Thresholds (20+ Employees)</th>
+                <td><span class="cat-badge cat-statute">Statute</span></td>
+                <td><span style="font-size:12px; color:#5a6472;">Jan 9, 2026</span></td>
+                <td><span class="status-active">Active</span></td>
+              </tr>
+
+              <tr>
+                <th scope="row" style="font-weight:600; font-size:13px;">Retaliation — Causal Link Framework</th>
+                <td><span class="cat-badge cat-case">Case Law</span></td>
+                <td><span style="font-size:12px; color:#5a6472;">Feb 28, 2026</span></td>
+                <td><span class="status-active">Active</span></td>
+              </tr>
+
+              <tr>
+                <th scope="row" style="font-weight:600; font-size:13px;">GINA Genetic Information Protections</th>
+                <td><span class="cat-badge cat-statute">Statute</span></td>
+                <td><span style="font-size:12px; color:#5a6472;">Nov 3, 2025</span></td>
+                <td><span class="status-active">Active</span></td>
+              </tr>
+
+              <tr>
+                <th scope="row" style="font-weight:600; font-size:13px;">29 CFR Part 1601 — Charge Processing Procedures</th>
+                <td><span class="cat-badge cat-cfr">CFR</span></td>
+                <td><span style="font-size:12px; color:#5a6472;">Oct 15, 2025</span></td>
+                <td><span class="status-active">Active</span></td>
+              </tr>
+
+              <tr>
+                <th scope="row" style="font-weight:600; font-size:13px;">ADR Mediation Eligibility Criteria</th>
+                <td><span class="cat-badge cat-policy">Policy</span></td>
+                <td><span style="font-size:12px; color:#5a6472;">May 1, 2026</span></td>
+                <td><span class="status-review">Under Review</span></td>
+              </tr>
+
+              <tr>
+                <th scope="row" style="font-weight:600; font-size:13px;">Strategic Enforcement Plan 2024–2028 — Priority Areas</th>
+                <td><span class="cat-badge cat-policy">Policy</span></td>
+                <td><span style="font-size:12px; color:#5a6472;">May 19, 2026</span></td>
+                <td><span class="status-draft">Draft</span></td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-muted mt-2" style="font-size:12px;">8 articles — uploads and edits are disabled in the demo environment.</p>
+
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="py-4 mt-5 bg-light" role="contentinfo">
+    <div class="container text-center text-muted" style="font-size:0.8rem;">
+      <p class="mb-1">This U.S. government system is to be used by authorized users only. Information from this system resides on computer systems funded by the government.</p>
+      <p class="mb-1">The data and documents on this system include Federal records that contain sensitive information protected by various Federal statutes, including the Privacy Act, 5 U.S.C. &sect; 552a.</p>
+      <p class="mb-1">All access or use of this system constitutes user understanding and acceptance of these terms and constitutes unconditional consent to review, monitor, record, audit and take action by all authorized government and law enforcement personnel.</p>
+      <p class="mb-0">Unauthorized user attempts or acts to (1) access, view, upload, change, or delete information on this system, (2) modify this system, (3) deny access to this system, (4) accrue resources for unauthorized use or (5) otherwise misuse this system are strictly prohibited. Such attempts or acts are subject to action that may result in criminal, civil, or administrative penalties.</p>
+    </div>
+  </footer>
+
+  <!-- ===== Toast Container ===== -->
+  <div id="toast-container"
+       class="toast-container"
+       role="status"
+       aria-live="polite"
+       aria-atomic="false"
+       data-toasts='[
+         {"type":"data","title":"Knowledge Base Storage","text":"Library articles are stored in Azure Blob Storage and indexed in the vector store used by the AI classification engine. Updates trigger an async re-index job.","delay":3000,"duration":10000},
+         {"type":"mcp","title":"RAG Integration","text":"The AI classification engine retrieves relevant articles at inference time using vector similarity search. Only Active-status articles are included in retrieval.","delay":5000,"duration":10000}
+       ]'>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmY19UFhFBKhxtuQFBTzAIiL5FsDq" crossorigin="anonymous"></script>
+  <script src="js/demo.js"></script>
+  <script>
+    /* Client-side table search — filters visible rows on the article title column */
+    function filterTable() {
+      'use strict';
+      var input = document.getElementById('library-search');
+      var filter = input.value.toLowerCase().trim();
+      var rows = document.querySelectorAll('#library-table tbody tr');
+      rows.forEach(function (row) {
+        var text = row.textContent.toLowerCase();
+        row.style.display = (!filter || text.indexOf(filter) !== -1) ? '' : 'none';
+      });
+    }
+
+    function clearSearch() {
+      'use strict';
+      document.getElementById('library-search').value = '';
+      filterTable();
+    }
+
+    document.getElementById('library-search').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); filterTable(); }
+    });
+  </script>
+</body>
+</html>

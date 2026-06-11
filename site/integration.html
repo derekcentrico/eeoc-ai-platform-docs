@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Integration Patterns — EEOC AI Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/site.css">
+    <style>
+        /* ---- Integration-page-specific overrides ---- */
+
+        /* Interactive flow steps — expandable detail */
+        .flow-step {
+            cursor: pointer;
+        }
+        .flow-step-detail {
+            display: none;
+            margin-top: 0.75rem;
+        }
+        .flow-step-detail.is-open {
+            display: block;
+        }
+        .flow-step-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 0.5rem;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--eeoc-gold-dark);
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        .flow-step-toggle:focus-visible {
+            outline: 2px solid #0a58ca;
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+        .flow-step-toggle .toggle-icon {
+            transition: transform 150ms ease;
+        }
+        .flow-step-toggle[aria-expanded="true"] .toggle-icon {
+            transform: rotate(90deg);
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: #1e2535;
+            color: #e2e8f0;
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 12.5px;
+            line-height: 1.65;
+            overflow-x: auto;
+            white-space: pre;
+            border: 1px solid #2d3a52;
+        }
+        .code-block .c-key    { color: #7dd3fc; }  /* JSON key */
+        .code-block .c-str    { color: #86efac; }  /* string value */
+        .code-block .c-num    { color: #fbbf24; }  /* number */
+        .code-block .c-bool   { color: #f472b6; }  /* boolean */
+        .code-block .c-null   { color: #94a3b8; }  /* null */
+        .code-block .c-cmt    { color: #64748b; font-style: italic; } /* comment */
+        .code-block .c-method { color: #c084fc; }  /* HTTP method */
+        .code-block .c-path   { color: #7dd3fc; }  /* URL path */
+        .code-block .c-label  { color: #fcd34d; font-weight: 600; } /* section label */
+
+        /* Protocol flow card */
+        .protocol-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+        }
+        .protocol-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .protocol-card p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        /* MCP message pairs */
+        .mcp-exchange {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 768px) {
+            .mcp-exchange { grid-template-columns: 1fr; }
+        }
+        .mcp-side-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 0.4rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .mcp-request  { background: #1e3a5f; color: #93c5fd; }
+        .mcp-response { background: #14432a; color: #86efac; }
+
+        /* Data contracts table */
+        .contracts-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .contracts-table thead tr {
+            background: var(--eeoc-navy);
+        }
+        .contracts-table th {
+            color: #fff;
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .contracts-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        .contracts-table tr:nth-child(even) td {
+            background: var(--surface);
+        }
+        .contracts-table .source-chip {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .freq-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--surface-alt);
+            color: var(--text-secondary);
+        }
+        .proto-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        /* Auth flow cards */
+        .auth-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            height: 100%;
+        }
+        .auth-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .auth-card .auth-context {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+        }
+
+        /* Inline flow diagram — auth steps */
+        .auth-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .auth-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            position: relative;
+        }
+        .auth-step::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 28px;
+            bottom: -8px;
+            width: 2px;
+            background: var(--border);
+        }
+        .auth-step:last-child::before {
+            display: none;
+        }
+        .auth-step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--eeoc-navy);
+            color: var(--eeoc-gold);
+            font-size: 11px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+        .auth-step-text {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-primary);
+            padding-top: 3px;
+        }
+        .auth-step-text code {
+            font-size: 11.5px;
+            background: var(--surface-alt);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            color: var(--text-primary);
+        }
+        .auth-result {
+            margin-top: 1rem;
+            padding: 8px 12px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            border-left: 3px solid var(--eeoc-gold);
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        /* API reference tabs */
+        .api-nav {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .api-tab-btn {
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: inherit;
+            border-radius: 4px 4px 0 0;
+            transition: all var(--transition);
+        }
+        .api-tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--surface);
+        }
+        .api-tab-btn.active {
+            color: var(--eeoc-navy);
+            border-bottom-color: var(--eeoc-gold);
+            background: var(--surface);
+        }
+        .api-tab-btn:focus-visible {
+            outline: 2px solid #0a58ca;
+            outline-offset: 2px;
+        }
+        .api-tab-panel {
+            display: none;
+        }
+        .api-tab-panel.active {
+            display: block;
+        }
+
+        /* Endpoint row */
+        .endpoint-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .endpoint-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        .endpoint-method {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .endpoint-path {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+        .endpoint-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Hero for this page */
+        .page-hero {
+            background: linear-gradient(135deg, var(--eeoc-navy) 0%, var(--eeoc-navy-light) 60%, #2d4a7a 100%);
+            color: #fff;
+            padding: 3.5rem 2rem 3rem;
+            text-align: center;
+            position: relative;
+        }
+        .page-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 25% 60%, rgba(197,165,86,0.07) 0%, transparent 65%),
+                        radial-gradient(ellipse at 75% 30%, rgba(59,130,246,0.06) 0%, transparent 55%);
+            pointer-events: none;
+        }
+        .page-hero-inner {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .page-hero h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+        }
+        .page-hero h1 span { color: var(--eeoc-gold); }
+        .page-hero p {
+            font-size: 1.05rem;
+            color: rgba(255,255,255,0.72);
+            line-height: 1.7;
+            max-width: 620px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- Navigation -->
+<nav class="site-nav" aria-label="Site navigation">
+    <a href="index.html" class="brand" aria-label="EEOC AI Platform home">
+        <div class="brand-icon" aria-hidden="true">EE</div>
+        <div class="brand-text">EEOC <span>AI Platform</span></div>
+    </a>
+    <ul class="nav-links" role="list">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="applications.html">Applications</a></li>
+        <li><a href="analytics.html">Analytics</a></li>
+        <li><a href="integration.html" class="active" aria-current="page">Integration</a></li>
+        <li><a href="security.html">Security</a></li>
+    </ul>
+</nav>
+
+<div class="page-content" id="main-content">
+
+<!-- Page Hero -->
+<section class="page-hero" aria-labelledby="page-title">
+    <div class="page-hero-inner">
+        <div class="hero-badge">Technical Reference</div>
+        <h1 id="page-title">System <span>Integration</span> Patterns</h1>
+        <p>How data moves between seven applications — from ARC charge intake through disposition
+           and analytics. API contracts, authentication flows, and the MCP protocol layer.</p>
+    </div>
+</section>
+
+<!-- ================================================================
+     SECTION 1 — Case Lifecycle Walkthrough
+     ================================================================ -->
+<section class="section" aria-labelledby="lifecycle-title">
+    <div class="section-label">End-to-End Walkthrough</div>
+    <h2 class="section-title" id="lifecycle-title">Case Lifecycle</h2>
+    <p class="section-desc">A discrimination charge moving through every system in sequence,
+       from initial filing to final disposition and analytics aggregation.</p>
+
+    <div class="flow-steps" role="list">
+
+        <!-- Step 1 -->
+        <div class="flow-step" role="listitem">
+            <div class="step-number" aria-hidden="true">1</div>
+            <div class="step-content">
+                <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.25rem;">Charge Filed — ARC</h3>
+                <p>A complainant files a discrimination charge at an EEOC field office. Staff enter
+                   the charge into ARC (Agency Record Center), the agency's system of record for all
+                   Title VII, ADA, ADEA, EPA, and GINA filings. ARC assigns the charge number and
+                   creates the investigation record.</p>
+                <button class="flow-step-toggle"
+                        aria-expanded="false"
+                        aria-controls="step1-detail">
+                    <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+                    Technical detail
+                </button>
+                <div id="step1-detail" class="flow-step-detail" role="region" aria-label="Step 1 technical detail">
+                    <div class="step-detail">
+                        <span style="color:#94a3b8;"># ARC charge record — authoritative source of truth</span>&#10;
+                        System: ARC (Agency Record Center)&#10;
+                        Storage: ARC relational database (EEOC data center)&#10;
+                        Charge fields: charge_number, basis[], statute[], respondent_id,&#10;
+                                       office_code, date_filed, narrative_text&#10;
+                        Statutes: TITLE_VII | ADA | ADEA | EPA | GINA&#10;
+                        Access: No direct API — consumed via ARC Integration API only
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="flow-step" role="listitem">
+            <div class="step-number" aria-hidden="true">2</div>
+            <div class="step-content">
+                <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.25rem;">Data Staged — ARC Integration API</h3>
+                <p>The <code>ARCSyncImporter</code> timer function polls ARC every 15 minutes for
+                   new and updated eligible cases. It translates ARC's legacy SOAP/REST interfaces
+                   into clean JSON, applies SSRF protections, and writes staged records to
+                   Azure Table Storage for downstream consumers.</p>
+                <button class="flow-step-toggle"
+                        aria-expanded="false"
+                        aria-controls="step2-detail">
+                    <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+                    Technical detail
+                </button>
+                <div id="step2-detail" class="flow-step-detail" role="region" aria-label="Step 2 technical detail">
+                    <div class="step-detail">
+                        GET /arc/v1/mediation/eligible-cases?since={watermark}&amp;limit=200&#10;
+                        GET /arc/v1/enforcement/cases/{charge_number}&#10;
+                        &#10;
+                        Auth: Managed Identity → ARC service account (no stored credentials)&#10;
+                        Pagination: watermark-based (not offset) — safe for large result sets&#10;
+                        Bus topic: eeoc-arc-staging / subscription: adr-consumer&#10;
+                        Timer: every 15 minutes (Azure Functions timer trigger)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="flow-step" role="listitem">
+            <div class="step-number" aria-hidden="true">3</div>
+            <div class="step-content">
+                <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.25rem;">Classification — OFS Triage</h3>
+                <p>The Triage application receives the staged charge via Service Bus. GPT-4o
+                   analyzes the charge narrative, identifies applicable statutes, scores
+                   investigation priority (A–D), and recommends a resolution track: mediation,
+                   full investigation, or conciliation. Stop sequences prevent legal conclusions
+                   from the model; a human reviewer must confirm before any action.</p>
+                <button class="flow-step-toggle"
+                        aria-expanded="false"
+                        aria-controls="step3-detail">
+                    <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+                    Technical detail
+                </button>
+                <div id="step3-detail" class="flow-step-detail" role="region" aria-label="Step 3 technical detail">
+                    <div class="step-detail">
+                        Model: Azure OpenAI GPT-4o (gpt-4o-2024-05-13)&#10;
+                        Stop sequences: ["Legal Advice:", "Legal Conclusion:"]&#10;
+                        Temperature: 0.2 (classification task — low variance required)&#10;
+                        Output: { priority: "A"|"B"|"C"|"D",&#10;
+                                  track: "MEDIATION"|"INVESTIGATION"|"CONCILIATION",&#10;
+                                  statutes: string[], confidence: float }&#10;
+                        Audit: HMAC-SHA256 signed record → Azure Blob WORM (7 yr)&#10;
+                        Human review: mandatory before routing decision is committed
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="flow-step" role="listitem">
+            <div class="step-number" aria-hidden="true">4</div>
+            <div class="step-content">
+                <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.25rem;">Routing Decision — Human Reviewer</h3>
+                <p>A program analyst reviews the AI classification in the Triage interface.
+                   They may accept the recommendation or override it before committing the
+                   routing decision. The confirmed track is published to Service Bus, which
+                   triggers the appropriate downstream workflow — ADR for mediation cases,
+                   or the investigation queue for others.</p>
+                <button class="flow-step-toggle"
+                        aria-expanded="false"
+                        aria-controls="step4-detail">
+                    <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+                    Technical detail
+                </button>
+                <div id="step4-detail" class="flow-step-detail" role="region" aria-label="Step 4 technical detail">
+                    <div class="step-detail">
+                        POST /triage/v1/cases/{case_id}/routing-decision&#10;
+                        Body: { track, analyst_id, override_reason? }&#10;
+                        &#10;
+                        Event published to: eeoc-routing-decisions (Service Bus topic)&#10;
+                        Subscriptions: adr-routing-sub | investigation-routing-sub&#10;
+                        Idempotency: decision_id UUID prevents duplicate processing&#10;
+                        Audit: analyst_id + timestamp + AI recommendation stored together
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="flow-step" role="listitem">
+            <div class="step-number" aria-hidden="true">5</div>
+            <div class="step-content">
+                <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.25rem;">Mediation — ADR Portal</h3>
+                <p>For mediation-track cases, ADR creates the case record, assigns a mediator,
+                   and opens the case for scheduling. The mediator conducts joint and caucus
+                   sessions, manages documents, and uses AI to draft settlement agreements.
+                   Every AI generation is HMAC-signed and requires human review before any
+                   document is shared with parties.</p>
+                <button class="flow-step-toggle"
+                        aria-expanded="false"
+                        aria-controls="step5-detail">
+                    <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+                    Technical detail
+                </button>
+                <div id="step5-detail" class="flow-step-detail" role="region" aria-label="Step 5 technical detail">
+                    <div class="step-detail">
+                        POST /api/v1/cases (creates ADR case from routing event)&#10;
+                        POST /api/v1/cases/{id}/sessions (schedules sessions)&#10;
+                        POST /api/v1/cases/{id}/documents (uploads documents)&#10;
+                        POST /api/v1/cases/{id}/ai/draft-agreement (AI drafting)&#10;
+                        &#10;
+                        AI audit: HMAC-SHA256 → Azure Blob immutable tier (7-yr WORM)&#10;
+                        E-signature: DocuSign and Adobe Acrobat Sign via Azure Function&#10;
+                        Sessions: Redis-backed (no cookie serialization)&#10;
+                        Auth: Entra ID + app roles (mediator, supervisor, admin)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="flow-step" role="listitem">
+            <div class="step-number" aria-hidden="true">6</div>
+            <div class="step-content">
+                <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.25rem;">Resolution or Escalation</h3>
+                <p>If the mediation reaches agreement, the mediator records disposition in ADR
+                   and the case is closed. The signed settlement is stored and the disposition
+                   event is pushed to UDAP for analytics. If mediation fails, a no-cause
+                   finding or full investigation is initiated, and the case may be referred
+                   to OGC for litigation.</p>
+                <button class="flow-step-toggle"
+                        aria-expanded="false"
+                        aria-controls="step6-detail">
+                    <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+                    Technical detail
+                </button>
+                <div id="step6-detail" class="flow-step-detail" role="region" aria-label="Step 6 technical detail">
+                    <div class="step-detail">
+                        POST /api/v1/cases/{id}/disposition&#10;
+                        Body: { outcome: "SETTLED"|"NO_CAUSE"|"INVESTIGATION"|"LITIGATION",&#10;
+                                settlement_amount?, disposition_date }&#10;
+                        &#10;
+                        Settled → closed, metrics pushed to UDAP&#10;
+                        Investigation → returned to investigation queue&#10;
+                        Litigation → case packet sent to OGC Trial Tool&#10;
+                        Event bus: eeoc-dispositions topic → udap-consumer
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 7 -->
+        <div class="flow-step" role="listitem">
+            <div class="step-number" aria-hidden="true">7</div>
+            <div class="step-content">
+                <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.25rem;">Trial Preparation — OGC Trial Tool</h3>
+                <p>When a case proceeds to litigation, the full enforcement file is transferred
+                   to the Trial Tool. Attorneys use RAG-powered document search across the
+                   complete case file, construct timelines, manage witnesses, and generate
+                   research memos. AI-assisted legal research runs with the same stop sequences
+                   and human-review requirement as all other AI outputs on the platform.</p>
+                <button class="flow-step-toggle"
+                        aria-expanded="false"
+                        aria-controls="step7-detail">
+                    <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+                    Technical detail
+                </button>
+                <div id="step7-detail" class="flow-step-detail" role="region" aria-label="Step 7 technical detail">
+                    <div class="step-detail">
+                        Case intake: POST /ogc/v1/cases (triggered by litigation disposition event)&#10;
+                        Document index: Azure AI Search — vector + keyword hybrid&#10;
+                        Vision: GPT-4o vision for scanned/handwritten documents&#10;
+                        Stop sequences: ["Legal Advice:", "Legal Conclusion:"]&#10;
+                        Auth: Entra ID + app roles (attorney, paralegal, supervisor)&#10;
+                        Audit: all AI calls HMAC-SHA256 signed → WORM blob (7 yr)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 8 -->
+        <div class="flow-step" role="listitem">
+            <div class="step-number" aria-hidden="true">8</div>
+            <div class="step-content">
+                <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.25rem;">Analytics Aggregation — UDAP</h3>
+                <p>Outcome data from every stage flows into UDAP (Unified Data Analytics Platform)
+                   via the data-middleware ETL pipeline. Leadership sees settlement rates,
+                   time-to-resolution, office performance, and charge basis trends through
+                   Superset dashboards, a natural language query interface, and JupyterHub
+                   notebooks. Metrics are queryable within minutes of disposition events.</p>
+                <button class="flow-step-toggle"
+                        aria-expanded="false"
+                        aria-controls="step8-detail">
+                    <i class="bi bi-chevron-right toggle-icon" aria-hidden="true"></i>
+                    Technical detail
+                </button>
+                <div id="step8-detail" class="flow-step-detail" role="region" aria-label="Step 8 technical detail">
+                    <div class="step-detail">
+                        ETL: data-middleware pulls from ADR, Triage, OGC via REST&#10;
+                        Schedule: daily batch + event-driven disposition updates&#10;
+                        Storage: PostgreSQL (operational) + Azure SQL (analytics warehouse)&#10;
+                        Dashboards: Apache Superset (read-only views for leadership)&#10;
+                        NL query: ai-assistant → GPT-4o → parameterized SQL (no string concat)&#10;
+                        Notebooks: JupyterHub (restricted to analysts with data-science role)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /flow-steps -->
+</section>
+
+<!-- ================================================================
+     SECTION 2 — MCP Protocol Deep Dive
+     ================================================================ -->
+<section class="section-dark" aria-labelledby="mcp-title">
+    <div class="section-inner">
+        <div class="section-label">Model Context Protocol</div>
+        <h2 class="section-title" id="mcp-title">MCP Protocol Deep Dive</h2>
+        <p class="section-desc">The platform uses JSON-RPC 2.0 over HTTPS for cross-application
+           AI tool orchestration. Every application exposes an MCP spoke; the Hub aggregates
+           and routes tool calls.</p>
+
+        <!-- What MCP is -->
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom:2rem;">
+            <div class="protocol-card">
+                <div class="card-icon" style="background:#f0f9ff; color:#0284c7;">
+                    <i class="bi bi-broadcast" aria-hidden="true"></i>
+                </div>
+                <h3>Transport</h3>
+                <p>JSON-RPC 2.0 over HTTPS. Each message carries a numeric <code>id</code>,
+                   method string, and typed <code>params</code>. The protocol is
+                   stateless at the HTTP layer; session context is carried in the
+                   MCP <code>sessionId</code> header.</p>
+            </div>
+            <div class="protocol-card">
+                <div class="card-icon" style="background:#ecfdf5; color:#059669;">
+                    <i class="bi bi-list-check" aria-hidden="true"></i>
+                </div>
+                <h3>Tool Catalog</h3>
+                <p>Each spoke exposes a <code>tools/list</code> endpoint returning a typed
+                   schema for every operation it supports. The Hub merges catalogs from all
+                   spokes and re-exposes them under a unified namespace, refreshing every
+                   five minutes.</p>
+            </div>
+            <div class="protocol-card">
+                <div class="card-icon" style="background:#fef3c7; color:#92400e;">
+                    <i class="bi bi-key" aria-hidden="true"></i>
+                </div>
+                <h3>Authorization</h3>
+                <p>Tool calls carry a bearer token scoped to the requesting application.
+                   The Hub validates the token against Entra ID before forwarding to the
+                   spoke. Spokes re-validate independently — no implicit trust between
+                   Hub and spoke.</p>
+            </div>
+        </div>
+
+        <!-- Initialization exchange -->
+        <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.25rem;">1. Initialization</h3>
+        <p style="font-size:0.875rem; color:var(--text-secondary); margin-bottom:1rem;">
+            The client announces its protocol version and capabilities. The server responds with
+            its own capabilities and a session identifier.
+        </p>
+        <div class="mcp-exchange">
+            <div>
+                <div class="mcp-side-label mcp-request">Client Request</div>
+                <div class="code-block" role="region" aria-label="MCP initialize request JSON">
+<span class="c-label">{</span>
+  <span class="c-key">"jsonrpc"</span>: <span class="c-str">"2.0"</span>,
+  <span class="c-key">"id"</span>: <span class="c-num">1</span>,
+  <span class="c-key">"method"</span>: <span class="c-str">"initialize"</span>,
+  <span class="c-key">"params"</span>: {
+    <span class="c-key">"protocolVersion"</span>: <span class="c-str">"2024-11-05"</span>,
+    <span class="c-key">"clientInfo"</span>: {
+      <span class="c-key">"name"</span>: <span class="c-str">"eeoc-mcp-hub"</span>,
+      <span class="c-key">"version"</span>: <span class="c-str">"1.0.0"</span>
+    },
+    <span class="c-key">"capabilities"</span>: {
+      <span class="c-key">"tools"</span>: {}
+    }
+  }
+<span class="c-label">}</span>
+                </div>
+            </div>
+            <div>
+                <div class="mcp-side-label mcp-response">Server Response</div>
+                <div class="code-block" role="region" aria-label="MCP initialize response JSON">
+<span class="c-label">{</span>
+  <span class="c-key">"jsonrpc"</span>: <span class="c-str">"2.0"</span>,
+  <span class="c-key">"id"</span>: <span class="c-num">1</span>,
+  <span class="c-key">"result"</span>: {
+    <span class="c-key">"protocolVersion"</span>: <span class="c-str">"2024-11-05"</span>,
+    <span class="c-key">"serverInfo"</span>: {
+      <span class="c-key">"name"</span>: <span class="c-str">"eeoc-adr-mcp-spoke"</span>,
+      <span class="c-key">"version"</span>: <span class="c-str">"2.1.0"</span>
+    },
+    <span class="c-key">"capabilities"</span>: {
+      <span class="c-key">"tools"</span>: { <span class="c-key">"listChanged"</span>: <span class="c-bool">false</span> }
+    }
+  }
+<span class="c-label">}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tool discovery -->
+        <h3 style="font-size:1rem; font-weight:700; margin:1.75rem 0 0.25rem;">2. Tool Discovery</h3>
+        <p style="font-size:0.875rem; color:var(--text-secondary); margin-bottom:1rem;">
+            The Hub calls <code>tools/list</code> on each spoke to build the merged catalog.
+            Each tool entry includes a typed JSON Schema for its input parameters.
+        </p>
+        <div class="mcp-exchange">
+            <div>
+                <div class="mcp-side-label mcp-request">Hub &rarr; Spoke</div>
+                <div class="code-block" role="region" aria-label="MCP tools/list request JSON">
+<span class="c-label">{</span>
+  <span class="c-key">"jsonrpc"</span>: <span class="c-str">"2.0"</span>,
+  <span class="c-key">"id"</span>: <span class="c-num">2</span>,
+  <span class="c-key">"method"</span>: <span class="c-str">"tools/list"</span>,
+  <span class="c-key">"params"</span>: {}
+<span class="c-label">}</span>
+                </div>
+            </div>
+            <div>
+                <div class="mcp-side-label mcp-response">Spoke Response (truncated)</div>
+                <div class="code-block" role="region" aria-label="MCP tools/list response JSON">
+<span class="c-label">{</span>
+  <span class="c-key">"jsonrpc"</span>: <span class="c-str">"2.0"</span>,
+  <span class="c-key">"id"</span>: <span class="c-num">2</span>,
+  <span class="c-key">"result"</span>: {
+    <span class="c-key">"tools"</span>: [
+      {
+        <span class="c-key">"name"</span>: <span class="c-str">"list_cases"</span>,
+        <span class="c-key">"description"</span>: <span class="c-str">"List ADR mediation cases"</span>,
+        <span class="c-key">"inputSchema"</span>: {
+          <span class="c-key">"type"</span>: <span class="c-str">"object"</span>,
+          <span class="c-key">"properties"</span>: {
+            <span class="c-key">"status"</span>: { <span class="c-key">"type"</span>: <span class="c-str">"string"</span> },
+            <span class="c-key">"office_code"</span>: { <span class="c-key">"type"</span>: <span class="c-str">"string"</span> },
+            <span class="c-key">"limit"</span>: { <span class="c-key">"type"</span>: <span class="c-str">"integer"</span> }
+          }
+        }
+      }
+      <span class="c-cmt">/* ... 9 more tools */</span>
+    ]
+  }
+<span class="c-label">}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tool invocation -->
+        <h3 style="font-size:1rem; font-weight:700; margin:1.75rem 0 0.25rem;">3. Tool Invocation</h3>
+        <p style="font-size:0.875rem; color:var(--text-secondary); margin-bottom:1rem;">
+            An AI agent calls <code>tools/call</code> with the tool name and typed arguments.
+            The Hub routes the call to the appropriate spoke and returns the result.
+            Example: an analytics agent querying active ADR cases.
+        </p>
+        <div class="mcp-exchange">
+            <div>
+                <div class="mcp-side-label mcp-request">Agent &rarr; Hub</div>
+                <div class="code-block" role="region" aria-label="MCP tools/call request JSON for list_cases">
+<span class="c-label">{</span>
+  <span class="c-key">"jsonrpc"</span>: <span class="c-str">"2.0"</span>,
+  <span class="c-key">"id"</span>: <span class="c-num">7</span>,
+  <span class="c-key">"method"</span>: <span class="c-str">"tools/call"</span>,
+  <span class="c-key">"params"</span>: {
+    <span class="c-key">"name"</span>: <span class="c-str">"adr__list_cases"</span>,
+    <span class="c-key">"arguments"</span>: {
+      <span class="c-key">"status"</span>: <span class="c-str">"ACTIVE"</span>,
+      <span class="c-key">"office_code"</span>: <span class="c-str">"PHI"</span>,
+      <span class="c-key">"limit"</span>: <span class="c-num">25</span>
+    }
+  }
+<span class="c-label">}</span>
+                </div>
+            </div>
+            <div>
+                <div class="mcp-side-label mcp-response">Hub &rarr; Agent</div>
+                <div class="code-block" role="region" aria-label="MCP tools/call response JSON for list_cases">
+<span class="c-label">{</span>
+  <span class="c-key">"jsonrpc"</span>: <span class="c-str">"2.0"</span>,
+  <span class="c-key">"id"</span>: <span class="c-num">7</span>,
+  <span class="c-key">"result"</span>: {
+    <span class="c-key">"content"</span>: [
+      {
+        <span class="c-key">"type"</span>: <span class="c-str">"text"</span>,
+        <span class="c-key">"text"</span>: <span class="c-str">"{\"cases\": [{\"id\": \"ADR-2026-00412\",
+          \"charge_number\": \"530-2026-00812\",
+          \"status\": \"ACTIVE\", \"mediator_id\": \"u-3a8f\",
+          \"office_code\": \"PHI\"}], \"total\": 18}"</span>
+      }
+    ],
+    <span class="c-key">"isError"</span>: <span class="c-bool">false</span>
+  }
+<span class="c-label">}</span>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /section-inner -->
+</section>
+
+<!-- ================================================================
+     SECTION 3 — Data Contracts
+     ================================================================ -->
+<section class="section" aria-labelledby="contracts-title">
+    <div class="section-label">Data Movement</div>
+    <h2 class="section-title" id="contracts-title">Data Contracts</h2>
+    <p class="section-desc">What data flows between each system pair, how often, and
+       over which protocol. All inter-service calls use HTTPS. All requests propagate
+       the <code>X-Request-ID</code> header.</p>
+
+    <div style="overflow-x:auto;">
+        <table class="contracts-table">
+            <caption class="visually-hidden">Data contracts between EEOC platform systems — source, destination, data, frequency, and protocol</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Source</th>
+                    <th scope="col">Destination</th>
+                    <th scope="col">Data</th>
+                    <th scope="col">Frequency</th>
+                    <th scope="col">Protocol</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="source-chip" style="background:#fee2e2; color:#991b1b;">ARC</span></td>
+                    <td><span class="source-chip" style="background:#f0f9ff; color:#0284c7;">Integration API</span></td>
+                    <td>Eligible mediation and enforcement cases — charge number, basis, statute, narrative, respondent</td>
+                    <td><span class="freq-badge"><i class="bi bi-clock" aria-hidden="true"></i> Every 15 min</span></td>
+                    <td><span class="proto-badge" style="background:#dbeafe; color:#1e40af;">REST / GET</span></td>
+                </tr>
+                <tr>
+                    <td><span class="source-chip" style="background:#f0f9ff; color:#0284c7;">Integration API</span></td>
+                    <td><span class="source-chip" style="background:#ecfdf5; color:#059669;">ADR Portal</span></td>
+                    <td>Staged case records published to Service Bus for ADR consumer</td>
+                    <td><span class="freq-badge"><i class="bi bi-lightning" aria-hidden="true"></i> Event-driven</span></td>
+                    <td><span class="proto-badge" style="background:#d1fae5; color:#065f46;">Service Bus</span></td>
+                </tr>
+                <tr>
+                    <td><span class="source-chip" style="background:#fef3c7; color:#92400e;">OFS Triage</span></td>
+                    <td><span class="source-chip" style="background:#ecfdf5; color:#059669;">ADR Portal</span></td>
+                    <td>Confirmed routing decisions — track assignment, analyst ID, override flag</td>
+                    <td><span class="freq-badge"><i class="bi bi-lightning" aria-hidden="true"></i> Event-driven</span></td>
+                    <td><span class="proto-badge" style="background:#d1fae5; color:#065f46;">Service Bus</span></td>
+                </tr>
+                <tr>
+                    <td><span class="source-chip" style="background:#ecfdf5; color:#059669;">ADR Portal</span></td>
+                    <td><span class="source-chip" style="background:#fff7ed; color:#c2410c;">UDAP</span></td>
+                    <td>Daily case metrics — settlement rates, time-to-resolution, office breakdowns</td>
+                    <td><span class="freq-badge"><i class="bi bi-calendar" aria-hidden="true"></i> Daily</span></td>
+                    <td><span class="proto-badge" style="background:#dbeafe; color:#1e40af;">REST / POST</span></td>
+                </tr>
+                <tr>
+                    <td><span class="source-chip" style="background:#ecfdf5; color:#059669;">ADR Portal</span></td>
+                    <td><span class="source-chip" style="background:#fff7ed; color:#c2410c;">UDAP</span></td>
+                    <td>Disposition events — outcome, settlement amount, charge basis, date closed</td>
+                    <td><span class="freq-badge"><i class="bi bi-lightning" aria-hidden="true"></i> Event-driven</span></td>
+                    <td><span class="proto-badge" style="background:#d1fae5; color:#065f46;">Service Bus</span></td>
+                </tr>
+                <tr>
+                    <td><span class="source-chip" style="background:#ecfdf5; color:#059669;">ADR Portal</span></td>
+                    <td><span class="source-chip" style="background:#f0f9ff; color:#0284c7;">OGC Trial Tool</span></td>
+                    <td>Full case packet on litigation disposition — enforcement file, documents, timeline</td>
+                    <td><span class="freq-badge"><i class="bi bi-lightning" aria-hidden="true"></i> Event-driven</span></td>
+                    <td><span class="proto-badge" style="background:#dbeafe; color:#1e40af;">REST / POST</span></td>
+                </tr>
+                <tr>
+                    <td><span class="source-chip" style="background:#f0f9ff; color:#0284c7;">OGC Trial Tool</span></td>
+                    <td><span class="source-chip" style="background:#fff7ed; color:#c2410c;">UDAP</span></td>
+                    <td>Litigation metrics — case outcomes, time from investigation to judgment</td>
+                    <td><span class="freq-badge"><i class="bi bi-calendar" aria-hidden="true"></i> Weekly</span></td>
+                    <td><span class="proto-badge" style="background:#dbeafe; color:#1e40af;">REST / POST</span></td>
+                </tr>
+                <tr>
+                    <td><span class="source-chip" style="background:#faf5ff; color:#6d28d9;">OCHCO Benefits</span></td>
+                    <td><span class="source-chip" style="background:#fff7ed; color:#c2410c;">UDAP</span></td>
+                    <td>Benefits anomaly summary — discrepancy counts, overpayment amounts, office breakdowns</td>
+                    <td><span class="freq-badge"><i class="bi bi-calendar" aria-hidden="true"></i> Daily</span></td>
+                    <td><span class="proto-badge" style="background:#dbeafe; color:#1e40af;">REST / POST</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ================================================================
+     SECTION 4 — Authentication Flows
+     ================================================================ -->
+<section class="section-dark" aria-labelledby="auth-title">
+    <div class="section-inner">
+        <div class="section-label">Authentication</div>
+        <h2 class="section-title" id="auth-title">Authentication Flows</h2>
+        <p class="section-desc">Three distinct auth patterns covering every actor on the platform:
+           EEOC staff, external parties, and service-to-service calls.</p>
+
+        <div class="row g-4">
+
+            <!-- Entra ID — EEOC Staff -->
+            <div class="col-lg-4">
+                <div class="auth-card">
+                    <div class="card-icon" style="background:#f0f9ff; color:#0284c7; margin-bottom:0.75rem;">
+                        <i class="bi bi-person-badge" aria-hidden="true"></i>
+                    </div>
+                    <h3>EEOC Staff</h3>
+                    <p class="auth-context">Mediators, attorneys, analysts, supervisors, and admins with <code>@eeoc.gov</code> accounts.</p>
+                    <ol class="auth-flow" aria-label="EEOC staff authentication steps">
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">1</span>
+                            <span class="auth-step-text">Browser navigates to application URL</span>
+                        </li>
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">2</span>
+                            <span class="auth-step-text">App redirects to <code>login.microsoftonline.com</code> (Entra ID)</span>
+                        </li>
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">3</span>
+                            <span class="auth-step-text">EEOC SSO / MFA completes — Entra issues <code>id_token</code> + <code>access_token</code></span>
+                        </li>
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">4</span>
+                            <span class="auth-step-text">App reads <code>roles[]</code> claim from token — maps to RBAC permissions</span>
+                        </li>
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">5</span>
+                            <span class="auth-step-text">Session stored in Redis — no cookie serialization</span>
+                        </li>
+                    </ol>
+                    <div class="auth-result" aria-label="Resulting RBAC roles">
+                        roles: mediator | supervisor | admin | analyst | attorney | paralegal
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login.gov — External Parties -->
+            <div class="col-lg-4">
+                <div class="auth-card">
+                    <div class="card-icon" style="background:#ecfdf5; color:#059669; margin-bottom:0.75rem;">
+                        <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                    </div>
+                    <h3>External Parties</h3>
+                    <p class="auth-context">Charging parties, respondent representatives, and other non-EEOC users requiring portal access.</p>
+                    <ol class="auth-flow" aria-label="External party authentication steps">
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">1</span>
+                            <span class="auth-step-text">User navigates to external portal URL</span>
+                        </li>
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">2</span>
+                            <span class="auth-step-text">OIDC Authorization Code + PKCE flow begins — redirect to <code>secure.login.gov</code></span>
+                        </li>
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">3</span>
+                            <span class="auth-step-text">Login.gov identity-proofs the user (IAL1 or IAL2)</span>
+                        </li>
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">4</span>
+                            <span class="auth-step-text">App exchanges code for token using <code>private_key_jwt</code> client assertion (no shared secret)</span>
+                        </li>
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">5</span>
+                            <span class="auth-step-text">Session stored in Redis — access scoped to user's own cases only</span>
+                        </li>
+                    </ol>
+                    <div class="auth-result" aria-label="Resulting access scope">
+                        scope: cases:read cases:document-upload — own records only
+                    </div>
+                </div>
+            </div>
+
+            <!-- Managed Identity — Service-to-Service -->
+            <div class="col-lg-4">
+                <div class="auth-card">
+                    <div class="card-icon" style="background:#faf5ff; color:#6d28d9; margin-bottom:0.75rem;">
+                        <i class="bi bi-gear-wide-connected" aria-hidden="true"></i>
+                    </div>
+                    <h3>Service-to-Service</h3>
+                    <p class="auth-context">Inter-application calls, Azure Function triggers, Service Bus consumers, and Key Vault access.</p>
+                    <ol class="auth-flow" aria-label="Service-to-service authentication steps">
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">1</span>
+                            <span class="auth-step-text">Service runs under its Azure Managed Identity — no credentials in code or config</span>
+                        </li>
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">2</span>
+                            <span class="auth-step-text">Azure IMDS endpoint issues a short-lived bearer token for the target resource</span>
+                        </li>
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">3</span>
+                            <span class="auth-step-text">Token presented in <code>Authorization: Bearer</code> header to target service</span>
+                        </li>
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">4</span>
+                            <span class="auth-step-text">Target validates against Entra ID JWKS — confirms <code>oid</code> + <code>appid</code> claims</span>
+                        </li>
+                        <li class="auth-step">
+                            <span class="auth-step-num" aria-hidden="true">5</span>
+                            <span class="auth-step-text">Secrets fetched from Key Vault via the same Managed Identity — never stored in env vars</span>
+                        </li>
+                    </ol>
+                    <div class="auth-result" aria-label="Resulting credential pattern">
+                        credentials: zero — no passwords, keys, or connection strings in code
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /row -->
+    </div>
+</section>
+
+<!-- ================================================================
+     SECTION 5 — API Reference Summary
+     ================================================================ -->
+<section class="section" aria-labelledby="api-title">
+    <div class="section-label">API Reference</div>
+    <h2 class="section-title" id="api-title">API Reference Summary</h2>
+    <p class="section-desc">Key endpoints and MCP tools across the platform. All REST
+       endpoints return RFC 7807 Problem Details on error. All calls propagate
+       <code>X-Request-ID</code>.</p>
+
+    <!-- Tab navigation -->
+    <div class="api-nav" role="tablist" aria-label="API reference by application">
+        <button class="api-tab-btn active"
+                role="tab"
+                aria-selected="true"
+                aria-controls="tab-arc"
+                id="tab-btn-arc"
+                onclick="switchApiTab('arc')">
+            ARC Integration
+        </button>
+        <button class="api-tab-btn"
+                role="tab"
+                aria-selected="false"
+                aria-controls="tab-adr"
+                id="tab-btn-adr"
+                tabindex="-1"
+                onclick="switchApiTab('adr')">
+            ADR MCP Tools
+        </button>
+        <button class="api-tab-btn"
+                role="tab"
+                aria-selected="false"
+                aria-controls="tab-hub"
+                id="tab-btn-hub"
+                tabindex="-1"
+                onclick="switchApiTab('hub')">
+            MCP Hub
+        </button>
+        <button class="api-tab-btn"
+                role="tab"
+                aria-selected="false"
+                aria-controls="tab-udap"
+                id="tab-btn-udap"
+                tabindex="-1"
+                onclick="switchApiTab('udap')">
+            UDAP
+        </button>
+    </div>
+
+    <!-- ARC Integration tab -->
+    <div id="tab-arc" class="api-tab-panel active"
+         role="tabpanel" aria-labelledby="tab-btn-arc">
+        <ul class="endpoint-list" aria-label="ARC Integration API endpoints">
+            <li class="endpoint-item">
+                <span class="endpoint-method method-get" aria-label="HTTP GET">GET</span>
+                <div>
+                    <div class="endpoint-path">/arc/v1/mediation/eligible-cases</div>
+                    <div class="endpoint-desc">Returns cases eligible for mediation. Watermark-based pagination via <code>since</code> query param. Protected against SSRF.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-get" aria-label="HTTP GET">GET</span>
+                <div>
+                    <div class="endpoint-path">/arc/v1/enforcement/cases/{charge_number}</div>
+                    <div class="endpoint-desc">Returns the full enforcement case record for a given ARC charge number.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-get" aria-label="HTTP GET">GET</span>
+                <div>
+                    <div class="endpoint-path">/arc/v1/mediation/cases/{charge_number}/status</div>
+                    <div class="endpoint-desc">Current status of a mediation case as reported by ARC — does not mutate ARC data.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="HTTP POST">POST</span>
+                <div>
+                    <div class="endpoint-path">/arc/v1/mediation/cases/{charge_number}/close</div>
+                    <div class="endpoint-desc">Writes disposition outcome back to ARC after mediation closes. Body: <code>{ outcome, settlement_amount?, close_date }</code>.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-get" aria-label="HTTP GET">GET</span>
+                <div>
+                    <div class="endpoint-path">/arc/v1/health</div>
+                    <div class="endpoint-desc">Liveness check. Returns 200 OK with ARC connectivity status. Called by platform health monitors every 60 seconds.</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- ADR MCP Tools tab -->
+    <div id="tab-adr" class="api-tab-panel"
+         role="tabpanel" aria-labelledby="tab-btn-adr">
+        <ul class="endpoint-list" aria-label="ADR MCP spoke tools">
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="MCP tool call">MCP</span>
+                <div>
+                    <div class="endpoint-path">list_cases</div>
+                    <div class="endpoint-desc">List ADR mediation cases with optional filters. Params: <code>status</code>, <code>office_code</code>, <code>mediator_id</code>, <code>limit</code>, <code>cursor</code>.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="MCP tool call">MCP</span>
+                <div>
+                    <div class="endpoint-path">get_case</div>
+                    <div class="endpoint-desc">Fetch full case details by case ID — parties, sessions, documents, current status, and audit trail summary.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="MCP tool call">MCP</span>
+                <div>
+                    <div class="endpoint-path">get_case_chat</div>
+                    <div class="endpoint-desc">Retrieve chat messages from a case channel. Params: <code>case_id</code>, <code>channel</code> (main / complainant / agency).</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="MCP tool call">MCP</span>
+                <div>
+                    <div class="endpoint-path">get_case_documents</div>
+                    <div class="endpoint-desc">Fetch document metadata for a case with download URLs. Does not return file content inline.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="MCP tool call">MCP</span>
+                <div>
+                    <div class="endpoint-path">create_case</div>
+                    <div class="endpoint-desc">Create a new ADR mediation case. Requires <code>charge_number</code>, <code>office_code</code>, and statute list. Returns the new case ID.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="MCP tool call">MCP</span>
+                <div>
+                    <div class="endpoint-path">update_case_metadata</div>
+                    <div class="endpoint-desc">Update charge number, statutes, key dates, or assigned office on an existing case. Partial updates supported.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="MCP tool call">MCP</span>
+                <div>
+                    <div class="endpoint-path">post_chat_message</div>
+                    <div class="endpoint-desc">Post a message to a case chat channel. Params: <code>case_id</code>, <code>channel</code>, <code>text</code>. Stored with sender identity and timestamp.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="MCP tool call">MCP</span>
+                <div>
+                    <div class="endpoint-path">add_participant</div>
+                    <div class="endpoint-desc">Add a participant to a case. Params: <code>case_id</code>, <code>user_id</code>, <code>role</code>. Triggers access provisioning for the participant portal.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="MCP tool call">MCP</span>
+                <div>
+                    <div class="endpoint-path">remove_participant</div>
+                    <div class="endpoint-desc">Remove a participant from a case. Revokes portal access and records the removal in the case audit trail.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="MCP tool call">MCP</span>
+                <div>
+                    <div class="endpoint-path">reassign_case</div>
+                    <div class="endpoint-desc">Reassign a case to a different mediator. Params: <code>case_id</code>, <code>mediator_id</code>, <code>reason</code>. Requires supervisor role.</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- MCP Hub tab -->
+    <div id="tab-hub" class="api-tab-panel"
+         role="tabpanel" aria-labelledby="tab-btn-hub">
+        <ul class="endpoint-list" aria-label="MCP Hub management endpoints">
+            <li class="endpoint-item">
+                <span class="endpoint-method method-get" aria-label="HTTP GET">GET</span>
+                <div>
+                    <div class="endpoint-path">/api/tools</div>
+                    <div class="endpoint-desc">Returns the merged tool catalog from all registered spokes. Cached for 5 minutes. Used by AI agents for tool discovery.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="HTTP POST">POST</span>
+                <div>
+                    <div class="endpoint-path">/api/tools/refresh</div>
+                    <div class="endpoint-desc">Forces an immediate re-discovery cycle across all registered spokes. Requires <code>hub:admin</code> scope. Returns updated tool count.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-get" aria-label="HTTP GET">GET</span>
+                <div>
+                    <div class="endpoint-path">/api/spokes</div>
+                    <div class="endpoint-desc">Returns the list of registered spoke applications with their URLs, last-seen timestamps, and tool counts.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="HTTP POST">POST</span>
+                <div>
+                    <div class="endpoint-path">/api/spokes/register</div>
+                    <div class="endpoint-desc">Registers a new MCP spoke. Body: <code>{ name, url, auth_scope }</code>. Requires <code>hub:admin</code> scope. Triggers immediate discovery.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-get" aria-label="HTTP GET">GET</span>
+                <div>
+                    <div class="endpoint-path">/api/health</div>
+                    <div class="endpoint-desc">Liveness and readiness check. Returns per-spoke connectivity status and last-refresh timestamp. Returns 200 even when spokes are unreachable (degraded).</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- UDAP tab -->
+    <div id="tab-udap" class="api-tab-panel"
+         role="tabpanel" aria-labelledby="tab-btn-udap">
+        <ul class="endpoint-list" aria-label="UDAP analytics endpoints">
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="HTTP POST">POST</span>
+                <div>
+                    <div class="endpoint-path">/api/v1/query</div>
+                    <div class="endpoint-desc">Natural language query endpoint. Body: <code>{ question: string, context?: object }</code>. GPT-4o generates parameterized SQL — no string concatenation. Returns data + SQL explanation.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="HTTP POST">POST</span>
+                <div>
+                    <div class="endpoint-path">/api/v1/narratives</div>
+                    <div class="endpoint-desc">Generates a plain-language narrative summary of query results. Used by the analytics assistant for leadership briefings. HMAC-signed audit record on every call.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-get" aria-label="HTTP GET">GET</span>
+                <div>
+                    <div class="endpoint-path">/api/v1/metrics/{metric_key}</div>
+                    <div class="endpoint-desc">Returns pre-computed metric values by key. Keys: <code>settlement_rate</code>, <code>avg_resolution_days</code>, <code>charge_volume</code>, <code>basis_breakdown</code>. Params: <code>office_code</code>, <code>period</code>.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-get" aria-label="HTTP GET">GET</span>
+                <div>
+                    <div class="endpoint-path">/api/v1/dashboards</div>
+                    <div class="endpoint-desc">Returns available Superset dashboard definitions and embed tokens for the calling user's role. Tokens expire in 30 minutes.</div>
+                </div>
+            </li>
+            <li class="endpoint-item">
+                <span class="endpoint-method method-post" aria-label="HTTP POST">POST</span>
+                <div>
+                    <div class="endpoint-path">/api/v1/ingest</div>
+                    <div class="endpoint-desc">Accepts metric payloads from source applications (ADR, Triage, OGC, OCHCO). Authenticated by Managed Identity. Body validated against per-source JSON Schema.</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+</section>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <strong>U.S. Equal Employment Opportunity Commission</strong> &mdash; Office of the Chief Information Officer<br>
+    AI-Enabled Case Management Platform &bull; FedRAMP High &bull; NIST 800-53 Rev5 &bull; WCAG 2.1 AA
+</footer>
+
+</div><!-- /page-content -->
+
+<script src="js/site.js"></script>
+<script>
+/* ---- Flow step toggle ---- */
+document.querySelectorAll('.flow-step-toggle').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var targetId = btn.getAttribute('aria-controls');
+        var detail = document.getElementById(targetId);
+        var isOpen = btn.getAttribute('aria-expanded') === 'true';
+
+        btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+        if (isOpen) {
+            detail.classList.remove('is-open');
+        } else {
+            detail.classList.add('is-open');
+        }
+    });
+});
+
+/* ---- API reference tab switching ---- */
+function switchApiTab(tabId) {
+    var allBtns = document.querySelectorAll('.api-tab-btn');
+    var allPanels = document.querySelectorAll('.api-tab-panel');
+
+    allBtns.forEach(function(btn) {
+        var isActive = btn.id === ('tab-btn-' + tabId);
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        btn.setAttribute('tabindex', isActive ? '0' : '-1');
+    });
+
+    allPanels.forEach(function(panel) {
+        panel.classList.toggle('active', panel.id === ('tab-' + tabId));
+    });
+}
+
+/* ---- Keyboard navigation for API tabs (arrow keys) ---- */
+document.querySelector('.api-nav').addEventListener('keydown', function(e) {
+    var tabs = Array.from(document.querySelectorAll('.api-tab-btn'));
+    var currentIndex = tabs.findIndex(function(t) { return t === document.activeElement; });
+    if (currentIndex === -1) return;
+
+    var targetIndex = -1;
+    if (e.key === 'ArrowRight') {
+        targetIndex = (currentIndex + 1) % tabs.length;
+    } else if (e.key === 'ArrowLeft') {
+        targetIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    } else if (e.key === 'Home') {
+        targetIndex = 0;
+    } else if (e.key === 'End') {
+        targetIndex = tabs.length - 1;
+    }
+
+    if (targetIndex !== -1) {
+        e.preventDefault();
+        tabs[targetIndex].focus();
+        tabs[targetIndex].click();
+    }
+});
+</script>
+
+</body>
+</html>

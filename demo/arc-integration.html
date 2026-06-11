@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ARC Integration Gateway — EEOC AI Platform</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    /* ===== EEOC 508 color overrides — Bootstrap 5.3.3 dangerous-defaults fix ===== */
+    :root {
+      --bs-border-color: #737373;
+      --bs-danger-rgb: 176, 42, 55;
+      --bs-danger: #b02a37;
+      --bs-success-rgb: 20, 108, 67;
+      --bs-success: #146c43;
+      --bs-secondary-rgb: 90, 100, 114;
+      --bs-secondary: #5a6472;
+    }
+
+    .text-primary   { color: #0a58ca !important; }
+    .text-info      { color: #087990 !important; }
+    .text-warning   { color: #7f6500 !important; }
+    .text-danger    { color: #b02a37 !important; }
+    .text-success   { color: #146c43 !important; }
+    .text-muted     { color: #5a6472 !important; }
+
+    /* Navbar text contrast — Bootstrap rgba(255,255,255,0.55) = ~3.2:1, fails 4.5:1 */
+    .navbar-dark .navbar-text,
+    .navbar-dark .navbar-text a { color: #fff !important; }
+
+    /* Badge fixes */
+    .badge.bg-info,
+    .badge.bg-warning { color: #000 !important; }
+
+    /* btn-outline-primary full override */
+    .btn-outline-primary {
+      --bs-btn-color: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #0a58ca;
+      --bs-btn-hover-border-color: #0a58ca;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #0a58ca;
+      --bs-btn-active-border-color: #0a58ca;
+      --bs-btn-disabled-color: #0a58ca;
+      --bs-btn-disabled-border-color: #0a58ca;
+      color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-outline-primary:hover,
+    .btn-outline-primary:active,
+    .btn-outline-primary.active {
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+      color: #fff !important;
+    }
+
+    .btn-primary {
+      --bs-btn-bg: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-bg: #084298;
+      --bs-btn-hover-border-color: #084298;
+      --bs-btn-active-bg: #084298;
+      --bs-btn-active-border-color: #063773;
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-primary:hover,
+    .btn-primary:active,
+    .btn-primary.active {
+      background-color: #084298 !important;
+      border-color: #084298 !important;
+      color: #fff !important;
+    }
+
+    /* Focus indicators — solid 2px, no box-shadow (WCAG 2.4.7 + 1.4.11) */
+    .btn:focus-visible,
+    a:focus-visible,
+    .nav-link:focus-visible,
+    .btn-close:focus-visible,
+    .dropdown-item:focus-visible,
+    .page-link:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible {
+      outline: 2px solid #0a58ca !important;
+      outline-offset: 2px !important;
+    }
+
+    .btn:focus, .nav-link:focus, .btn-close:focus, .dropdown-item:focus,
+    .page-link:focus, .form-control:focus, .form-select:focus,
+    .form-check-input:focus {
+      box-shadow: none !important;
+    }
+
+    details summary:focus-visible {
+      outline: 2px solid #0a58ca;
+      outline-offset: 2px;
+    }
+
+    /* ===== Page layout ===== */
+    body {
+      background-color: #f8f9fa;
+    }
+
+    /* ===== Metric cards ===== */
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.1;
+      color: #212529;
+    }
+
+    .metric-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #5a6472;
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-sub {
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+    }
+
+    /* ===== Charge number monospace ===== */
+    .charge-num {
+      font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace;
+      font-size: 12px;
+      color: #0a58ca;
+      font-weight: 600;
+    }
+
+    /* ===== Endpoint path monospace ===== */
+    .endpoint-path {
+      font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace;
+      font-size: 12px;
+      color: #0f172a;
+    }
+
+    /* ===== HTTP method badges ===== */
+    .method-badge {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      letter-spacing: 0.03em;
+    }
+
+    /* d1fae5 bg with #146c43 text = 6.45:1 */
+    .method-get  { background: #d1fae5; color: #146c43; }
+    /* dbeafe bg with #0a58ca text = ~4.5:1 */
+    .method-post { background: #dbeafe; color: #0a58ca; }
+    /* fef3c7 bg with #7f6500 text = 5.58:1 */
+    .method-put  { background: #fef3c7; color: #7f6500; }
+
+    /* ===== Status pills ===== */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-pill-success { background: #d1fae5; color: #146c43; }
+    .status-pill-info    { background: #cff4fc; color: #087990; }
+    .status-pill-warning { background: #fff3cd; color: #7f6500; }
+    .status-pill-neutral { background: #e9ecef; color: #5a6472; }
+
+    /* ===== Live sync dot ===== */
+    .sync-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #146c43;
+      animation: sync-pulse 2s infinite;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+
+    @keyframes sync-pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.25; }
+    }
+
+    /* ===== Latency bar ===== */
+    .latency-bar-track {
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+      width: 80px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    .latency-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      /* #0a58ca = 6.44:1 on white — passes 3:1 non-text minimum */
+      background: #0a58ca;
+    }
+
+    /* ===== Toast container ===== */
+    .toast-container-custom {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 1090;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 320px;
+    }
+
+    .toast-item {
+      background: #212529;
+      color: #f8f9fa;
+      border-radius: 6px;
+      padding: 12px 14px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      transition: opacity 0.3s;
+    }
+
+    .toast-item-icon { font-size: 1rem; margin-top: 1px; flex-shrink: 0; }
+
+    .toast-item-title {
+      font-weight: 700;
+      margin-bottom: 2px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .toast-item-text { font-size: 12px; color: #ced4da; }
+
+    .toast-item-close {
+      background: none;
+      border: none;
+      color: #adb5bd;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .toast-item-close:focus-visible {
+      outline: 2px solid #0a58ca;
+      outline-offset: 2px;
+    }
+
+    details summary {
+      font-size: 12px;
+      color: #5a6472;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+
+    details .table { font-size: 12px; margin-top: 0.5rem; }
+
+    /* ===== Government footer ===== */
+    .gov-footer {
+      font-size: 0.75rem;
+      color: #5a6472;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Skip navigation (WCAG 2.4.1) -->
+  <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+
+  <!-- ===== Navbar ===== -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-semibold" href="index.html">ARC Integration Gateway</a>
+
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <a href="arc-integration.html" class="btn btn-primary btn-sm" aria-current="page">
+          <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Sync Status
+        </a>
+        <a href="arc-staged.html" class="btn btn-outline-light btn-sm">Staged Charges</a>
+        <a href="arc-history.html" class="btn btn-outline-light btn-sm">Sync History</a>
+        <a href="arc-integration.html#endpoint-health" class="btn btn-outline-light btn-sm">Endpoint Health</a>
+        <a href="arc-integration.html#error-log" class="btn btn-outline-light btn-sm">Error Log</a>
+
+        <span class="navbar-text ms-3 me-2" aria-label="Signed in as D. Gordon, Platform Admin">
+          D. Gordon &mdash; Platform Admin
+        </span>
+        <a href="index.html" class="btn btn-light btn-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Main content ===== -->
+  <main id="main-content" class="container-fluid py-4 px-4" role="main" tabindex="-1">
+
+    <!-- Page heading -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <nav aria-label="Breadcrumb">
+          <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="index.html">Platform</a></li>
+            <li class="breadcrumb-item active" aria-current="page">ARC Sync Status</li>
+          </ol>
+        </nav>
+        <h1 class="h4 mb-0" id="sync-status">
+          <span class="sync-dot" aria-hidden="true"></span>
+          ARC Sync Status
+        </h1>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" type="button">
+          <i class="bi bi-download me-1" aria-hidden="true"></i>Export Log
+        </button>
+        <button class="btn btn-primary btn-sm" type="button">
+          <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Force Sync
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== Metrics ===== -->
+    <section aria-labelledby="metrics-heading" class="mb-4">
+      <h2 id="metrics-heading" class="visually-hidden">ARC Sync Summary Metrics</h2>
+      <div class="row g-3" role="list" aria-label="ARC sync summary metrics">
+
+        <div class="col-6 col-md-3" role="listitem">
+          <div class="card h-100" aria-label="Last Sync: 3 minutes ago">
+            <div class="card-body">
+              <div class="metric-label">Last Sync</div>
+              <div class="metric-value" style="font-size:1.5rem;" aria-hidden="true">3 min ago</div>
+              <div class="metric-sub text-muted">
+                <span class="visually-hidden">Next sync in:</span>
+                Next in 12 min
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3" role="listitem">
+          <div class="card h-100" aria-label="Cases Staged Today: 23">
+            <div class="card-body">
+              <div class="metric-label">Cases Staged Today</div>
+              <div class="metric-value counter" data-target="23" data-decimals="0" aria-hidden="true">23</div>
+              <div class="metric-sub text-success">
+                <i class="bi bi-arrow-up" aria-hidden="true"></i>
+                <span class="visually-hidden">Increase:</span>
+                4 from yesterday
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3" role="listitem">
+          <div class="card h-100" aria-label="Sync Success Rate: 99.7 percent">
+            <div class="card-body">
+              <div class="metric-label">Sync Success Rate</div>
+              <div class="metric-value counter" data-target="99.7" data-decimals="1" data-suffix="%" aria-hidden="true">99.7%</div>
+              <div class="metric-sub text-success">
+                <i class="bi bi-arrow-up" aria-hidden="true"></i>
+                <span class="visually-hidden">Increase:</span>
+                +0.2% this week
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3" role="listitem">
+          <div class="card h-100" aria-label="Average Sync Duration: 4.2 seconds">
+            <div class="card-body">
+              <div class="metric-label">Avg Sync Duration</div>
+              <div class="metric-value counter" data-target="4.2" data-decimals="1" data-suffix="s" aria-hidden="true">4.2s</div>
+              <div class="metric-sub text-muted">
+                <span class="visually-hidden">No change.</span>
+                Stable
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== Sync Activity Chart ===== -->
+    <section class="card mb-4" aria-labelledby="sync-chart-heading" id="sync-history">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-bar-chart-line text-primary" aria-hidden="true"></i>
+        <h2 class="h6 mb-0" id="sync-chart-heading">Cases Synced per Hour (Last 24h)</h2>
+      </div>
+      <div class="card-body">
+        <canvas
+          id="syncChart"
+          role="img"
+          aria-label="Line chart showing cases synced per hour over the last 24 hours. Activity peaks mid-morning around 22 to 24 cases per hour and drops to zero overnight."
+          style="max-height:220px;"
+        ></canvas>
+
+        <details class="mt-2">
+          <summary>Chart data is available in the table below.</summary>
+          <table class="table table-sm">
+            <caption class="visually-hidden">Cases synced per hour over the last 24 hours, starting at midnight.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Hour</th>
+                <th scope="col">Cases Synced</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">12:00 AM</th><td>0</td></tr>
+              <tr><th scope="row">1:00 AM</th><td>0</td></tr>
+              <tr><th scope="row">2:00 AM</th><td>0</td></tr>
+              <tr><th scope="row">3:00 AM</th><td>0</td></tr>
+              <tr><th scope="row">4:00 AM</th><td>2</td></tr>
+              <tr><th scope="row">5:00 AM</th><td>5</td></tr>
+              <tr><th scope="row">6:00 AM</th><td>8</td></tr>
+              <tr><th scope="row">7:00 AM</th><td>12</td></tr>
+              <tr><th scope="row">8:00 AM</th><td>15</td></tr>
+              <tr><th scope="row">9:00 AM</th><td>18</td></tr>
+              <tr><th scope="row">10:00 AM</th><td>22</td></tr>
+              <tr><th scope="row">11:00 AM</th><td>19</td></tr>
+              <tr><th scope="row">12:00 PM</th><td>24</td></tr>
+              <tr><th scope="row">1:00 PM</th><td>21</td></tr>
+              <tr><th scope="row">2:00 PM</th><td>17</td></tr>
+              <tr><th scope="row">3:00 PM</th><td>14</td></tr>
+              <tr><th scope="row">4:00 PM</th><td>11</td></tr>
+              <tr><th scope="row">5:00 PM</th><td>9</td></tr>
+              <tr><th scope="row">6:00 PM</th><td>6</td></tr>
+              <tr><th scope="row">7:00 PM</th><td>4</td></tr>
+              <tr><th scope="row">8:00 PM</th><td>3</td></tr>
+              <tr><th scope="row">9:00 PM</th><td>1</td></tr>
+              <tr><th scope="row">10:00 PM</th><td>0</td></tr>
+              <tr><th scope="row">11:00 PM</th><td>0</td></tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===== Recently Staged Charges ===== -->
+    <section class="card mb-4" aria-labelledby="staged-charges-heading" id="staged-charges">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-inbox text-primary" aria-hidden="true"></i>
+        <h2 class="h6 mb-0" id="staged-charges-heading">
+          Charges Staged from ARC &mdash; Last 10
+        </h2>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <caption class="visually-hidden">The 10 most recently staged charges imported from ARC, with status.</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Charge #</th>
+                <th scope="col">Filed</th>
+                <th scope="col">Office</th>
+                <th scope="col">Basis</th>
+                <th scope="col">Respondent</th>
+                <th scope="col">Staged At</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="charge-num">520-2026-01892</span></td>
+                <td>May 19</td>
+                <td>Philadelphia</td>
+                <td>Race</td>
+                <td>Apex Manufacturing Inc.</td>
+                <td>14:21:07</td>
+                <td><span class="status-pill status-pill-success">Imported to ADR</span></td>
+              </tr>
+              <tr>
+                <td><span class="charge-num">520-2026-01891</span></td>
+                <td>May 19</td>
+                <td>Chicago</td>
+                <td>Disability</td>
+                <td>Metro Healthcare Group</td>
+                <td>14:21:07</td>
+                <td><span class="status-pill status-pill-success">Imported to ADR</span></td>
+              </tr>
+              <tr>
+                <td><span class="charge-num">520-2026-01890</span></td>
+                <td>May 19</td>
+                <td>Dallas</td>
+                <td>Sex / Retaliation</td>
+                <td>Southwest Logistics LLC</td>
+                <td>14:21:06</td>
+                <td><span class="status-pill status-pill-info">Pending Review</span></td>
+              </tr>
+              <tr>
+                <td><span class="charge-num">520-2026-01889</span></td>
+                <td>May 19</td>
+                <td>New York</td>
+                <td>Age</td>
+                <td>Financial Services Corp.</td>
+                <td>14:21:06</td>
+                <td><span class="status-pill status-pill-info">Pending Review</span></td>
+              </tr>
+              <tr>
+                <td><span class="charge-num">520-2026-01888</span></td>
+                <td>May 19</td>
+                <td>Atlanta</td>
+                <td>Race / Disability</td>
+                <td>Southern Foods Inc.</td>
+                <td>14:06:03</td>
+                <td><span class="status-pill status-pill-success">Imported to ADR</span></td>
+              </tr>
+              <tr>
+                <td><span class="charge-num">520-2026-01887</span></td>
+                <td>May 18</td>
+                <td>Houston</td>
+                <td>Retaliation</td>
+                <td>Energy Partners LP</td>
+                <td>14:06:03</td>
+                <td><span class="status-pill status-pill-success">Imported to ADR</span></td>
+              </tr>
+              <tr>
+                <td><span class="charge-num">520-2026-01886</span></td>
+                <td>May 18</td>
+                <td>Los Angeles</td>
+                <td>Sex</td>
+                <td>Pacific Tech Solutions</td>
+                <td>14:06:02</td>
+                <td><span class="status-pill status-pill-success">Imported to ADR</span></td>
+              </tr>
+              <tr>
+                <td><span class="charge-num">520-2026-01885</span></td>
+                <td>May 18</td>
+                <td>Phoenix</td>
+                <td>Race</td>
+                <td>Desert Construction Co.</td>
+                <td>13:51:01</td>
+                <td><span class="status-pill status-pill-warning">Awaiting Mediator</span></td>
+              </tr>
+              <tr>
+                <td><span class="charge-num">520-2026-01884</span></td>
+                <td>May 18</td>
+                <td>New York</td>
+                <td>Disability</td>
+                <td>National Retail Group</td>
+                <td>13:51:01</td>
+                <td><span class="status-pill status-pill-success">Imported to ADR</span></td>
+              </tr>
+              <tr>
+                <td><span class="charge-num">520-2026-01883</span></td>
+                <td>May 18</td>
+                <td>Chicago</td>
+                <td>Age / Retaliation</td>
+                <td>Midwest Insurance LLC</td>
+                <td>13:51:00</td>
+                <td><span class="status-pill status-pill-success">Imported to ADR</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Endpoint Health ===== -->
+    <section class="card mb-4" aria-labelledby="endpoint-health-heading" id="endpoint-health">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-heart-pulse text-primary" aria-hidden="true"></i>
+        <h2 class="h6 mb-0" id="endpoint-health-heading">ARC API Endpoint Status</h2>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <caption class="visually-hidden">Health status of the eight ARC Integration API endpoints, including last response code, average latency, and current health state.</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Endpoint</th>
+                <th scope="col">Method</th>
+                <th scope="col">Last Response</th>
+                <th scope="col">Avg Latency</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="endpoint-path">/arc/v1/mediation/eligible-cases</span></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td>200 OK</td>
+                <td>
+                  <div class="latency-bar-track" role="img" aria-label="340 milliseconds latency bar">
+                    <div class="latency-bar-fill" style="width:68%;"></div>
+                  </div>
+                  340ms
+                </td>
+                <td><span class="status-pill status-pill-success">Healthy</span></td>
+              </tr>
+              <tr>
+                <td><span class="endpoint-path">/arc/v1/mediation/cases/{charge}</span></td>
+                <td><span class="method-badge method-get">GET</span></td>
+                <td>200 OK</td>
+                <td>
+                  <div class="latency-bar-track" role="img" aria-label="180 milliseconds latency bar">
+                    <div class="latency-bar-fill" style="width:36%;"></div>
+                  </div>
+                  180ms
+                </td>
+                <td><span class="status-pill status-pill-success">Healthy</span></td>
+              </tr>
+              <tr>
+                <td><span class="endpoint-path">/arc/v1/mediation/cases/{charge}/status</span></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td>201 Created</td>
+                <td>
+                  <div class="latency-bar-track" role="img" aria-label="220 milliseconds latency bar">
+                    <div class="latency-bar-fill" style="width:44%;"></div>
+                  </div>
+                  220ms
+                </td>
+                <td><span class="status-pill status-pill-success">Healthy</span></td>
+              </tr>
+              <tr>
+                <td><span class="endpoint-path">/arc/v1/mediation/cases/{charge}/staff</span></td>
+                <td><span class="method-badge method-put">PUT</span></td>
+                <td>200 OK</td>
+                <td>
+                  <div class="latency-bar-track" role="img" aria-label="190 milliseconds latency bar">
+                    <div class="latency-bar-fill" style="width:38%;"></div>
+                  </div>
+                  190ms
+                </td>
+                <td><span class="status-pill status-pill-success">Healthy</span></td>
+              </tr>
+              <tr>
+                <td><span class="endpoint-path">/arc/v1/mediation/cases/{charge}/close</span></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td>201 Created</td>
+                <td>
+                  <div class="latency-bar-track" role="img" aria-label="280 milliseconds latency bar">
+                    <div class="latency-bar-fill" style="width:56%;"></div>
+                  </div>
+                  280ms
+                </td>
+                <td><span class="status-pill status-pill-success">Healthy</span></td>
+              </tr>
+              <tr>
+                <td><span class="endpoint-path">/arc/v1/mediation/cases/{charge}/documents</span></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td>201 Created</td>
+                <td>
+                  <div class="latency-bar-track" role="img" aria-label="450 milliseconds latency bar">
+                    <div class="latency-bar-fill" style="width:90%;"></div>
+                  </div>
+                  450ms
+                </td>
+                <td><span class="status-pill status-pill-success">Healthy</span></td>
+              </tr>
+              <tr>
+                <td><span class="endpoint-path">/arc/v1/mediation/cases/{charge}/events</span></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td>201 Created</td>
+                <td>
+                  <div class="latency-bar-track" role="img" aria-label="200 milliseconds latency bar">
+                    <div class="latency-bar-fill" style="width:40%;"></div>
+                  </div>
+                  200ms
+                </td>
+                <td><span class="status-pill status-pill-success">Healthy</span></td>
+              </tr>
+              <tr>
+                <td><span class="endpoint-path">/arc/v1/mediation/cases/{charge}/signed-agreements</span></td>
+                <td><span class="method-badge method-post">POST</span></td>
+                <td>201 Created</td>
+                <td>
+                  <div class="latency-bar-track" role="img" aria-label="310 milliseconds latency bar">
+                    <div class="latency-bar-fill" style="width:62%;"></div>
+                  </div>
+                  310ms
+                </td>
+                <td><span class="status-pill status-pill-success">Healthy</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Error Log placeholder ===== -->
+    <section class="card mb-4" aria-labelledby="error-log-heading" id="error-log">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-circle text-primary" aria-hidden="true"></i>
+        <h2 class="h6 mb-0" id="error-log-heading">Error Log</h2>
+      </div>
+      <div class="card-body">
+        <p class="text-muted mb-0" style="font-size:0.875rem;">No errors in the last 24 hours.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== Government footer ===== -->
+  <footer class="py-4 mt-2 bg-light" role="contentinfo">
+    <div class="container-fluid px-4 gov-footer">
+      <p class="mb-1">This U.S. government system is for use by authorized users only. Information from this system resides on computer systems funded by the government.</p>
+      <p class="mb-1">The data and documents on this system include Federal records that contain sensitive information protected by various Federal statutes, including the Privacy Act, 5 U.S.C. &sect; 552a.</p>
+      <p class="mb-0">Unauthorized user attempts or acts to access, modify, or deny access to this system are strictly prohibited and subject to criminal, civil, or administrative penalties.</p>
+    </div>
+  </footer>
+
+  <!-- ===== Toast container ===== -->
+  <div
+    id="toast-container"
+    class="toast-container-custom"
+    role="status"
+    aria-live="polite"
+    aria-atomic="false"
+    data-toasts='[
+      {"type":"data","title":"15-Minute Sync Cycle","text":"The ARCSyncImporter Azure Function polls ARC every 15 minutes using watermark-based pagination. Only new and modified charges are pulled.","delay":3000,"duration":10000},
+      {"type":"info","title":"Single Gateway","text":"All EEOC applications access ARC data through this Integration API. No application calls ARC directly — this enforces consistent auth, rate limiting, and audit logging.","delay":5000,"duration":10000},
+      {"type":"mcp","title":"Managed Identity","text":"The Integration API authenticates to ARC using Azure Managed Identity. No credentials are stored in code or configuration files.","delay":4000,"duration":10000}
+    ]'>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmY19UFhFKhxtuQFBTzAIiL5FsDq" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+  <script src="js/demo.js"></script>
+  <script>
+    /* Sync activity chart */
+    (function () {
+      const labels = [
+        '12 AM','1 AM','2 AM','3 AM','4 AM','5 AM',
+        '6 AM','7 AM','8 AM','9 AM','10 AM','11 AM',
+        '12 PM','1 PM','2 PM','3 PM','4 PM','5 PM',
+        '6 PM','7 PM','8 PM','9 PM','10 PM','11 PM'
+      ];
+
+      const values = [0,0,0,0,2,5,8,12,15,18,22,19,24,21,17,14,11,9,6,4,3,1,0,0];
+
+      /* #1a2744 = navy, verified > 3:1 on white canvas (non-text WCAG 1.4.11) */
+      const lineColor = 'rgb(26, 39, 68)';
+
+      const ctx = document.getElementById('syncChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Cases Synced',
+            data: values,
+            borderColor: lineColor,
+            borderWidth: 2,
+            fill: false,
+            tension: 0.35,
+            pointRadius: 3,
+            pointBackgroundColor: lineColor,
+            pointBorderColor: lineColor
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.parsed.y} cases`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 11 }, color: '#5a6472', maxTicksLimit: 8 }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: '#e2e8f0' },
+              ticks: { font: { size: 11 }, color: '#5a6472', stepSize: 5 }
+            }
+          }
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>

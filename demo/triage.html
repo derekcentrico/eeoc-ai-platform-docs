@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case Triage Dashboard — EEOC AI Triage System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="css/demo.css" rel="stylesheet">
+  <style>
+    /* =========================================================================
+       EEOC AI Triage System — Page overrides
+       Mirrors eeoc-ofs-triage/triage_webapp/static/css/eeoc-ai-triage-custom.css
+       Section 508 / WCAG 2.1 AA verified 2026-05-21
+       ========================================================================= */
+
+    /* CSS custom property overrides — EEOC 508-safe values */
+    :root {
+      --bs-danger-rgb:    176, 42, 55;
+      --bs-danger:        #b02a37;
+      --bs-success-rgb:   20, 108, 67;
+      --bs-success:       #146c43;
+      --bs-secondary-rgb: 90, 100, 114;
+      --bs-secondary:     #5a6472;
+      --bs-info-rgb:      8, 121, 144;
+      --bs-info:          #087990;
+      --bs-warning-rgb:   127, 101, 0;
+      --bs-warning:       #7f6500;
+      --bs-border-color:  #737373;
+    }
+
+    /* Text utility overrides — all pass 4.5:1 on white and #f8f9fa */
+    .text-muted   { color: #5a6472 !important; }
+    .text-danger  { color: #b02a37 !important; }
+    .text-success { color: #146c43 !important; }
+    .text-info    { color: #087990 !important; }
+    .text-warning { color: #7f6500 !important; }
+    .text-primary { color: #0a58ca !important; }
+
+    /* Navbar text — override Bootstrap rgba(255,255,255,0.55) default (3.2:1) */
+    .navbar-dark .navbar-text,
+    .navbar-dark .navbar-text a { color: #fff !important; }
+
+    /* Skip link — WCAG 2.4.1 */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      text-decoration: none;
+      z-index: 1100;
+      border-radius: 0 0 4px 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* Focus indicators — solid 2px, no box-shadow (WCAG 2.4.7 + 1.4.11) */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    [tabindex]:focus-visible,
+    .btn:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible,
+    .nav-link:focus-visible,
+    .btn-close:focus-visible,
+    .dropdown-item:focus-visible,
+    .page-link:focus-visible {
+      outline: 2px solid #0a58ca !important;
+      outline-offset: 2px !important;
+      box-shadow: none !important;
+    }
+
+    /* Suppress Bootstrap :focus box-shadow globally */
+    .btn:focus, a:focus, button:focus, input:focus, select:focus, textarea:focus,
+    [tabindex]:focus, .form-control:focus, .form-select:focus,
+    .form-check-input:focus, .nav-link:focus, .btn-close:focus,
+    .dropdown-item:focus, .page-link:focus {
+      box-shadow: none !important;
+    }
+
+    /* body */
+    body {
+      background-color: #f8f9fa;
+      color: #212529;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+                   "Noto Sans", "Liberation Sans", Arial, sans-serif;
+    }
+
+    .container { max-width: 1140px; }
+
+    /* ---- Navbar active-page indicator ---- */
+    .navbar .btn-outline-light[aria-current="page"] {
+      background-color: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+
+    /* btn-outline-light custom properties — prevent Bootstrap hover flash */
+    .btn-outline-light {
+      --bs-btn-color:               #f8f9fa;
+      --bs-btn-border-color:        #f8f9fa;
+      --bs-btn-hover-color:         #212529;
+      --bs-btn-hover-bg:            #f8f9fa;
+      --bs-btn-hover-border-color:  #f8f9fa;
+      --bs-btn-active-color:        #212529;
+      --bs-btn-active-bg:           #f8f9fa;
+      --bs-btn-active-border-color: #f8f9fa;
+    }
+
+    /* btn-outline-warning in the navbar (admin tools) */
+    .btn-outline-warning {
+      --bs-btn-color:               #7f6500;
+      --bs-btn-border-color:        #7f6500;
+      --bs-btn-hover-color:         #fff;
+      --bs-btn-hover-bg:            #7f6500;
+      --bs-btn-hover-border-color:  #7f6500;
+      --bs-btn-active-color:        #fff;
+      --bs-btn-active-bg:           #7f6500;
+      --bs-btn-active-border-color: #7f6500;
+      color: #7f6500 !important;
+      border-color: #7f6500 !important;
+    }
+    .btn-outline-warning:hover,
+    .btn-outline-warning:active,
+    .btn-outline-warning.active {
+      background-color: #7f6500 !important;
+      border-color:     #7f6500 !important;
+      color:            #fff !important;
+    }
+
+    /* ---- Metric cards ---- */
+    /* Reuse .metric-card from demo.css; no changes needed */
+
+    /* ---- Priority badges (solid bg/text — all >= 4.5:1) ---- */
+    .priority-a {
+      background: #fde8ea;
+      color: #b02a37;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+    .priority-b {
+      background: #fef3c7;
+      color: #7f6500;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+    .priority-c {
+      background: #dbeafe;
+      color: #0a58ca;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+
+    /* ---- Status badges ---- */
+    .status-pending { background: #f1f5f9; color: #5a6472; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+    .status-ai      { background: #dbeafe; color: #0a58ca; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+    .status-routed  { background: #d1fae5; color: #146c43; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+    .status-review  { background: #fef3c7; color: #7f6500; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+
+    /* ---- Charge queue table ---- */
+    .charge-row { cursor: pointer; }
+    .charge-row.selected td { background: #eff6ff !important; }
+    .charge-row td { transition: background 0.12s; }
+
+    /* Charge number monospace */
+    .charge-num {
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      font-size: 12px;
+      color: #0a58ca;
+      font-weight: 600;
+    }
+
+    /* ---- Detail panel ---- */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 60fr 40fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 900px) {
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+
+    .detail-section {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+
+    .detail-section h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1a2744;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .detail-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #5a6472;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+
+    .detail-value {
+      font-size: 13px;
+      color: #0f172a;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Confidence bar */
+    .confidence-track {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .confidence-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: #146c43;
+      transition: width 0.6s ease;
+    }
+
+    /* Human review banner */
+    .review-banner {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-left: 4px solid #7f6500;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #7f6500;
+      font-weight: 600;
+      margin-top: 0.75rem;
+    }
+
+    /* Reasoning block */
+    .reasoning-block {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #475569;
+      line-height: 1.6;
+      margin-top: 4px;
+    }
+
+    /* Audit trail line */
+    .audit-line {
+      margin-top: 0.75rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid #e2e8f0;
+      font-size: 11px;
+      color: #5a6472;
+      font-family: 'SFMono-Regular', Consolas, monospace;
+    }
+
+    /* AI indicator chip */
+    .ai-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #0a58ca;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Submission window filter bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    /* Footer text override for contrast */
+    footer .text-muted { color: #5a6472 !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Skip navigation — WCAG 2.4.1 -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ===== Navbar (mirrors layout.html exactly) ===== -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">EEOC AI Triage System</a>
+      <div class="d-flex align-items-center flex-wrap gap-1">
+        <a href="triage.html" class="btn btn-outline-light btn-sm me-1">Upload</a>
+        <a href="triage.html" class="btn btn-outline-light btn-sm me-1" aria-current="page">Dashboard</a>
+        <a href="triage-analytics.html" class="btn btn-outline-light btn-sm me-1">Analytics</a>
+        <a href="triage-reports.html" class="btn btn-outline-light btn-sm me-1">Reports</a>
+        <a href="triage-library.html" class="btn btn-outline-light btn-sm me-1">Manage Library</a>
+        <a href="triage-admin.html" class="btn btn-outline-warning btn-sm me-2" title="Admin Tools" aria-label="Admin Tools">Admin Tools</a>
+        <span class="navbar-text me-2">Welcome, S. Rodriguez</span>
+        <a href="index.html" class="btn btn-light btn-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Main Content ===== -->
+  <main id="main-content" class="container mt-4" role="main" tabindex="-1">
+
+    <!-- Page heading + filter controls -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+      <h1 class="mb-2 mb-md-0">Case Triage Dashboard</h1>
+      <div class="d-flex align-items-center flex-wrap gap-2">
+        <div class="filter-bar mb-0">
+          <label for="sector-selector" class="visually-hidden">Filter by Sector</label>
+          <select id="sector-selector" class="form-select form-select-sm" style="width:auto;">
+            <option value="">All Sectors</option>
+            <option value="OFS" selected>OFS</option>
+            <option value="OFP">OFP</option>
+          </select>
+
+          <label for="week-selector" class="visually-hidden">Select Week</label>
+          <select id="week-selector" class="form-select form-select-sm" style="width:auto;">
+            <option value="20" selected>Week 20</option>
+            <option value="19">Week 19</option>
+            <option value="18">Week 18</option>
+          </select>
+
+          <button type="button" class="btn btn-sm btn-outline-secondary">Apply</button>
+          <button type="button" class="btn btn-sm btn-info text-white">Generate Spreadsheet</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flash / alert region -->
+    <div role="alert" aria-live="assertive"></div>
+
+    <!-- ===== Metrics Row ===== -->
+    <div class="metrics-row mb-4" role="list" aria-label="Queue summary metrics">
+
+      <div class="metric-card" role="listitem">
+        <div class="label">New Today</div>
+        <div class="value counter" data-target="7" data-decimals="0">7</div>
+        <div class="change up">
+          <span class="visually-hidden">Increase:</span>
+          +2 since yesterday
+        </div>
+      </div>
+
+      <div class="metric-card" role="listitem">
+        <div class="label">Pending Review</div>
+        <div class="value counter" data-target="23" data-decimals="0">23</div>
+        <div class="change neutral">
+          <span class="visually-hidden">No change:</span>
+          Across all officers
+        </div>
+      </div>
+
+      <div class="metric-card" role="listitem">
+        <div class="label">Routed This Week</div>
+        <div class="value counter" data-target="34" data-decimals="0">34</div>
+        <div class="change up">
+          <span class="visually-hidden">Increase:</span>
+          +6 from last week
+        </div>
+      </div>
+
+      <div class="metric-card" role="listitem">
+        <div class="label">Avg Classification Time</div>
+        <div class="value counter" data-target="4.2" data-decimals="1" data-suffix=" min">4.2 min</div>
+        <div class="change down">
+          <span class="visually-hidden">Decrease:</span>
+          0.8 min from target
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== Charge Queue Table ===== -->
+    <div class="card mb-3">
+      <div class="card-body p-0">
+        <div class="px-3 pt-3 pb-2 d-flex align-items-center gap-2">
+          <h2 class="h5 mb-0">Charge Queue</h2>
+          <span class="ai-chip">AI Classification Active</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0" id="charge-queue-table">
+            <caption class="visually-hidden">New charge queue — 7 charges pending triage officer review. Select a row to view charge detail below.</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Charge #</th>
+                <th scope="col">Filed</th>
+                <th scope="col">Respondent</th>
+                <th scope="col">Basis</th>
+                <th scope="col">Priority</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="charge-row selected" data-charge="01847" tabindex="0"
+                  aria-selected="true"
+                  aria-label="Charge 520-2026-01847, National Electronics Corp., Race and Retaliation, Priority A, AI Classified. Press Enter to view detail.">
+                <td><span class="charge-num">520-2026-01847</span></td>
+                <td>May 14, 2026</td>
+                <td>National Electronics Corp.</td>
+                <td>Race, Retaliation</td>
+                <td><span class="priority-a">A</span></td>
+                <td><span class="status-ai">AI Classified</span></td>
+              </tr>
+              <tr class="charge-row" data-charge="01851" tabindex="0"
+                  aria-selected="false"
+                  aria-label="Charge 520-2026-01851, Meridian Health Partners, Disability, Priority B, Pending Review. Press Enter to view detail.">
+                <td><span class="charge-num">520-2026-01851</span></td>
+                <td>May 14, 2026</td>
+                <td>Meridian Health Partners</td>
+                <td>Disability</td>
+                <td><span class="priority-b">B</span></td>
+                <td><span class="status-pending">Pending Review</span></td>
+              </tr>
+              <tr class="charge-row" data-charge="01853" tabindex="0"
+                  aria-selected="false"
+                  aria-label="Charge 520-2026-01853, FedServ Logistics LLC, Sex, Priority B, Pending Review. Press Enter to view detail.">
+                <td><span class="charge-num">520-2026-01853</span></td>
+                <td>May 15, 2026</td>
+                <td>FedServ Logistics LLC</td>
+                <td>Sex</td>
+                <td><span class="priority-b">B</span></td>
+                <td><span class="status-pending">Pending Review</span></td>
+              </tr>
+              <tr class="charge-row" data-charge="01856" tabindex="0"
+                  aria-selected="false"
+                  aria-label="Charge 520-2026-01856, Capitol Staffing Group, Age, Priority C, AI Classified. Press Enter to view detail.">
+                <td><span class="charge-num">520-2026-01856</span></td>
+                <td>May 15, 2026</td>
+                <td>Capitol Staffing Group</td>
+                <td>Age</td>
+                <td><span class="priority-c">C</span></td>
+                <td><span class="status-ai">AI Classified</span></td>
+              </tr>
+              <tr class="charge-row" data-charge="01858" tabindex="0"
+                  aria-selected="false"
+                  aria-label="Charge 520-2026-01858, Cornerstone Financial Services, Retaliation, Priority A, Under Human Review. Press Enter to view detail.">
+                <td><span class="charge-num">520-2026-01858</span></td>
+                <td>May 16, 2026</td>
+                <td>Cornerstone Financial Svcs.</td>
+                <td>Retaliation</td>
+                <td><span class="priority-a">A</span></td>
+                <td><span class="status-review">Under Human Review</span></td>
+              </tr>
+              <tr class="charge-row" data-charge="01861" tabindex="0"
+                  aria-selected="false"
+                  aria-label="Charge 520-2026-01861, Highpoint Manufacturing Inc., Disability and Race, Priority B, Pending Review. Press Enter to view detail.">
+                <td><span class="charge-num">520-2026-01861</span></td>
+                <td>May 16, 2026</td>
+                <td>Highpoint Manufacturing Inc.</td>
+                <td>Disability, Race</td>
+                <td><span class="priority-b">B</span></td>
+                <td><span class="status-pending">Pending Review</span></td>
+              </tr>
+              <tr class="charge-row" data-charge="01864" tabindex="0"
+                  aria-selected="false"
+                  aria-label="Charge 520-2026-01864, Tri-State Transit Authority, Sex, Priority C, Routed to Mediation. Press Enter to view detail.">
+                <td><span class="charge-num">520-2026-01864</span></td>
+                <td>May 17, 2026</td>
+                <td>Tri-State Transit Authority</td>
+                <td>Sex</td>
+                <td><span class="priority-c">C</span></td>
+                <td><span class="status-routed">Routed to Mediation</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Detail Panel ===== -->
+    <section aria-label="Selected charge detail" aria-live="polite" aria-atomic="false">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h2 class="h5 mb-3">
+            Charge Detail &mdash;
+            <span class="charge-num" style="font-size:0.875rem;">520-2026-01847</span>
+          </h2>
+
+          <div class="detail-grid">
+
+            <!-- Left: Charge information (60%) -->
+            <div class="detail-section">
+              <h3>Charge Information</h3>
+
+              <div class="detail-label">Charge Number</div>
+              <div class="detail-value">
+                <span class="charge-num" style="font-size:13px;">520-2026-01847</span>
+              </div>
+
+              <div class="detail-label">Respondent</div>
+              <div class="detail-value">National Electronics Corp.</div>
+
+              <div class="detail-label">Charging Party</div>
+              <div class="detail-value">
+                M.S.
+                <span class="visually-hidden">(identity masked — PII protected)</span>
+                <span aria-hidden="true" style="font-size:11px;color:#5a6472;">(PII masked)</span>
+              </div>
+
+              <div class="detail-label">Date Filed</div>
+              <div class="detail-value">May 14, 2026</div>
+
+              <div class="detail-label">Basis of Discrimination</div>
+              <div class="detail-value">
+                <span class="status-ai" style="margin-right:4px;">Race</span>
+                <span class="status-review">Retaliation</span>
+              </div>
+
+              <div class="detail-label" style="margin-top:0.25rem;">Charge Narrative</div>
+              <div class="detail-value" style="line-height:1.7;">
+                The charging party alleges that despite consistently strong performance evaluations
+                and seniority, they were passed over for a senior engineering promotion in favor of
+                a less experienced colleague. Following an internal discrimination complaint filed
+                with the respondent's HR department on January 12, 2026, the charging party was
+                placed on a performance improvement plan within 30 days. On April 3, 2026, the
+                charging party was terminated; the respondent cited an organizational restructuring
+                that eliminated their position. The charging party notes that no other positions
+                were eliminated in the same reorganization and that a peer hired two years later
+                remains employed in a functionally identical role.
+              </div>
+
+              <!-- AI analysis summary block -->
+              <div class="analysis-details-box border rounded p-3 mt-2">
+                <p class="mb-1"><strong>Summary:</strong></p>
+                <p class="fst-italic mb-3">
+                  Charge presents strong prima facie evidence of race discrimination and retaliation
+                  under Title VII. Temporal proximity between internal complaint and PIP initiation
+                  (26 days) meets the threshold established in Clark County School District v. Breeden.
+                </p>
+                <p class="mb-1"><strong>Sources Cited:</strong></p>
+                <ul class="list-unstyled mt-1 small">
+                  <li>
+                    <p class="mb-0"><strong>Source:</strong> EEOC Enforcement Guidance on Retaliation (2016)</p>
+                    <blockquote class="blockquote-footer mt-0 mb-1">"Temporal proximity alone can establish a causal connection when the adverse action follows very closely on the heels of the protected activity."</blockquote>
+                  </li>
+                  <li>
+                    <p class="mb-0"><strong>Source:</strong> ARC Charge File — 520-2026-01847 (Page 3)</p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Right: AI Classification Result (40%) -->
+            <div class="detail-section">
+              <h3>AI Classification Result</h3>
+
+              <div class="detail-label">Priority Rank</div>
+              <div class="detail-value" style="display:flex;align-items:center;gap:8px;">
+                <span class="priority-a" style="font-size:13px;padding:3px 12px;">A</span>
+                <span style="font-weight:600;color:#0f172a;">Full Investigation</span>
+              </div>
+
+              <div class="detail-label" style="margin-top:0.25rem;">Confidence</div>
+              <div class="detail-value" style="margin-bottom:0.5rem;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+                  <span style="font-weight:700;color:#146c43;">94%</span>
+                  <span style="font-size:11px;color:#5a6472;">High confidence</span>
+                </div>
+                <div class="confidence-track" role="img" aria-label="Classification confidence: 94 percent">
+                  <div class="confidence-fill" style="width:94%;"></div>
+                </div>
+              </div>
+
+              <div class="detail-label">Basis Detected</div>
+              <div class="detail-value">
+                Race <span style="color:#5a6472;font-size:11px;">(primary)</span>,
+                Retaliation <span style="color:#5a6472;font-size:11px;">(secondary)</span>
+              </div>
+
+              <div class="detail-label">Applicable Statutes</div>
+              <div class="detail-value" style="font-family:'SFMono-Regular',Consolas,monospace;font-size:12px;">
+                Title VII &sect;703(a)(1), &sect;704(a)
+              </div>
+
+              <div class="detail-label">Recommended Track</div>
+              <div class="detail-value">
+                <span class="status-routed">Mediation</span>
+              </div>
+
+              <div class="detail-label">Reasoning</div>
+              <div class="reasoning-block">
+                Respondent participated in 4 prior EEOC mediations with a 75% settlement rate.
+                Charging party indicated willingness to mediate in the charge narrative.
+                Temporal proximity between internal complaint (Jan 12) and PIP initiation
+                (Feb 7) meets the prima facie threshold for retaliation under &sect;704(a).
+              </div>
+
+              <div class="review-banner" role="status">
+                Human review required before routing
+              </div>
+
+              <div class="audit-line">
+                HMAC-SHA256 verified &bull; Audit ID: clf-8a2e4c7d
+              </div>
+
+              <!-- Correction form — mirrors dashboard.html action panel -->
+              <div class="mt-3">
+                <label for="correct-ranking" class="form-label small fw-bold">Correct Ranking</label>
+                <div class="input-group input-group-sm mb-2">
+                  <select id="correct-ranking" name="correct_ranking" class="form-select"
+                          aria-required="true" aria-label="Correct ranking for charge 520-2026-01847">
+                    <option value="" disabled selected>Correct rank...</option>
+                    <option value="A">Rank A: Priority / Full Investigation</option>
+                    <option value="B">Rank B: Further Investigation</option>
+                    <option value="C">Rank C: Decision Letter Queue</option>
+                  </select>
+                  <button type="button" class="btn btn-outline-success btn-sm">Save</button>
+                </div>
+
+                <label for="correction-notes" class="visually-hidden">Reason for ranking correction</label>
+                <textarea id="correction-notes" name="correction_notes"
+                          placeholder="Reason for change..."
+                          rows="2" class="form-control form-control-sm mb-2"
+                          aria-required="true"
+                          aria-label="Reason for ranking correction"></textarea>
+
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" name="use_for_learning"
+                         value="true" id="learn-01847">
+                  <label class="form-check-label small" for="learn-01847">Use as learning example</label>
+                </div>
+
+                <div class="d-flex flex-wrap gap-1 mb-2">
+                  <button type="button" class="btn btn-sm btn-outline-info">Mark Reviewed</button>
+                </div>
+
+                <button type="button" class="btn btn-sm btn-primary w-100 mb-1">Approve &amp; Route</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== Footer (mirrors layout.html) ===== -->
+  <footer class="py-4 mt-5 bg-light" role="contentinfo">
+    <div class="container text-center text-muted" style="font-size:0.8rem;">
+      <p class="mb-1">This U.S. government system is to be used by authorized users only. Information from this system resides on computer systems funded by the government.</p>
+      <p class="mb-1">The data and documents on this system include Federal records that contain sensitive information protected by various Federal statutes, including the Privacy Act, 5 U.S.C. &sect; 552a.</p>
+      <p class="mb-1">All access or use of this system constitutes user understanding and acceptance of these terms and constitutes unconditional consent to review, monitor, record, audit and take action by all authorized government and law enforcement personnel.</p>
+      <p class="mb-0">Unauthorized user attempts or acts to (1) access, view, upload, change, or delete information on this system, (2) modify this system, (3) deny access to this system, (4) accrue resources for unauthorized use or (5) otherwise misuse this system are strictly prohibited. Such attempts or acts are subject to action that may result in criminal, civil, or administrative penalties.</p>
+    </div>
+  </footer>
+
+  <!-- ===== Toast Container — educational explainers ===== -->
+  <div id="toast-container"
+       class="toast-container"
+       role="status"
+       aria-live="polite"
+       aria-atomic="false"
+       data-toasts='[
+         {"type":"data","title":"ARC Sync","text":"This charge was imported from ARC via the Integration API 12 minutes ago. The ARCSyncImporter pulls eligible cases every 15 minutes.","delay":3000,"duration":10000},
+         {"type":"mcp","title":"AI Classification","text":"The classification uses Azure OpenAI via managed identity. The result, confidence score, and recommended track are logged with HMAC-SHA256 signatures for audit integrity.","delay":5000,"duration":10000},
+         {"type":"info","title":"Human Oversight","text":"All AI classifications require supervisor approval before routing. The system recommends — the triage officer decides.","delay":4000,"duration":10000}
+       ]'>
+  </div>
+
+  <!-- Screen reader announcer for row selection changes -->
+  <div id="row-sr-announcer" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmY19UFhFBKhxtuQFBTzAIiL5FsDq" crossorigin="anonymous"></script>
+  <script src="js/demo.js"></script>
+  <script>
+    /* Charge row selection — keyboard + pointer */
+    (function () {
+      'use strict';
+      var rows = document.querySelectorAll('.charge-row');
+      var announcer = document.getElementById('row-sr-announcer');
+
+      function selectRow(row) {
+        rows.forEach(function (r) {
+          r.classList.remove('selected');
+          r.setAttribute('aria-selected', 'false');
+        });
+        row.classList.add('selected');
+        row.setAttribute('aria-selected', 'true');
+
+        var label = row.getAttribute('aria-label') || 'Charge selected';
+        if (announcer) {
+          announcer.textContent = '';
+          setTimeout(function () { announcer.textContent = label; }, 80);
+        }
+      }
+
+      rows.forEach(function (row) {
+        row.addEventListener('click', function () { selectRow(row); });
+        row.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            selectRow(row);
+          }
+        });
+      });
+    }());
+  </script>
+</body>
+</html>

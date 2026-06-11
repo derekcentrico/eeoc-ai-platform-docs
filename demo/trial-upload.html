@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload New Case — OGC Trial Tool Demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous">
+  <style>
+    /* ==========================================================================
+       508 overrides — EEOC color table, WCAG 2.x piecewise formula
+       ========================================================================== */
+    :root {
+      --bs-border-color: #737373;
+      --bs-danger-rgb: 176, 42, 55;
+      --bs-danger: #b02a37;
+      --bs-success-rgb: 20, 108, 67;
+      --bs-success: #146c43;
+      --bs-secondary-rgb: 90, 100, 114;
+      --bs-secondary: #5a6472;
+    }
+
+    .text-primary  { color: #0a58ca !important; }
+    .text-info     { color: #087990 !important; }
+    .text-warning  { color: #7f6500 !important; }
+    .text-danger   { color: #b02a37 !important; }
+    .text-success  { color: #146c43 !important; }
+    .text-muted    { color: #5a6472 !important; }
+
+    .bg-primary, .text-bg-primary { background-color: #0a58ca !important; }
+    .bg-success, .text-bg-success { background-color: #146c43 !important; }
+    .bg-danger,  .text-bg-danger  { background-color: #b02a37 !important; }
+
+    .btn-primary {
+      --bs-btn-bg: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-bg: #0a4fb4;
+      --bs-btn-hover-border-color: #0a4fb4;
+      --bs-btn-active-bg: #0842a0;
+      --bs-btn-active-border-color: #0842a0;
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-primary:hover  { background-color: #0a4fb4 !important; border-color: #0a4fb4 !important; }
+    .btn-primary:active, .btn-primary.active { background-color: #0842a0 !important; border-color: #0842a0 !important; }
+
+    .btn-outline-primary {
+      --bs-btn-color: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #0a58ca;
+      --bs-btn-hover-border-color: #0a58ca;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #0a58ca;
+      --bs-btn-active-border-color: #0a58ca;
+      --bs-btn-disabled-color: #0a58ca;
+      --bs-btn-disabled-border-color: #0a58ca;
+      color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-outline-primary:hover,
+    .btn-outline-primary:active,
+    .btn-outline-primary.active {
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+      color: #fff !important;
+    }
+
+    .btn-outline-secondary {
+      --bs-btn-color: #5a6472;
+      --bs-btn-border-color: #5a6472;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #5a6472;
+      --bs-btn-hover-border-color: #5a6472;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #5a6472;
+      --bs-btn-active-border-color: #5a6472;
+      --bs-btn-disabled-color: #5a6472;
+      --bs-btn-disabled-border-color: #5a6472;
+      color: #5a6472 !important;
+      border-color: #5a6472 !important;
+    }
+    .btn-outline-secondary:hover,
+    .btn-outline-secondary:active,
+    .btn-outline-secondary.active {
+      background-color: #5a6472 !important;
+      border-color: #5a6472 !important;
+      color: #fff !important;
+    }
+
+    /* Navbar text contrast — rgba(255,255,255,0.55) fails 4.5:1 */
+    .navbar-dark .navbar-text,
+    .navbar-dark .navbar-text a { color: #fff !important; }
+
+    /* Focus indicators — WCAG 2.4.7 + 1.4.11 */
+    .btn:focus-visible,
+    a:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible,
+    .nav-link:focus-visible,
+    .btn-close:focus-visible,
+    .dropdown-item:focus-visible,
+    .page-link:focus-visible,
+    .accordion-button:focus-visible { outline: 2px solid #0a58ca !important; outline-offset: 2px !important; }
+
+    .btn:focus, .nav-link:focus, .btn-close:focus, .dropdown-item:focus,
+    .page-link:focus, .accordion-button:focus, .form-control:focus,
+    .form-select:focus, .form-check-input:focus { box-shadow: none !important; }
+
+    /* ==========================================================================
+       Layout
+       ========================================================================== */
+    body { background-color: #f8f9fa; }
+    .container { max-width: 1280px; }
+    .navbar-brand { font-weight: bold; }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      z-index: 9999;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ==========================================================================
+       Drop zone
+       ========================================================================== */
+    .drop-zone {
+      border: 2px dashed #737373;
+      border-radius: 0.5rem;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      background: #fff;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .drop-zone.drag-over {
+      background: #e8f0fe;
+      border-color: #0a58ca;
+    }
+
+    .drop-zone-icon {
+      font-size: 2.5rem;
+      color: #5a6472;
+      margin-bottom: 0.75rem;
+      display: block;
+      line-height: 1;
+    }
+
+    /* Processing status steps */
+    .step-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    .step-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .step-done {
+      background-color: #146c43;
+      color: #fff;
+    }
+
+    .step-pending {
+      background-color: #dee2e6;
+      color: #5a6472;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Skip link — WCAG 2.4.1 -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ==========================================================================
+       Navbar
+       ========================================================================== -->
+  <header role="banner">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark"
+         role="navigation" aria-label="Main navigation">
+      <div class="container">
+        <a class="navbar-brand" href="trial-tool.html">OGC Trial Tool</a>
+        <div class="d-flex align-items-center">
+          <a href="trial-upload.html" class="btn btn-light btn-sm me-2" role="button"
+             aria-current="page">Upload New Case</a>
+          <a href="trial-cases.html" class="btn btn-outline-light btn-sm me-2" role="button">Dashboard</a>
+          <button type="button" class="btn btn-outline-warning btn-sm me-3"
+                  disabled title="Admin tools — not yet available"
+                  style="--bs-btn-color:#7f6500;--bs-btn-border-color:#7f6500;--bs-btn-disabled-color:#7f6500;--bs-btn-disabled-border-color:#7f6500;">
+            Admin Tools
+          </button>
+          <span class="navbar-text me-3" aria-label="Current user">Welcome, A. Washington</span>
+          <a href="index.html" class="btn btn-light btn-sm" role="button">Logout</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ==========================================================================
+       Main content
+       ========================================================================== -->
+  <main id="main-content" class="container mt-4" role="main">
+
+    <!-- Flash alert region -->
+    <div role="alert" aria-live="assertive" id="flash-region"></div>
+
+    <div class="text-center mb-4">
+      <h1>Upload New Case</h1>
+      <p class="lead">Submit deposition transcripts and other case documents for indexing and analysis.</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+
+        <!-- Case metadata -->
+        <section class="card mb-4" aria-labelledby="metadata-heading">
+          <div class="card-header">
+            <h2 id="metadata-heading" class="h5 mb-0">Case Information</h2>
+          </div>
+          <div class="card-body">
+            <div role="alert" aria-live="assertive" class="visually-hidden" id="form-errors"></div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="case_name" class="form-label">Case Name <span aria-hidden="true">*</span></label>
+                <input type="text" class="form-control" id="case_name" name="case_name"
+                       aria-required="true" required maxlength="255"
+                       placeholder="EEOC v. Respondent Name"
+                       value="EEOC v. Ridgeline Logistics LLC">
+              </div>
+              <div class="col-md-6">
+                <label for="charge_number" class="form-label">Charge Number</label>
+                <input type="text" class="form-control" id="charge_number" name="charge_number"
+                       maxlength="25" placeholder="e.g. 430-2026-00234"
+                       value="430-2026-00234">
+              </div>
+              <div class="col-md-6">
+                <label for="case_type" class="form-label">Case Type <span aria-hidden="true">*</span></label>
+                <select id="case_type" name="case_type" class="form-select" aria-required="true" required>
+                  <option value="">Select case type</option>
+                  <option value="title_vii" selected>Title VII Discrimination</option>
+                  <option value="ada">ADA Disability</option>
+                  <option value="adea">ADEA Age Discrimination</option>
+                  <option value="epa">Equal Pay Act</option>
+                  <option value="title_vii_retaliation">Title VII Retaliation</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="court_name" class="form-label">Court</label>
+                <input type="text" class="form-control" id="court_name" name="court_name"
+                       maxlength="200" placeholder="e.g. U.S. District Court, S.D.N.Y."
+                       value="U.S. District Court, D. Md.">
+              </div>
+              <div class="col-md-6">
+                <label for="trial_date" class="form-label">Trial Date (if scheduled)</label>
+                <input type="date" class="form-control" id="trial_date" name="trial_date"
+                       value="2027-01-14">
+              </div>
+              <div class="col-md-6">
+                <label for="attorney" class="form-label">Assigned Attorney <span aria-hidden="true">*</span></label>
+                <select id="attorney" name="attorney" class="form-select" aria-required="true" required>
+                  <option value="washington" selected>A. Washington</option>
+                  <option value="okonkwo">D. Okonkwo</option>
+                  <option value="reyes">M. Reyes</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- File upload -->
+        <section class="card mb-4" aria-labelledby="upload-heading">
+          <div class="card-header">
+            <h2 id="upload-heading" class="h5 mb-0">Case Documents</h2>
+          </div>
+          <div class="card-body">
+            <p class="card-text text-muted small mb-3">
+              Accepted formats: <strong>.pdf</strong>, <strong>.docx</strong>.
+              Maximum 50 MB per file. Upload all documents for this case at once.
+            </p>
+
+            <!-- Drag-and-drop zone -->
+            <div class="drop-zone mb-3" id="drop-zone"
+                 role="region" aria-label="File drag-and-drop zone"
+                 aria-describedby="drop-zone-help">
+              <span class="drop-zone-icon" aria-hidden="true">&#128196;</span>
+              <p class="mb-1 fw-semibold">Drag files here, or use the button below</p>
+              <p class="text-muted small mb-0" id="drop-zone-help">
+                .pdf and .docx only &mdash; complaint, answer, depositions, exhibits
+              </p>
+            </div>
+
+            <div class="mb-3">
+              <label for="case_files_input" class="form-label">Select files to upload</label>
+              <input class="form-control" type="file" name="case_files"
+                     id="case_files_input" multiple
+                     accept=".pdf,.docx"
+                     aria-required="true" required
+                     aria-describedby="file-help-text">
+              <div id="file-help-text" class="form-text">
+                Hold Ctrl (Windows) or Command (Mac) to select multiple files.
+              </div>
+            </div>
+
+            <!-- Static file list showing demo upload state -->
+            <div class="mb-3" aria-label="Selected files" id="file-list">
+              <p class="text-muted small fw-semibold mb-2">Selected files (3):</p>
+              <ul class="list-group list-group-flush" style="font-size:0.88rem;">
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                  <span>Complaint_Ridgeline_v_EEOC.pdf</span>
+                  <span class="text-muted small">1.2 MB</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                  <span>Dep_M_Torres_2026-05-10.pdf</span>
+                  <span class="text-muted small">3.7 MB</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                  <span>Exhibit_A_Email_Chain.pdf</span>
+                  <span class="text-muted small">0.4 MB</span>
+                </li>
+              </ul>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="upload-button">
+              Upload &amp; Process Case
+            </button>
+          </div>
+        </section>
+
+        <!-- Processing status — static demo showing 100% complete -->
+        <section class="card mb-4" aria-labelledby="processing-heading">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 id="processing-heading" class="h5 mb-0">Processing Status</h2>
+            <span class="badge text-bg-success">Complete</span>
+          </div>
+          <div class="card-body">
+
+            <!-- Overall progress bar -->
+            <div class="mb-3">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="small fw-semibold">Overall progress</span>
+                <span class="small text-muted" aria-live="polite">100%</span>
+              </div>
+              <div class="progress" role="progressbar"
+                   aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                   aria-label="Upload processing progress: 100 percent complete"
+                   style="height:10px;">
+                <div class="progress-bar bg-success" style="width:100%;background-color:#146c43 !important;"></div>
+              </div>
+            </div>
+
+            <!-- Processing steps -->
+            <div role="list" aria-label="Processing steps">
+
+              <div class="step-row" role="listitem">
+                <div class="step-icon step-done" aria-label="Complete">&#10003;</div>
+                <div>
+                  <span class="fw-semibold">Text Extracted</span>
+                  <span class="text-muted small ms-2">3 files &mdash; 58 pages total</span>
+                </div>
+              </div>
+
+              <div class="step-row" role="listitem">
+                <div class="step-icon step-done" aria-label="Complete">&#10003;</div>
+                <div>
+                  <span class="fw-semibold">Pages Indexed</span>
+                  <span class="text-muted small ms-2">58 pages indexed in Azure AI Search</span>
+                </div>
+              </div>
+
+              <div class="step-row" role="listitem">
+                <div class="step-icon step-done" aria-label="Complete">&#10003;</div>
+                <div>
+                  <span class="fw-semibold">Embeddings Generated</span>
+                  <span class="text-muted small ms-2">text-embedding-3-large &mdash; 1,740 chunks</span>
+                </div>
+              </div>
+
+              <div class="step-row" role="listitem">
+                <div class="step-icon step-done" aria-label="Complete">&#10003;</div>
+                <div>
+                  <span class="fw-semibold">Case Ready for Analysis</span>
+                  <span class="text-muted small ms-2">All documents available in AI assistant</span>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="mt-3">
+              <a href="trial-chat.html" class="btn btn-outline-primary btn-sm"
+                 role="button">Open AI Assistant</a>
+              <a href="trial-cases.html" class="btn btn-outline-secondary btn-sm ms-2"
+                 role="button">Return to Case Registry</a>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==========================================================================
+       Footer
+       ========================================================================== -->
+  <footer class="py-4 mt-5 bg-light" role="contentinfo">
+    <div class="container text-center text-muted" style="font-size:0.8rem;">
+      <p class="mb-1">U.S. Equal Employment Opportunity Commission &mdash; Office of General Counsel</p>
+      <p class="mb-0">All access or use of this system constitutes user understanding and acceptance of applicable terms and policies.</p>
+    </div>
+  </footer>
+
+  <!-- Toast container -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3"
+       role="status" aria-live="polite" aria-atomic="false">
+
+    <div id="toast-upload-done" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">Documents Processed</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close notification"></button>
+      </div>
+      <div class="toast-body">
+        3 documents indexed. 58 pages available for AI analysis in the assistant.
+      </div>
+    </div>
+
+    <div id="toast-retention" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">NARA Retention</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close notification"></button>
+      </div>
+      <div class="toast-body">
+        All uploaded documents are stored in WORM-compliant Azure Blob for 7-year NARA retention.
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmY19UFhFKhxtuQFBTzAIiL5FsDq"
+          crossorigin="anonymous"></script>
+  <script src="js/demo.js"></script>
+
+  <script>
+  (function () {
+    // Drag-and-drop visual feedback only (demo)
+    var zone = document.getElementById('drop-zone');
+    if (zone) {
+      zone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        zone.classList.add('drag-over');
+      });
+      ['dragleave', 'dragend', 'drop'].forEach(function (evt) {
+        zone.addEventListener(evt, function () {
+          zone.classList.remove('drag-over');
+        });
+      });
+    }
+
+    // Staggered toasts
+    [['toast-upload-done', 1200], ['toast-retention', 3800]].forEach(function (pair) {
+      setTimeout(function () {
+        var el = document.getElementById(pair[0]);
+        if (el) { new bootstrap.Toast(el, { delay: 7000 }).show(); }
+      }, pair[1]);
+    });
+  })();
+  </script>
+
+</body>
+</html>

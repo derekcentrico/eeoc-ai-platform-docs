@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Audit Log — MCP Hub Console — EEOC AI Platform</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    /* ===== EEOC 508 color overrides — Bootstrap 5.3.3 dangerous-defaults fix ===== */
+    :root {
+      --bs-border-color: #737373;
+      --bs-danger-rgb: 176, 42, 55;
+      --bs-danger: #b02a37;
+      --bs-success-rgb: 20, 108, 67;
+      --bs-success: #146c43;
+      --bs-secondary-rgb: 90, 100, 114;
+      --bs-secondary: #5a6472;
+    }
+
+    .text-primary   { color: #0a58ca !important; }
+    .text-info      { color: #087990 !important; }
+    .text-warning   { color: #7f6500 !important; }
+    .text-danger    { color: #b02a37 !important; }
+    .text-success   { color: #146c43 !important; }
+    .text-muted     { color: #5a6472 !important; }
+
+    /* Navbar text contrast — Bootstrap rgba(255,255,255,0.55) = ~3.2:1, fails 4.5:1 */
+    .navbar-dark .navbar-text,
+    .navbar-dark .navbar-text a { color: #fff !important; }
+
+    /* Badge fixes */
+    .badge.bg-info,
+    .badge.bg-warning { color: #000 !important; }
+
+    /* btn-outline-primary full override */
+    .btn-outline-primary {
+      --bs-btn-color: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #0a58ca;
+      --bs-btn-hover-border-color: #0a58ca;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #0a58ca;
+      --bs-btn-active-border-color: #0a58ca;
+      --bs-btn-disabled-color: #0a58ca;
+      --bs-btn-disabled-border-color: #0a58ca;
+      color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-outline-primary:hover,
+    .btn-outline-primary:active,
+    .btn-outline-primary.active {
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+      color: #fff !important;
+    }
+
+    .btn-primary {
+      --bs-btn-bg: #0a58ca;
+      --bs-btn-border-color: #0a58ca;
+      --bs-btn-hover-bg: #084298;
+      --bs-btn-hover-border-color: #084298;
+      --bs-btn-active-bg: #084298;
+      --bs-btn-active-border-color: #063773;
+      background-color: #0a58ca !important;
+      border-color: #0a58ca !important;
+    }
+    .btn-primary:hover,
+    .btn-primary:active,
+    .btn-primary.active {
+      background-color: #084298 !important;
+      border-color: #084298 !important;
+      color: #fff !important;
+    }
+
+    /* btn-outline-secondary full override */
+    .btn-outline-secondary {
+      --bs-btn-color: #5a6472;
+      --bs-btn-border-color: #5a6472;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #5a6472;
+      --bs-btn-hover-border-color: #5a6472;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #5a6472;
+      --bs-btn-active-border-color: #5a6472;
+      --bs-btn-disabled-color: #5a6472;
+      --bs-btn-disabled-border-color: #5a6472;
+      color: #5a6472 !important;
+      border-color: #5a6472 !important;
+    }
+    .btn-outline-secondary:hover,
+    .btn-outline-secondary:active,
+    .btn-outline-secondary.active {
+      background-color: #5a6472 !important;
+      border-color: #5a6472 !important;
+      color: #fff !important;
+    }
+
+    /* Focus indicators — solid 2px, no box-shadow (WCAG 2.4.7 + 1.4.11) */
+    .btn:focus-visible,
+    a:focus-visible,
+    .nav-link:focus-visible,
+    .btn-close:focus-visible,
+    .dropdown-item:focus-visible,
+    .page-link:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible {
+      outline: 2px solid #0a58ca !important;
+      outline-offset: 2px !important;
+    }
+
+    .btn:focus, .nav-link:focus, .btn-close:focus, .dropdown-item:focus,
+    .page-link:focus, .form-control:focus, .form-select:focus,
+    .form-check-input:focus {
+      box-shadow: none !important;
+    }
+
+    details summary:focus-visible {
+      outline: 2px solid #0a58ca;
+      outline-offset: 2px;
+    }
+
+    /* ===== Page layout ===== */
+    body {
+      background-color: #f8f9fa;
+    }
+
+    /* ===== Metric cards ===== */
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.1;
+      color: #212529;
+    }
+
+    .metric-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #5a6472;
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-sub {
+      font-size: 0.8rem;
+      color: #5a6472;
+      margin-top: 0.25rem;
+    }
+
+    /* ===== Tool name monospace ===== */
+    .tool-name {
+      font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #0a58ca;
+    }
+
+    /* ===== Audit table ===== */
+    .audit-table td,
+    .audit-table th {
+      font-size: 12px;
+      vertical-align: middle;
+    }
+
+    .ae-ts {
+      font-variant-numeric: tabular-nums;
+      color: #5a6472;
+      white-space: nowrap;
+    }
+
+    .ae-status-ok     { color: #146c43; font-weight: 600; }
+    .ae-status-created { color: #087990; font-weight: 600; }
+
+    .ae-hmac {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      color: #146c43;
+      font-weight: 600;
+    }
+
+    .ae-dur {
+      font-variant-numeric: tabular-nums;
+      color: #5a6472;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .req-size {
+      font-variant-numeric: tabular-nums;
+      color: #5a6472;
+    }
+
+    /* ===== Status pills ===== */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-pill-success { background-color: #d1fae5; color: #146c43; }
+
+    /* ===== HMAC verified chip ===== */
+    .hmac-ok {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #146c43;
+    }
+
+    /* ===== Toast container ===== */
+    .toast-container-custom {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 1090;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 320px;
+    }
+
+    .toast-item {
+      background: #212529;
+      color: #f8f9fa;
+      border-radius: 6px;
+      padding: 12px 14px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      transition: opacity 0.3s;
+    }
+
+    .toast-item-icon { font-size: 1rem; margin-top: 1px; flex-shrink: 0; }
+
+    .toast-item-title {
+      font-weight: 700;
+      margin-bottom: 2px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .toast-item-text { font-size: 12px; color: #ced4da; }
+
+    .toast-item-close {
+      background: none;
+      border: none;
+      color: #adb5bd;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .toast-item-close:focus-visible {
+      outline: 2px solid #0a58ca;
+      outline-offset: 2px;
+    }
+
+    details summary {
+      font-size: 12px;
+      color: #5a6472;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+
+    details .table { font-size: 12px; margin-top: 0.5rem; }
+
+    /* ===== Government footer ===== */
+    .gov-footer {
+      font-size: 0.75rem;
+      color: #5a6472;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Skip navigation (WCAG 2.4.1) -->
+  <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+
+  <!-- ===== Navbar ===== -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-semibold" href="mcp-hub.html">MCP Hub Console</a>
+
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <a href="mcp-hub.html" class="btn btn-outline-light btn-sm">
+          <i class="bi bi-activity me-1" aria-hidden="true"></i>Hub Status
+        </a>
+        <a href="mcp-spokes.html" class="btn btn-outline-light btn-sm">Spoke Registry</a>
+        <a href="mcp-hub.html#tool-catalog" class="btn btn-outline-light btn-sm">Tool Catalog</a>
+        <a href="mcp-audit.html" class="btn btn-primary btn-sm" aria-current="page">Audit Log</a>
+        <a href="mcp-hub.html#health-monitor" class="btn btn-outline-light btn-sm">Health Monitor</a>
+
+        <span class="navbar-text ms-3 me-2" aria-label="Signed in as D. Gordon, Platform Admin">
+          D. Gordon &mdash; Platform Admin
+        </span>
+        <a href="index.html" class="btn btn-light btn-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Main content ===== -->
+  <main id="main-content" class="container-fluid py-4 px-4" role="main" tabindex="-1">
+
+    <!-- Page heading -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <nav aria-label="Breadcrumb">
+          <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="index.html">Platform</a></li>
+            <li class="breadcrumb-item"><a href="mcp-hub.html">Hub Console</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Audit Log</li>
+          </ol>
+        </nav>
+        <h1 class="h4 mb-0">MCP Request Audit Log</h1>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" type="button">
+          <i class="bi bi-download me-1" aria-hidden="true"></i>Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== Summary stats ===== -->
+    <section aria-labelledby="audit-metrics-heading" class="mb-4">
+      <h2 id="audit-metrics-heading" class="visually-hidden">Audit Summary Metrics</h2>
+      <div class="row g-3" role="list">
+
+        <div class="col-6 col-md-3" role="listitem">
+          <div class="card h-100" aria-label="Total requests in last 24 hours: 1,247">
+            <div class="card-body">
+              <div class="metric-label">Total Requests (24h)</div>
+              <div class="metric-value counter" data-target="1247" aria-hidden="true">0</div>
+              <div class="metric-sub">HMAC-verified</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3" role="listitem">
+          <div class="card h-100" aria-label="Success rate: 99.8 percent">
+            <div class="card-body">
+              <div class="metric-label">Success Rate</div>
+              <div class="metric-value text-success">99.8%</div>
+              <div class="metric-sub">200/201 responses</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3" role="listitem">
+          <div class="card h-100" aria-label="Average latency: 142 milliseconds">
+            <div class="card-body">
+              <div class="metric-label">Avg Latency</div>
+              <div class="metric-value">142<span style="font-size:1rem;font-weight:400;">ms</span></div>
+              <div class="metric-sub">p95: 287ms</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3" role="listitem">
+          <div class="card h-100" aria-label="HMAC failures: 0">
+            <div class="card-body">
+              <div class="metric-label">HMAC Failures</div>
+              <div class="metric-value text-success">0</div>
+              <div class="metric-sub">All records intact</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== Filters ===== -->
+    <section class="card mb-4" aria-labelledby="audit-filters-heading">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-funnel text-primary" aria-hidden="true"></i>
+        <h2 class="h6 mb-0" id="audit-filters-heading">Filter Log</h2>
+      </div>
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-12 col-md-3">
+            <label for="filter-date-from" class="form-label">From</label>
+            <input type="datetime-local" id="filter-date-from" class="form-control form-control-sm"
+                   value="2026-05-21T12:00" aria-label="Filter log from date and time">
+          </div>
+          <div class="col-12 col-md-3">
+            <label for="filter-date-to" class="form-label">To</label>
+            <input type="datetime-local" id="filter-date-to" class="form-control form-control-sm"
+                   value="2026-05-21T14:30" aria-label="Filter log to date and time">
+          </div>
+          <div class="col-12 col-md-2">
+            <label for="filter-source" class="form-label">Source</label>
+            <select id="filter-source" class="form-select form-select-sm" aria-label="Filter by source">
+              <option value="">All sources</option>
+              <option>Azure AI Agent</option>
+              <option>UDAP Analytics</option>
+              <option>ADR Portal UI</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-2">
+            <label for="filter-status" class="form-label">Status</label>
+            <select id="filter-status" class="form-select form-select-sm" aria-label="Filter by response status">
+              <option value="">All statuses</option>
+              <option>200 OK</option>
+              <option>201 Created</option>
+              <option>4xx Error</option>
+              <option>5xx Error</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-2 d-flex gap-2">
+            <button type="button" class="btn btn-primary btn-sm w-100">
+              <i class="bi bi-search me-1" aria-hidden="true"></i>Apply
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-x" aria-hidden="true"></i>
+              <span class="visually-hidden">Clear filters</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Full audit log table ===== -->
+    <section class="card mb-4" aria-labelledby="audit-table-heading">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-journal-text text-primary" aria-hidden="true"></i>
+        <h2 class="h6 mb-0" id="audit-table-heading">
+          Audit Entries
+          <span class="fw-normal text-muted ms-2" style="font-size:0.8rem;">Last 20 entries — 2026-05-21 12:23 – 14:23</span>
+        </h2>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive" role="region" aria-label="MCP request audit log table, scrollable">
+          <table class="table table-hover mb-0 audit-table">
+            <caption class="visually-hidden">MCP request audit log — 20 entries showing timestamp, source, method, tool, request size, response code, duration, and HMAC status</caption>
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Timestamp</th>
+                <th scope="col">Source</th>
+                <th scope="col">Method</th>
+                <th scope="col">Tool</th>
+                <th scope="col">Req Size</th>
+                <th scope="col">Response</th>
+                <th scope="col">Duration</th>
+                <th scope="col">HMAC</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row" class="ae-ts">14:23:07</th>
+                <td>Azure AI Agent</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">list_cases</span></td>
+                <td class="req-size">412 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">142ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:22:51</th>
+                <td>UDAP Analytics</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">get_case</span></td>
+                <td class="req-size">298 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">87ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:21:33</th>
+                <td>Azure AI Agent</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">post_chat_message</span></td>
+                <td class="req-size">1.1 KB</td>
+                <td class="ae-status-created">201 Created</td>
+                <td class="ae-dur">234ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:20:18</th>
+                <td>UDAP Analytics</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">list_cases</span></td>
+                <td class="req-size">318 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">98ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:19:44</th>
+                <td>Azure AI Agent</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">get_case_documents</span></td>
+                <td class="req-size">276 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">156ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:18:02</th>
+                <td>ADR Portal UI</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">assign_mediator</span></td>
+                <td class="req-size">542 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">189ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:16:55</th>
+                <td>Azure AI Agent</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">get_party_info</span></td>
+                <td class="req-size">201 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">73ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:15:31</th>
+                <td>UDAP Analytics</td>
+                <td><code style="font-size:11px;">tools/list</code></td>
+                <td><span class="text-muted" style="font-size:12px;">(catalog refresh)</span></td>
+                <td class="req-size">48 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">31ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:14:09</th>
+                <td>Azure AI Agent</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">schedule_session</span></td>
+                <td class="req-size">788 B</td>
+                <td class="ae-status-created">201 Created</td>
+                <td class="ae-dur">312ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:12:47</th>
+                <td>ADR Portal UI</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">update_case_status</span></td>
+                <td class="req-size">394 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">204ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:10:22</th>
+                <td>Azure AI Agent</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">get_chat_history</span></td>
+                <td class="req-size">187 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">118ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:08:58</th>
+                <td>UDAP Analytics</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">list_cases</span></td>
+                <td class="req-size">328 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">92ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:07:14</th>
+                <td>Azure AI Agent</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">get_case</span></td>
+                <td class="req-size">212 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">81ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:05:39</th>
+                <td>ADR Portal UI</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">reassign_case</span></td>
+                <td class="req-size">461 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">177ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">14:03:01</th>
+                <td>Azure AI Agent</td>
+                <td><code style="font-size:11px;">tools/list</code></td>
+                <td><span class="text-muted" style="font-size:12px;">(catalog refresh)</span></td>
+                <td class="req-size">48 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">29ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">13:58:44</th>
+                <td>UDAP Analytics</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">get_case_documents</span></td>
+                <td class="req-size">281 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">163ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">13:55:17</th>
+                <td>Azure AI Agent</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">post_chat_message</span></td>
+                <td class="req-size">934 B</td>
+                <td class="ae-status-created">201 Created</td>
+                <td class="ae-dur">287ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">13:51:29</th>
+                <td>ADR Portal UI</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">get_party_info</span></td>
+                <td class="req-size">195 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">68ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">13:47:08</th>
+                <td>Azure AI Agent</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">assign_mediator</span></td>
+                <td class="req-size">527 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">198ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+              <tr>
+                <th scope="row" class="ae-ts">13:43:52</th>
+                <td>UDAP Analytics</td>
+                <td><code style="font-size:11px;">tools/call</code></td>
+                <td><span class="tool-name">list_cases</span></td>
+                <td class="req-size">341 B</td>
+                <td class="ae-status-ok">200 OK</td>
+                <td class="ae-dur">101ms</td>
+                <td><span class="ae-hmac"><i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">Verified</span> Verified</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Accessible summary for screen readers -->
+        <div class="px-3 pb-3 pt-2">
+          <details>
+            <summary>Audit log statistics available in the table below.</summary>
+            <table class="table table-sm mt-2">
+              <caption class="visually-hidden">Audit log summary statistics for the last 20 entries</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Metric</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Time range shown</th><td>13:43 – 14:23 (2026-05-21)</td></tr>
+                <tr><th scope="row">Total entries shown</th><td>20</td></tr>
+                <tr><th scope="row">200 OK responses</th><td>16</td></tr>
+                <tr><th scope="row">201 Created responses</th><td>3</td></tr>
+                <tr><th scope="row">4xx / 5xx errors</th><td>0</td></tr>
+                <tr><th scope="row">HMAC failures</th><td>0</td></tr>
+                <tr><th scope="row">Min duration</th><td>29ms</td></tr>
+                <tr><th scope="row">Max duration</th><td>312ms</td></tr>
+              </tbody>
+            </table>
+          </details>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== Government footer ===== -->
+  <footer class="py-4 mt-2 bg-light" role="contentinfo">
+    <div class="container-fluid px-4 gov-footer">
+      <p class="mb-1">This U.S. government system is for use by authorized users only. Information from this system resides on computer systems funded by the government.</p>
+      <p class="mb-1">The data and documents on this system include Federal records that contain sensitive information protected by various Federal statutes, including the Privacy Act, 5 U.S.C. &sect; 552a.</p>
+      <p class="mb-0">Unauthorized user attempts or acts to access, modify, or deny access to this system are strictly prohibited and subject to criminal, civil, or administrative penalties.</p>
+    </div>
+  </footer>
+
+  <!-- ===== Toast container ===== -->
+  <div
+    id="toast-container"
+    class="toast-container-custom"
+    role="status"
+    aria-live="polite"
+    aria-atomic="false"
+    data-toasts='[
+      {"type":"data","title":"HMAC Audit Trail","text":"Every MCP request is HMAC-SHA256 signed and logged to immutable WORM storage with 7-year retention per NARA requirements. Zero failures since platform launch.","delay":3000,"duration":10000},
+      {"type":"mcp","title":"Audit Record Fields","text":"Each record captures: timestamp (UTC), calling service identity, JSON-RPC method, tool name, request payload size, response code, duration, and HMAC signature.","delay":5000,"duration":10000},
+      {"type":"info","title":"Retention Policy","text":"Audit records are retained for 7 years in Azure Immutable Blob Storage with legal hold. Records cannot be deleted or modified after write.","delay":4000,"duration":10000}
+    ]'>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmY19UFhFKhxtuQFBTzAIiL5FsDq" crossorigin="anonymous"></script>
+  <script src="js/demo.js"></script>
+</body>
+</html>

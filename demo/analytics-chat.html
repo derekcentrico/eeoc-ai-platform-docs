@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<!--
+  analytics-chat.html — AI Assistant full-page interface (demo mockup).
+  Mirrors the ai-assistant chat.html structure and the analytics.html
+  custom CSS framework. Section 508 / WCAG 2.1 AA compliant.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <title>AI Analytics Assistant — EEOC Unified Data Analytics Platform</title>
+
+  <style>
+/* ============================================================
+   CSS Custom Properties — matches analytics.html / ai-assistant app.css
+   ============================================================ */
+:root {
+  --navy:        #003366;
+  --blue:        #0066CC;
+  --gold:        #996600;
+  --light-blue:  #E8F1FB;
+  --white:       #FFFFFF;
+  --gray-100:    #F5F7FA;
+  --gray-200:    #E2E8F0;
+  --gray-700:    #4A5568;
+  --gray-900:    #1A1A1A;
+  --success:     #006400;
+  --error:       #B22222;
+  --focus-ring:  3px solid #005FCC;
+
+  --font-sans:   "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+  --font-mono:   "Source Code Pro", "Courier New", monospace;
+
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.12);
+  --shadow-md:   0 4px 12px rgba(0,0,0,0.15);
+
+  --nav-height:  56px;
+  --sidebar-w:   260px;
+}
+
+/* ============================================================
+   Reset / base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  color: var(--gray-900);
+  background: var(--gray-100);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+*:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.btn:focus, a:focus, input:focus, button:focus, select:focus, textarea:focus {
+  box-shadow: none !important;
+}
+
+/* Screen-reader only */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
+}
+
+/* Skip navigation */
+.skip-nav {
+  position: absolute; top: -100%; left: 0;
+  background: var(--navy); color: var(--white);
+  padding: 8px 16px; z-index: 9999;
+  font-weight: 600; text-decoration: none;
+  border-radius: 0 0 var(--radius-sm) 0;
+}
+.skip-nav:focus { top: 0; }
+
+/* ============================================================
+   Government banner
+   ============================================================ */
+.gov-banner {
+  background: var(--gray-200);
+  font-size: 0.8rem;
+  padding: 4px 0;
+  border-bottom: 1px solid #C5D0DC;
+}
+.gov-banner__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--gray-700);
+}
+
+.gov-flag {
+  display: inline-block;
+  width: 16px; height: 11px;
+  background: linear-gradient(
+    to bottom,
+    #B22234 0%, #B22234 14.3%,
+    #fff 14.3%, #fff 28.6%,
+    #B22234 28.6%, #B22234 42.9%,
+    #fff 42.9%, #fff 57.1%,
+    #B22234 57.1%, #B22234 71.4%,
+    #fff 71.4%, #fff 85.7%,
+    #B22234 85.7%, #B22234 100%
+  );
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Navbar — horizontal, no sidebar
+   ============================================================ */
+.navbar {
+  background: var(--navy);
+  border-bottom: 3px solid var(--gold);
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar__brand { display: flex; align-items: center; gap: 0.75rem; }
+
+.navbar__logo-placeholder {
+  height: 36px; width: 120px;
+  background: rgba(255,255,255,0.15);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700; color: var(--white);
+  letter-spacing: 0.05em;
+}
+
+.navbar__title {
+  color: var(--white);
+  font-size: 1.1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.navbar__links {
+  display: flex; list-style: none; gap: 0.25rem;
+  flex: 1; justify-content: center;
+}
+.navbar__link {
+  color: #D6E4F7; text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  transition: background 0.15s, color 0.15s;
+}
+.navbar__link:hover,
+.navbar__link:focus { color: var(--white); background: rgba(255,255,255,0.12); }
+.navbar__link--active {
+  color: var(--white);
+  border-bottom: 2px solid var(--gold);
+  padding-bottom: calc(0.5rem - 2px);
+}
+
+.navbar__user { display: flex; align-items: center; gap: 0.75rem; white-space: nowrap; }
+.navbar__username { color: #D6E4F7; font-size: 0.9rem; }
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 0.4rem;
+  font-family: var(--font-sans); font-size: 0.95rem; font-weight: 600;
+  line-height: 1;
+  min-height: 44px; min-width: 44px;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.btn--primary   { background: var(--navy); color: var(--white); }
+.btn--primary:hover, .btn--primary:focus { background: #002244; }
+.btn--secondary { background: var(--white); border-color: var(--navy); color: var(--navy); }
+.btn--secondary:hover, .btn--secondary:focus { background: var(--light-blue); }
+.btn--ghost     { background: transparent; color: var(--gray-700); border-color: var(--gray-200); }
+.btn--ghost:hover, .btn--ghost:focus { background: var(--gray-200); }
+.btn--sm        { min-height: 36px; padding: 0.3rem 0.875rem; font-size: 0.875rem; }
+.btn:disabled   { opacity: 0.55; cursor: not-allowed; }
+
+/* ============================================================
+   Chat layout — sidebar + main (mirrors chat.html structure)
+   ============================================================ */
+.chat-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Sidebar */
+.chat-sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--white);
+  border-right: 1px solid var(--gray-200);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.chat-sidebar__header {
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chat-sidebar__title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.chat-sidebar__header-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.chat-sidebar__section {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.chat-sidebar__section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gray-700);
+  margin-bottom: 0.5rem;
+}
+
+.chat-sidebar__hint {
+  font-size: 0.75rem;
+  color: var(--gray-700);
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
+.conversation-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.conversation-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-align: left;
+  width: 100%;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--gray-900);
+  transition: background 0.1s;
+}
+.conversation-item:hover,
+.conversation-item:focus { background: var(--light-blue); border-color: var(--blue); }
+.conversation-item--active {
+  background: var(--light-blue);
+  border-color: var(--blue);
+  font-weight: 600;
+}
+
+.conversation-item__label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.conversation-item__date {
+  font-size: 0.7rem;
+  color: var(--gray-700);
+  white-space: nowrap;
+}
+
+.quick-queries {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quick-query-btn {
+  width: 100%;
+  text-align: left;
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+  font-size: 0.8rem;
+  color: var(--blue);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  min-height: 36px;
+  transition: background 0.1s, border-color 0.1s;
+}
+.quick-query-btn:hover,
+.quick-query-btn:focus { background: var(--light-blue); border-color: var(--blue); }
+
+.data-catalog-link {
+  display: inline-flex;
+  margin-bottom: 0.4rem;
+}
+
+/* ============================================================
+   Main chat area
+   ============================================================ */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Message list */
+.chat-messages {
+  flex: 1;
+  padding: 1.25rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.message {
+  display: flex;
+  gap: 0.75rem;
+  max-width: 860px;
+}
+
+.message--user {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.message--assistant { align-self: flex-start; }
+
+.message__avatar {
+  width: 36px; height: 36px; min-width: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700;
+  background: var(--navy); color: var(--white);
+  flex-shrink: 0;
+}
+
+.message--user .message__avatar { background: var(--gold); }
+
+.message__body {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 0.875rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.message--user .message__body {
+  background: var(--navy);
+  color: var(--white);
+  border-color: var(--navy);
+}
+
+.message__body p + p { margin-top: 0.5rem; }
+
+.message__body ul {
+  margin: 0.5rem 0 0.5rem 1.25rem;
+}
+
+.message__body li { margin-bottom: 0.2rem; }
+
+.message__notice {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--light-blue);
+  border-left: 3px solid var(--blue);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.8rem;
+  color: var(--gray-900);
+}
+
+/* HMAC audit footer */
+.message__audit {
+  margin-top: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--gray-200);
+  font-size: 0.7rem;
+  color: var(--gray-700);
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.audit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #EEF4EC;
+  border: 1px solid #006400;
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--success);
+}
+
+.audit-id {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
+/* Suggested query chips */
+.chat-suggest-row {
+  padding: 0.5rem 1.25rem 0.625rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--gray-200);
+  background: var(--gray-100);
+}
+
+.chat-suggest-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gray-700);
+  align-self: center;
+  white-space: nowrap;
+}
+
+.chat-suggest {
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  color: var(--blue);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  min-height: 32px;
+  transition: background 0.1s, border-color 0.1s;
+}
+.chat-suggest:hover,
+.chat-suggest:focus { background: var(--light-blue); border-color: var(--blue); }
+
+/* Input area */
+.chat-input-area {
+  background: var(--white);
+  border-top: 1px solid var(--gray-200);
+  padding: 0.75rem 1.25rem;
+}
+
+.chat-input-wrapper {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.chat-input {
+  flex: 1;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gray-700);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  min-height: 60px;
+  max-height: 180px;
+  line-height: 1.5;
+}
+.chat-input:focus { border-color: var(--blue); }
+
+.chat-input-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--gray-700);
+}
+
+.keyboard-hint { color: var(--gray-700); }
+
+/* Query result panel */
+.query-result {
+  background: var(--white);
+  border-top: 2px solid var(--navy);
+  padding: 0.875rem 1.25rem;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.query-result__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.query-result__title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.query-result__actions { display: flex; gap: 0.5rem; }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 6px 10px;
+  border: 1px solid var(--gray-200);
+  text-align: left;
+}
+
+.data-table thead th {
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.data-table tbody tr:hover { background: var(--light-blue); }
+
+/* Pulse dot */
+.pulse-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.footer {
+  background: var(--navy);
+  color: #D6E4F7;
+  text-align: center;
+  padding: 0.875rem 1rem;
+  font-size: 0.8rem;
+  margin-top: auto;
+}
+.footer p + p { margin-top: 0.25rem; }
+.footer a { color: #A8C8EE; }
+.footer a:hover { color: var(--white); }
+.footer__notice { color: #8AAFD4; font-size: 0.75rem; }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 900px) {
+  .chat-sidebar { display: none; }
+  .navbar__links { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .btn--primary { border: 2px solid ButtonText; }
+  .message__body { border: 1px solid CanvasText; }
+  .audit-badge { border: 1px solid CanvasText; }
+}
+  </style>
+</head>
+<body>
+
+<!-- Skip navigation — WCAG 2.4.1 -->
+<a class="skip-nav" href="#main-content">Skip to main content</a>
+
+<!-- SR announcer for new chat messages (WCAG 4.1.3).
+     Separate from the chat log so full innerHTML resets don't re-read everything. -->
+<div id="chat-sr-announcer"
+     class="sr-only"
+     role="status"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+<!-- Government banner -->
+<div class="gov-banner">
+  <div class="gov-banner__inner">
+    <span class="gov-flag" aria-hidden="true"></span>
+    <span>An official website of the United States government</span>
+  </div>
+</div>
+
+<!-- Primary navigation -->
+<header role="banner">
+  <nav class="navbar" aria-label="Primary navigation">
+    <div class="navbar__brand">
+      <a href="analytics.html" class="navbar__logo-link" aria-label="EEOC Analytics Portal home">
+        <div class="navbar__logo-placeholder" aria-hidden="true">EEOC</div>
+      </a>
+      <span class="navbar__title">Analytics Assistant</span>
+    </div>
+
+    <ul class="navbar__links" role="list">
+      <li>
+        <a href="analytics.html" class="navbar__link">Dashboards</a>
+      </li>
+      <li>
+        <a href="analytics-chat.html" class="navbar__link navbar__link--active" aria-current="page">
+          AI Assistant
+        </a>
+      </li>
+      <li>
+        <a href="analytics-search.html" class="navbar__link">Narrative Search</a>
+      </li>
+      <li>
+        <a href="analytics-notebooks.html" class="navbar__link">Notebooks</a>
+      </li>
+      <li>
+        <a href="analytics-catalog.html" class="navbar__link">Data Catalog</a>
+      </li>
+      <li>
+        <a href="analytics-admin.html" class="navbar__link">Access Mgmt</a>
+      </li>
+    </ul>
+
+    <div class="navbar__user" aria-label="User menu">
+      <span class="navbar__username" aria-label="Signed in as D. Gordon">
+        D. Gordon
+      </span>
+      <a href="index.html" class="btn btn--secondary btn--sm">Sign out</a>
+    </div>
+  </nav>
+</header>
+
+<!-- Chat layout: sidebar + main — mirrors chat.html structure -->
+<div class="chat-layout" id="main-content" tabindex="-1">
+
+  <!-- Sidebar: conversation history and quick queries -->
+  <aside class="chat-sidebar" id="chat-sidebar" aria-label="Conversation history and quick queries">
+
+    <div class="chat-sidebar__header">
+      <h2 class="chat-sidebar__title">Conversations</h2>
+      <div class="chat-sidebar__header-actions">
+        <button id="new-conversation-btn"
+                class="btn btn--primary btn--sm"
+                type="button"
+                aria-label="Start a new conversation">
+          + New
+        </button>
+      </div>
+    </div>
+
+    <!-- Conversation history -->
+    <section class="chat-sidebar__section" aria-labelledby="history-heading">
+      <h3 id="history-heading" class="chat-sidebar__section-title">History</h3>
+      <ul id="conversation-list" class="conversation-list" role="list" aria-label="Previous conversations">
+        <li>
+          <button class="conversation-item conversation-item--active"
+                  aria-label="Conversation: FY2025 Q3 settlement analysis, May 19">
+            <span class="conversation-item__label">FY2025 Q3 settlement analysis</span>
+            <span class="conversation-item__date">May 19</span>
+          </button>
+        </li>
+        <li>
+          <button class="conversation-item"
+                  aria-label="Conversation: Phoenix staffing review, May 14">
+            <span class="conversation-item__label">Phoenix staffing review</span>
+            <span class="conversation-item__date">May 14</span>
+          </button>
+        </li>
+        <li>
+          <button class="conversation-item"
+                  aria-label="Conversation: Mediation outcome comparison Q2 vs Q3, May 10">
+            <span class="conversation-item__label">Mediation outcome comparison Q2 vs Q3</span>
+            <span class="conversation-item__date">May 10</span>
+          </button>
+        </li>
+        <li>
+          <button class="conversation-item"
+                  aria-label="Conversation: Director briefing narrative May 2025, May 7">
+            <span class="conversation-item__label">Director briefing narrative May 2025</span>
+            <span class="conversation-item__date">May 7</span>
+          </button>
+        </li>
+        <li>
+          <button class="conversation-item"
+                  aria-label="Conversation: Retaliation charges by office FY2025, Apr 28">
+            <span class="conversation-item__label">Retaliation charges by office FY2025</span>
+            <span class="conversation-item__date">Apr 28</span>
+          </button>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Resources -->
+    <section class="chat-sidebar__section" aria-labelledby="resources-heading">
+      <h3 id="resources-heading" class="chat-sidebar__section-title">Resources</h3>
+      <a href="analytics-catalog.html" class="btn btn--secondary btn--sm data-catalog-link">
+        Data Catalog
+      </a>
+      <p class="chat-sidebar__hint">
+        Browse available tables, columns, and metric definitions to see what questions you can ask.
+      </p>
+    </section>
+
+    <!-- Quick queries -->
+    <section class="chat-sidebar__section" aria-labelledby="quick-queries-heading">
+      <h3 id="quick-queries-heading" class="chat-sidebar__section-title">Quick Queries</h3>
+      <ul class="quick-queries" role="list">
+        <li>
+          <button class="quick-query-btn"
+                  type="button"
+                  data-query="How many charges were filed in FY2025?">
+            Charges filed in FY2025
+          </button>
+        </li>
+        <li>
+          <button class="quick-query-btn"
+                  type="button"
+                  data-query="Show me settlement rates by office">
+            Settlement rates by office
+          </button>
+        </li>
+        <li>
+          <button class="quick-query-btn"
+                  type="button"
+                  data-query="What is the average resolution time by region?">
+            Resolution time by region
+          </button>
+        </li>
+        <li>
+          <button class="quick-query-btn"
+                  type="button"
+                  data-query="Show mediation success rates by fiscal year">
+            Mediation success trends
+          </button>
+        </li>
+      </ul>
+    </section>
+  </aside>
+
+  <!-- Main chat area -->
+  <section class="chat-main" aria-label="Chat conversation">
+
+    <!-- Message list — role="log" for structural semantics.
+         New-message announcements go to #chat-sr-announcer (WCAG 4.1.3). -->
+    <div id="chat-messages"
+         class="chat-messages"
+         role="log"
+         aria-live="polite"
+         aria-atomic="false"
+         aria-label="Conversation messages"
+         aria-relevant="additions">
+
+      <!-- Welcome message -->
+      <article class="message message--assistant" aria-label="Assistant message">
+        <div class="message__avatar" aria-hidden="true">AI</div>
+        <div class="message__body">
+          <p>Hello, <strong>D. Gordon</strong>. I am the EEOC Analytics Assistant.</p>
+          <p>I can help you explore workforce and charge data using natural language.
+             I generate SQL queries against governed views — I can only read data, not modify it.</p>
+          <p>Try asking: <em>"How many charges were filed in FY2025?"</em></p>
+          <p class="message__notice">
+            <strong>Note:</strong> All queries are logged for compliance. Do not enter personally
+            identifiable information in your questions.
+          </p>
+        </div>
+      </article>
+
+      <!-- Exchange 1: charge filing volume -->
+      <article class="message message--user" aria-label="You said">
+        <div class="message__avatar" aria-hidden="true">DG</div>
+        <div class="message__body">
+          How many charges were filed in FY2025?
+        </div>
+      </article>
+
+      <article class="message message--assistant" aria-label="Assistant response">
+        <div class="message__avatar" aria-hidden="true">AI</div>
+        <div class="message__body">
+          <p>In FY2025 (October 1, 2024 through September 30, 2025), EEOC received
+             <strong>88,531 charges</strong> nationwide. This represents a 3.2% increase
+             over FY2024 (85,779 charges).</p>
+          <p>The largest contributing bases were:</p>
+          <ul>
+            <li>Retaliation — 38,462 charges (43.4%)</li>
+            <li>Disability — 26,559 charges (30.0%)</li>
+            <li>Race — 22,133 charges (25.0%)</li>
+            <li>Sex/Gender — 19,877 charges (22.5%)</li>
+          </ul>
+          <p>Note: charges may allege multiple bases; percentages do not sum to 100.</p>
+          <div class="message__audit" aria-label="Audit information">
+            <span class="audit-badge">
+              <span aria-hidden="true">&#10003;</span> HMAC-SHA256 verified
+            </span>
+            <span class="audit-id">Audit ID: ana-a1b2c3d4</span>
+            <span>&#183;</span>
+            <span>Human review required before case action</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Exchange 2: settlement rates by office -->
+      <article class="message message--user" aria-label="You said">
+        <div class="message__avatar" aria-hidden="true">DG</div>
+        <div class="message__body">
+          Show me settlement rates by office
+        </div>
+      </article>
+
+      <article class="message message--assistant" aria-label="Assistant response">
+        <div class="message__avatar" aria-hidden="true">AI</div>
+        <div class="message__body">
+          <p>Settlement rates for FY2025 Q3 by district office are shown below.
+             National average is <strong>72.3%</strong>.</p>
+          <p>Top performers: Philadelphia (81.2%), Chicago (79.8%), Dallas (78.4%).
+             Offices below national average: Houston (68.9%), Los Angeles (66.4%), Phoenix (63.2%).</p>
+          <p>A bar chart of these values is available on the
+             <a href="analytics.html">Executive Dashboard</a>, Settlement Rate by Office panel.
+             Phoenix and Los Angeles are flagged for staffing review — see the resource
+             utilization query for detail.</p>
+          <div class="message__audit" aria-label="Audit information">
+            <span class="audit-badge">
+              <span aria-hidden="true">&#10003;</span> HMAC-SHA256 verified
+            </span>
+            <span class="audit-id">Audit ID: ana-e5f6a7b8</span>
+            <span>&#183;</span>
+            <span>Human review required before case action</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Exchange 3: Q2 vs Q3 mediation comparison -->
+      <article class="message message--user" aria-label="You said">
+        <div class="message__avatar" aria-hidden="true">DG</div>
+        <div class="message__body">
+          Compare Q2 vs Q3 mediation outcomes
+        </div>
+      </article>
+
+      <article class="message message--assistant" aria-label="Assistant response">
+        <div class="message__avatar" aria-hidden="true">AI</div>
+        <div class="message__body">
+          <p>Mediation outcomes: FY2025 Q2 vs Q3.</p>
+          <ul>
+            <li><strong>Settled:</strong> Q2 — 892 cases &rarr; Q3 — 1,004 cases (+12.6%)</li>
+            <li><strong>No agreement:</strong> Q2 — 341 cases &rarr; Q3 — 287 cases (&minus;15.8%)</li>
+            <li><strong>Withdrawn:</strong> Q2 — 88 cases &rarr; Q3 — 76 cases (&minus;13.6%)</li>
+            <li><strong>Settlement rate:</strong> Q2 — 68.2% &rarr; Q3 — 72.3% (+4.1 pts)</li>
+            <li><strong>Avg resolution time:</strong> Q2 — 47 days &rarr; Q3 — 41 days (&minus;6 days)</li>
+          </ul>
+          <p>Q3 improvement is driven primarily by the Philadelphia and Chicago offices,
+             which processed a backlog from the previous quarter's scheduling hold.</p>
+          <div class="message__audit" aria-label="Audit information">
+            <span class="audit-badge">
+              <span aria-hidden="true">&#10003;</span> HMAC-SHA256 verified
+            </span>
+            <span class="audit-id">Audit ID: ana-c9d0e1f2</span>
+            <span>&#183;</span>
+            <span>Human review required before case action</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Exchange 4: understaffed offices -->
+      <article class="message message--user" aria-label="You said">
+        <div class="message__avatar" aria-hidden="true">DG</div>
+        <div class="message__body">
+          Which offices are understaffed?
+        </div>
+      </article>
+
+      <article class="message message--assistant" aria-label="Assistant response">
+        <div class="message__avatar" aria-hidden="true">AI</div>
+        <div class="message__body">
+          <p>Based on active cases per mediator (national average: 22 cases):</p>
+          <ul>
+            <li><strong>Phoenix</strong> — 34 cases/mediator (155% of target); 3 additional FTEs recommended</li>
+            <li><strong>Los Angeles</strong> — 29 cases/mediator (132%); 2 additional FTEs recommended</li>
+            <li><strong>Houston</strong> — 26 cases/mediator (118%); 1 additional FTE or temp reassignment</li>
+          </ul>
+          <p>Offices with available capacity for temporary reassignment:</p>
+          <ul>
+            <li><strong>Denver</strong> — 15 cases/mediator (68% of target)</li>
+            <li><strong>Seattle</strong> — 16 cases/mediator (71% of target)</li>
+          </ul>
+          <p>Denver and Seattle can absorb 8&ndash;12 temporary reassignments combined
+             without exceeding the 22-case average.</p>
+          <div class="message__audit" aria-label="Audit information">
+            <span class="audit-badge">
+              <span aria-hidden="true">&#10003;</span> HMAC-SHA256 verified
+            </span>
+            <span class="audit-id">Audit ID: ana-3a4b5c6d</span>
+            <span>&#183;</span>
+            <span>Human review required before case action</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Exchange 5: director briefing narrative -->
+      <article class="message message--user" aria-label="You said">
+        <div class="message__avatar" aria-hidden="true">DG</div>
+        <div class="message__body">
+          Generate a summary for the director's briefing
+        </div>
+      </article>
+
+      <article class="message message--assistant" aria-label="Assistant response">
+        <div class="message__avatar" aria-hidden="true">AI</div>
+        <div class="message__body">
+          <p><strong>EEOC ADR Program — Executive Summary, FY2025 Q3</strong></p>
+          <p>The ADR program processed <strong>1,367 mediations</strong> in Q3, achieving a
+             national settlement rate of <strong>72.3%</strong> — up 4.1 percentage points
+             from Q2. Average resolution time fell to <strong>41 days</strong>, six days
+             below the Q2 figure and the lowest since Q4 FY2023.</p>
+          <p>Three offices — Phoenix, Los Angeles, and Houston — are operating above
+             the 22-case-per-mediator threshold and represent the primary driver of
+             below-average settlement rates in the West and South regions.
+             Temporary reassignments from Denver and Seattle are recommended pending
+             FTE allocation review.</p>
+          <p>Retaliation remains the most frequently alleged basis (43.4% of FY2025
+             charges). Disability charges continue to grow at 30% of total volume,
+             consistent with the five-year trend.</p>
+          <p class="message__notice">
+            <strong>Reminder:</strong> This output is AI-generated. A program analyst must
+            verify figures against source data before inclusion in official documents.
+          </p>
+          <div class="message__audit" aria-label="Audit information">
+            <span class="audit-badge">
+              <span aria-hidden="true">&#10003;</span> HMAC-SHA256 verified
+            </span>
+            <span class="audit-id">Audit ID: ana-7e8f9a0b</span>
+            <span>&#183;</span>
+            <span>Human review required before case action</span>
+          </div>
+        </div>
+      </article>
+
+    </div><!-- /#chat-messages -->
+
+    <!-- Suggested queries -->
+    <div class="chat-suggest-row" role="group" aria-label="Suggested queries">
+      <span class="chat-suggest-label" aria-hidden="true">Try:</span>
+      <button class="chat-suggest" type="button">Charges by protected basis FY2025</button>
+      <button class="chat-suggest" type="button">Top offices by charge volume</button>
+      <button class="chat-suggest" type="button">Mediation success by basis</button>
+      <button class="chat-suggest" type="button">Resolution time trend 5-year</button>
+    </div>
+
+    <!-- Input area -->
+    <div class="chat-input-area" role="form" aria-label="Ask a question">
+      <div class="chat-input-wrapper">
+        <label for="chat-input" class="sr-only">Type your analytics question</label>
+        <textarea id="chat-input"
+                  class="chat-input"
+                  placeholder="Ask a question about EEOC data..."
+                  rows="2"
+                  maxlength="2000"
+                  aria-required="true"
+                  aria-describedby="char-count-hint"
+                  aria-label="Your analytics question"></textarea>
+        <button id="send-btn"
+                class="btn btn--primary"
+                type="button"
+                aria-label="Send message">
+          <span aria-hidden="true">&#9658;</span> Send
+        </button>
+      </div>
+      <div class="chat-input-meta">
+        <span id="char-count-hint" aria-live="polite" aria-atomic="true">
+          <span id="char-count">0</span> / 2000 characters
+        </span>
+        <span class="keyboard-hint" aria-hidden="true">Enter to send &middot; Shift+Enter for new line</span>
+      </div>
+    </div>
+
+  </section><!-- /.chat-main -->
+
+</div><!-- /.chat-layout -->
+
+<!-- Footer -->
+<footer class="footer" role="contentinfo">
+  <p>
+    <strong>U.S. Equal Employment Opportunity Commission</strong> |
+    <a href="https://www.eeoc.gov/accessibility">Accessibility</a> |
+    <a href="https://www.eeoc.gov/privacy-policy">Privacy Policy</a> |
+    <a href="#">Section 508</a>
+  </p>
+  <p class="footer__notice">
+    This system contains U.S. Government information. Unauthorized access is prohibited.
+    Usage is monitored and logged for security and compliance purposes.
+  </p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var chatInput  = document.getElementById('chat-input');
+  var sendBtn    = document.getElementById('send-btn');
+  var messages   = document.getElementById('chat-messages');
+  var charCount  = document.getElementById('char-count');
+  var announcer  = document.getElementById('chat-sr-announcer');
+
+  /* Character counter */
+  chatInput.addEventListener('input', function () {
+    charCount.textContent = chatInput.value.length;
+  });
+
+  /* Canned demo responses cycled in order */
+  var responses = [
+    {
+      text: 'In FY2025, EEOC received 88,531 charges — a 3.2% increase over FY2024. Retaliation (43.4%), Disability (30.0%), and Race (25.0%) were the most frequently alleged bases.',
+      auditId: 'ana-b1c2d3e4'
+    },
+    {
+      text: 'Settlement rates for Q3 ranged from 63.2% (Phoenix) to 81.2% (Philadelphia). Offices below the 72.3% national average are Houston, Los Angeles, and Phoenix.',
+      auditId: 'ana-f5a6b7c8'
+    },
+    {
+      text: 'Q3 improved on every metric vs Q2: settlement rate up 4.1 pts, resolution time down 6 days, total mediations up 8.4%. Philadelphia and Chicago processed a prior-quarter backlog contributing to the gains.',
+      auditId: 'ana-d9e0f1a2'
+    }
+  ];
+  var idx = 0;
+
+  function sendMessage() {
+    var text = chatInput.value.trim();
+    if (!text) return;
+
+    /* Append user message — safe textContent, no innerHTML injection */
+    var userEl = document.createElement('article');
+    userEl.className = 'message message--user';
+    userEl.setAttribute('aria-label', 'You said');
+
+    var avatarEl = document.createElement('div');
+    avatarEl.className = 'message__avatar';
+    avatarEl.setAttribute('aria-hidden', 'true');
+    avatarEl.textContent = 'DG';
+
+    var bodyEl = document.createElement('div');
+    bodyEl.className = 'message__body';
+    bodyEl.textContent = text;
+
+    userEl.appendChild(avatarEl);
+    userEl.appendChild(bodyEl);
+    messages.appendChild(userEl);
+    chatInput.value = '';
+    charCount.textContent = '0';
+    messages.scrollTop = messages.scrollHeight;
+    sendBtn.disabled = true;
+
+    /* Simulate response latency */
+    setTimeout(function () {
+      var r = responses[idx % responses.length];
+      idx++;
+
+      var aiEl     = document.createElement('article');
+      aiEl.className = 'message message--assistant';
+      aiEl.setAttribute('aria-label', 'Assistant response');
+
+      var aiAvatar = document.createElement('div');
+      aiAvatar.className = 'message__avatar';
+      aiAvatar.setAttribute('aria-hidden', 'true');
+      aiAvatar.textContent = 'AI';
+
+      var aiBody = document.createElement('div');
+      aiBody.className = 'message__body';
+
+      var pEl = document.createElement('p');
+      pEl.textContent = r.text;
+
+      var auditEl = document.createElement('div');
+      auditEl.className = 'message__audit';
+      auditEl.setAttribute('aria-label', 'Audit information');
+
+      var badgeEl = document.createElement('span');
+      badgeEl.className = 'audit-badge';
+      badgeEl.innerHTML = '<span aria-hidden="true">&#10003;</span> HMAC-SHA256 verified';
+
+      var idEl = document.createElement('span');
+      idEl.className = 'audit-id';
+      idEl.textContent = 'Audit ID: ' + r.auditId;
+
+      var sep = document.createElement('span');
+      sep.setAttribute('aria-hidden', 'true');
+      sep.textContent = '·';
+
+      var reviewEl = document.createElement('span');
+      reviewEl.textContent = 'Human review required before case action';
+
+      auditEl.appendChild(badgeEl);
+      auditEl.appendChild(idEl);
+      auditEl.appendChild(sep);
+      auditEl.appendChild(reviewEl);
+
+      aiBody.appendChild(pEl);
+      aiBody.appendChild(auditEl);
+      aiEl.appendChild(aiAvatar);
+      aiEl.appendChild(aiBody);
+      messages.appendChild(aiEl);
+      messages.scrollTop = messages.scrollHeight;
+      sendBtn.disabled = false;
+
+      /* Announce to screen readers (WCAG 4.1.3) */
+      if (announcer) {
+        announcer.textContent = '';
+        setTimeout(function () {
+          announcer.textContent = 'Assistant: ' + r.text;
+        }, 100);
+      }
+    }, 700);
+  }
+
+  /* Enter to send, Shift+Enter for newline */
+  chatInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  sendBtn.addEventListener('click', sendMessage);
+
+  /* Suggested query chips */
+  document.querySelectorAll('.chat-suggest').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      chatInput.value = btn.textContent.trim();
+      charCount.textContent = chatInput.value.length;
+      chatInput.focus();
+    });
+  });
+
+  /* Quick query sidebar buttons */
+  document.querySelectorAll('.quick-query-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var query = btn.getAttribute('data-query');
+      if (query) {
+        chatInput.value = query;
+        charCount.textContent = query.length;
+        chatInput.focus();
+      }
+    });
+  });
+}());
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Applications — EEOC AI Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/site.css">
+    <style>
+        /* ---- Applications page overrides ---- */
+        .app-hero {
+            background: linear-gradient(135deg, var(--eeoc-navy) 0%, var(--eeoc-navy-light) 60%, #2a3f6e 100%);
+            padding: 4rem 2rem 3rem;
+            color: #fff;
+        }
+
+        .app-hero-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .app-hero h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+        }
+
+        .app-hero p {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.7);
+            max-width: 640px;
+            line-height: 1.7;
+        }
+
+        /* ---- TOC jump strip ---- */
+        .app-toc {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            position: sticky;
+            top: 64px;
+            z-index: 50;
+            overflow-x: auto;
+        }
+
+        .app-toc-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0;
+        }
+
+        .app-toc a {
+            display: inline-block;
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            transition: all var(--transition);
+        }
+
+        .app-toc a:hover {
+            color: var(--text-primary);
+            border-bottom-color: var(--eeoc-gold);
+        }
+
+        /* ---- App section layout ---- */
+        .app-section {
+            padding: 4rem 2rem;
+        }
+
+        .app-section-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .app-section-bg {
+            background: var(--surface);
+        }
+
+        .app-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .app-header-left {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+        }
+
+        .app-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .app-header-text h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .app-header-text .app-sub {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* ---- Two-column layout for demo + metadata ---- */
+        .app-columns {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        /* ---- Feature list ---- */
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list .fi-icon {
+            color: var(--eeoc-gold-dark);
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* ---- Metadata card ---- */
+        .meta-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .meta-card-section {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .meta-card-section:last-child {
+            border-bottom: none;
+        }
+
+        .meta-card-section h4 {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.6rem;
+        }
+
+        .meta-pill {
+            display: inline-block;
+            background: var(--surface-alt);
+            color: var(--text-secondary);
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 500;
+            margin: 2px;
+        }
+
+        /* ---- AI capability callout ---- */
+        .ai-callout {
+            background: var(--eeoc-navy);
+            border-radius: var(--radius);
+            padding: 1rem 1.25rem;
+            color: rgba(255,255,255,0.85);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .ai-callout h4 {
+            color: var(--eeoc-gold-light);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-callout ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .ai-callout li {
+            padding: 3px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .ai-callout li::before {
+            content: '';
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            background: var(--eeoc-gold);
+            border-radius: 50%;
+            margin-top: 7px;
+            flex-shrink: 0;
+        }
+
+        /* ---- Demo interface: form panels ---- */
+        .form-panel {
+            padding: 1.25rem;
+        }
+
+        .form-panel label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .form-panel .form-field {
+            width: 100%;
+            padding: 7px 10px;
+            font-size: 13px;
+            font-family: inherit;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            color: var(--text-primary);
+            background: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .form-panel textarea.form-field {
+            resize: none;
+            height: 80px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0;
+            color: var(--text-secondary);
+            cursor: default;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            accent-color: var(--eeoc-navy);
+        }
+
+        /* ---- AI result panel ---- */
+        .ai-result-panel {
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            padding: 1.25rem;
+        }
+
+        .ai-result-header {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .classification-badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 12px;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-row .rl {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .result-row .rv {
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .confidence-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .confidence-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            width: 80px;
+            overflow: hidden;
+        }
+
+        .confidence-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: #059669;
+        }
+
+        /* ---- Document viewer demo ---- */
+        .doc-list {
+            list-style: none;
+            padding: 0.75rem;
+            margin: 0;
+            background: var(--eeoc-navy-dark);
+            border-right: 1px solid rgba(255,255,255,0.08);
+            min-width: 190px;
+        }
+
+        .doc-list li {
+            padding: 7px 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: default;
+        }
+
+        .doc-list li.active {
+            background: rgba(197,165,86,0.15);
+            color: var(--eeoc-gold-light);
+        }
+
+        .doc-list li i {
+            font-size: 13px;
+        }
+
+        /* ---- Analysis result panel ---- */
+        .analysis-panel {
+            padding: 1.25rem;
+            background: #fff;
+        }
+
+        .analysis-block {
+            margin-bottom: 1.25rem;
+        }
+
+        .analysis-block h4 {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .analysis-block ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .analysis-block li {
+            padding: 4px 0;
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .analysis-block li:last-child {
+            border-bottom: none;
+        }
+
+        .analysis-block li::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            background: var(--eeoc-gold-dark);
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        /* ---- Status pills in tables ---- */
+        .pill-valid {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--success-bg);
+            color: var(--success);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .pill-discrepancy {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #fee2e2;
+            color: #b02a37;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .pill-healthy {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--success-bg);
+            color: var(--success);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .pill-pending {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--surface-alt);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .spoke-dot-pending {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            margin-right: 4px;
+        }
+
+        .endpoint-path {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 11px;
+            color: var(--text-primary);
+        }
+
+        /* ---- UDAP shortcut card ---- */
+        .udap-link-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1a2744 100%);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            color: #fff;
+            text-align: center;
+        }
+
+        .udap-link-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--eeoc-gold-light);
+        }
+
+        .udap-link-card p {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.65);
+            max-width: 520px;
+            margin: 0 auto 1.75rem;
+            line-height: 1.7;
+        }
+
+        /* ---- Spoke registry status dot ---- */
+        .spoke-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            margin-right: 4px;
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 900px) {
+            .app-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-hero h1 { font-size: 1.5rem; }
+            .app-toc { display: none; }
+        }
+
+        /* ---- Focus indicators ---- */
+        a:focus-visible,
+        button:focus-visible {
+            outline: 2px solid #0a58ca;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- Navigation -->
+<nav class="site-nav" aria-label="Site navigation">
+    <a href="index.html" class="brand">
+        <div class="brand-icon" aria-hidden="true">EE</div>
+        <div class="brand-text">EEOC <span>AI Platform</span></div>
+    </a>
+    <ul class="nav-links" role="list">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="applications.html" class="active" aria-current="page">Applications</a></li>
+        <li><a href="analytics.html">Analytics</a></li>
+        <li><a href="integration.html">Integration</a></li>
+        <li><a href="security.html">Security</a></li>
+    </ul>
+</nav>
+
+<div class="page-content" id="main-content">
+
+<!-- Hero -->
+<section class="app-hero">
+    <div class="app-hero-inner">
+        <div class="hero-badge">Platform Applications</div>
+        <h1>Seven Applications,<br>One Integrated Platform</h1>
+        <p>Each application serves a distinct EEOC program while sharing authentication,
+           data contracts, and the MCP tool layer. This page walks through each one —
+           its deployed interface, capabilities, and technical profile.</p>
+    </div>
+</section>
+
+<!-- Table of contents jump strip -->
+<nav class="app-toc" aria-label="Jump to application">
+    <div class="app-toc-inner">
+        <a href="#adr-portal">ADR Portal</a>
+        <a href="#arc-integration">ARC Integration API</a>
+        <a href="#mcp-hub">MCP Hub</a>
+        <a href="#ofs-triage">OFS Triage</a>
+        <a href="#ogc-trial">OGC Trial Tool</a>
+        <a href="#ochco-benefits">OCHCO Benefits</a>
+        <a href="#udap-analytics">UDAP Analytics</a>
+    </div>
+</nav>
+
+
+<!-- ================================================================
+     1. ADR Portal
+     ================================================================ -->
+<section class="app-section" id="adr-portal" aria-labelledby="adr-heading">
+    <div class="app-section-inner">
+
+        <div class="app-header">
+            <div class="app-header-left">
+                <div class="app-icon" style="background:#ecfdf5; color:#059669;" aria-hidden="true">
+                    <i class="bi bi-people-fill" aria-hidden="true"></i>
+                </div>
+                <div class="app-header-text">
+                    <h2 id="adr-heading">ADR Portal</h2>
+                    <div class="app-sub">Office of Federal Operations &mdash; Mediation Case Management</div>
+                </div>
+            </div>
+            <span class="status-badge status-live" role="status">
+                <span class="visually-hidden">Status:</span>Live
+            </span>
+        </div>
+
+        <div class="app-columns">
+            <!-- Demo window -->
+            <div>
+                <div class="demo-window" role="region" aria-label="ADR Portal case management interface demo">
+                    <div class="demo-titlebar" aria-hidden="true">
+                        <div class="demo-dot red"></div>
+                        <div class="demo-dot yellow"></div>
+                        <div class="demo-dot green"></div>
+                        <div class="demo-url">adr.eeoc.gov / cases</div>
+                    </div>
+                    <div class="demo-body">
+                        <div class="app-layout">
+                            <!-- Sidebar -->
+                            <nav class="app-sidebar" aria-label="ADR application navigation">
+                                <div class="sidebar-header">
+                                    <h3>ADR Portal</h3>
+                                    <span>OFS Mediation</span>
+                                </div>
+                                <ul class="sidebar-nav" role="list">
+                                    <li><a class="active" aria-current="page" href="#adr-portal" tabindex="-1">
+                                        <span class="nav-icon"><i class="bi bi-grid" aria-hidden="true"></i></span> My Cases
+                                    </a></li>
+                                    <li><a href="#adr-portal" tabindex="-1">
+                                        <span class="nav-icon"><i class="bi bi-calendar3" aria-hidden="true"></i></span> Schedule
+                                    </a></li>
+                                    <li><a href="#adr-portal" tabindex="-1">
+                                        <span class="nav-icon"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span> Documents
+                                    </a></li>
+                                    <li><a href="#adr-portal" tabindex="-1">
+                                        <span class="nav-icon"><i class="bi bi-pen" aria-hidden="true"></i></span> Agreements
+                                    </a></li>
+                                    <li><a href="#adr-portal" tabindex="-1">
+                                        <span class="nav-icon"><i class="bi bi-envelope" aria-hidden="true"></i></span> Notifications
+                                    </a></li>
+                                </ul>
+                            </nav>
+                            <!-- Main -->
+                            <div class="app-main">
+                                <div class="page-header">
+                                    <h3 style="font-size:1.15rem;">Active Cases</h3>
+                                    <span class="status-badge status-live" aria-label="6 active cases">6 Active</span>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="data-table" aria-label="Active mediation cases">
+                                        <caption class="visually-hidden">Active ADR mediation cases showing case ID, charge number, parties, mediator, status, and next session date</caption>
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Case ID</th>
+                                                <th scope="col">Charge #</th>
+                                                <th scope="col">Parties</th>
+                                                <th scope="col">Mediator</th>
+                                                <th scope="col">Status</th>
+                                                <th scope="col">Next Session</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><span class="case-link">ADR-2025-0847</span></td>
+                                                <td>520-2025-01234</td>
+                                                <td>Williams v. Acme Corp</td>
+                                                <td>S. Martinez</td>
+                                                <td><span class="status-badge status-live" style="font-size:10px;" aria-label="Status: Active, scheduled">Active &mdash; Scheduled</span></td>
+                                                <td>May 28, 2026</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="case-link">ADR-2025-0891</span></td>
+                                                <td>510-2025-02981</td>
+                                                <td>Johnson v. Metro Transit Auth.</td>
+                                                <td>R. Okafor</td>
+                                                <td><span class="status-badge status-live" style="font-size:10px;" aria-label="Status: Active, scheduled">Active &mdash; Scheduled</span></td>
+                                                <td>Jun 3, 2026</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="case-link">ADR-2025-0904</span></td>
+                                                <td>440-2025-05517</td>
+                                                <td>Davis v. Premier Health Systems</td>
+                                                <td>L. Chen</td>
+                                                <td><span class="status-badge status-ready" style="font-size:10px;" aria-label="Status: Agreement review">Agreement Review</span></td>
+                                                <td>&mdash;</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="case-link">ADR-2025-0923</span></td>
+                                                <td>530-2025-07742</td>
+                                                <td>Thompson v. Bayside Logistics</td>
+                                                <td>S. Martinez</td>
+                                                <td><span class="status-badge status-live" style="font-size:10px;" aria-label="Status: Active, pending documents">Active &mdash; Docs Pending</span></td>
+                                                <td>Jun 10, 2026</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="case-link">ADR-2026-0011</span></td>
+                                                <td>480-2026-00388</td>
+                                                <td>Garcia v. Southwest Federal Credit Union</td>
+                                                <td>R. Okafor</td>
+                                                <td><span class="status-badge status-progress" style="font-size:10px;" aria-label="Status: Intake, awaiting consent">Intake &mdash; Consent Pending</span></td>
+                                                <td>Jun 17, 2026</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="case-link">ADR-2026-0019</span></td>
+                                                <td>560-2026-01105</td>
+                                                <td>Patel v. National Staffing Group</td>
+                                                <td>L. Chen</td>
+                                                <td><span class="status-badge status-progress" style="font-size:10px;" aria-label="Status: Intake, awaiting consent">Intake &mdash; Consent Pending</span></td>
+                                                <td>Jun 24, 2026</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metadata sidebar -->
+            <div>
+                <div class="meta-card">
+                    <div class="meta-card-section">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list" aria-label="ADR Portal key features">
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> AI-assisted settlement agreement drafting</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Calendar integration via Microsoft Graph API</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> E-signature integration (DocuSign and Adobe Acrobat Sign)</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Participant portal with Login.gov OIDC</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Document management and version control</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Daily digest email notifications</li>
+                        </ul>
+                    </div>
+                    <div class="meta-card-section">
+                        <h4>Infrastructure</h4>
+                        <span class="meta-pill">Azure App Service</span>
+                        <span class="meta-pill">2x Function Apps</span>
+                        <span class="meta-pill">Azure Table Storage (primary)</span>
+                        <span class="meta-pill">PostgreSQL (migration mode, default off)</span>
+                        <span class="meta-pill">Redis Sessions</span>
+                        <span class="meta-pill">Azure Blob (WORM)</span>
+                        <span class="meta-pill">Service Bus</span>
+                    </div>
+                    <div class="meta-card-section">
+                        <h4>Auth</h4>
+                        <span class="meta-pill">Entra ID (@eeoc.gov)</span>
+                        <span class="meta-pill">Login.gov OIDC</span>
+                        <span class="meta-pill">Managed Identity</span>
+                    </div>
+                    <div class="meta-card-section">
+                        <div class="ai-callout">
+                            <h4>AI Capabilities</h4>
+                            <ul>
+                                <li>Settlement agreement drafting with stop sequences</li>
+                                <li>On-demand case summary generation via MCP prompt template</li>
+                                <li>Party scheduling via availability polls</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     2. ARC Integration API
+     ================================================================ -->
+<section class="app-section app-section-bg" id="arc-integration" aria-labelledby="arc-heading">
+    <div class="app-section-inner">
+
+        <div class="app-header">
+            <div class="app-header-left">
+                <div class="app-icon" style="background:#dbeafe; color:#1e40af;" aria-hidden="true">
+                    <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+                </div>
+                <div class="app-header-text">
+                    <h2 id="arc-heading">ARC Integration API</h2>
+                    <div class="app-sub">Sole gateway to the ARC legacy charge management system</div>
+                </div>
+            </div>
+            <span class="status-badge status-ready" role="status">
+                <span class="visually-hidden">Status:</span>Ready
+            </span>
+        </div>
+
+        <div class="app-columns">
+            <!-- Demo window -->
+            <div>
+                <div class="demo-window" role="region" aria-label="ARC Integration API endpoint reference demo">
+                    <div class="demo-titlebar" aria-hidden="true">
+                        <div class="demo-dot red"></div>
+                        <div class="demo-dot yellow"></div>
+                        <div class="demo-dot green"></div>
+                        <div class="demo-url">arc-api.internal.eeoc.gov / docs</div>
+                    </div>
+                    <div class="demo-body" style="padding:1.25rem;">
+                        <div style="margin-bottom:1rem;">
+                            <div style="font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:0.25rem;">Mediation Endpoints</div>
+                            <div style="font-size:12px; color:var(--text-secondary);">All routes require Managed Identity Bearer token. Rate limit: 120 req/min per caller.</div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table" aria-label="ARC Integration API mediation endpoints">
+                                <caption class="visually-hidden">ARC Integration API mediation endpoints showing HTTP method, path, description, and authentication requirement</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Method</th>
+                                        <th scope="col">Path</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Auth</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="method-get">GET</span></td>
+                                        <td><span class="endpoint-path">/arc/v1/mediation/eligible-cases</span></td>
+                                        <td style="font-size:12px;">Watermark-paginated list of charges eligible for mediation. Polls every 15 min.</td>
+                                        <td style="font-size:11px;">Managed Identity</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-get">GET</span></td>
+                                        <td><span class="endpoint-path">/arc/v1/mediation/cases/{charge_number}</span></td>
+                                        <td style="font-size:12px;">Full charge record including basis, parties, filing date, and investigation status.</td>
+                                        <td style="font-size:11px;">Managed Identity</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-post">POST</span></td>
+                                        <td><span class="endpoint-path">/arc/v1/mediation/cases/{charge_number}/status</span></td>
+                                        <td style="font-size:12px;">Write mediation status (Accepted, Declined, Scheduled, Settled, Withdrawn) back to ARC.</td>
+                                        <td style="font-size:11px;">Managed Identity</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-put">PUT</span></td>
+                                        <td><span class="endpoint-path">/arc/v1/mediation/cases/{charge_number}/staff</span></td>
+                                        <td style="font-size:12px;">Assign mediator. ARC staff ID validated against the active roster before write.</td>
+                                        <td style="font-size:11px;">Managed Identity</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-post">POST</span></td>
+                                        <td><span class="endpoint-path">/arc/v1/mediation/cases/{charge_number}/close</span></td>
+                                        <td style="font-size:12px;">Record disposition and close charge. Service Bus event publishing planned.</td>
+                                        <td style="font-size:11px;">Managed Identity</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-post">POST</span></td>
+                                        <td><span class="endpoint-path">/arc/v1/mediation/cases/{charge_number}/documents</span></td>
+                                        <td style="font-size:12px;">Attach a document reference in ARC. Blob URL stored; content remains in Azure Blob.</td>
+                                        <td style="font-size:11px;">Managed Identity</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metadata sidebar -->
+            <div>
+                <div class="meta-card">
+                    <div class="meta-card-section">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list" aria-label="ARC Integration API key features">
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> SSRF prevention with DNS rebinding protection</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Exponential backoff retry with jitter</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Managed Identity — no stored credentials</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Service Bus event publishing (planned)</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> RFC 7807 Problem Details on all errors</li>
+                        </ul>
+                    </div>
+                    <div class="meta-card-section">
+                        <h4>Infrastructure</h4>
+                        <span class="meta-pill">FastAPI (Python 3.13)</span>
+                        <span class="meta-pill">Azure App Service</span>
+                        <span class="meta-pill">Azure Service Bus</span>
+                        <span class="meta-pill">Redis (circuit breaker state)</span>
+                    </div>
+                    <div class="meta-card-section">
+                        <h4>Hard Constraint</h4>
+                        <div style="font-size:12px; color:var(--text-secondary); line-height:1.6;">
+                            No other platform application calls ARC directly. All charge data
+                            flows through this service. Violations are blocked at the
+                            network layer via Azure VNET routing.
+                        </div>
+                    </div>
+                    <div class="meta-card-section">
+                        <div class="ai-callout">
+                            <h4>Observability</h4>
+                            <ul>
+                                <li>X-Request-ID propagated through every ARC hop</li>
+                                <li>Watermark logged per sync cycle to Azure Table</li>
+                                <li>Circuit breaker state visible in health endpoint</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     3. MCP Hub
+     ================================================================ -->
+<section class="app-section" id="mcp-hub" aria-labelledby="mcp-heading">
+    <div class="app-section-inner">
+
+        <div class="app-header">
+            <div class="app-header-left">
+                <div class="app-icon" style="background:#fef3c7; color:#92400e;" aria-hidden="true">
+                    <i class="bi bi-diagram-3-fill" aria-hidden="true"></i>
+                </div>
+                <div class="app-header-text">
+                    <h2 id="mcp-heading">MCP Hub</h2>
+                    <div class="app-sub">Azure Functions &mdash; Model Context Protocol Aggregator</div>
+                </div>
+            </div>
+            <span class="status-badge status-ready" role="status">
+                <span class="visually-hidden">Status:</span>Ready
+            </span>
+        </div>
+
+        <div class="app-columns">
+            <!-- Demo window -->
+            <div>
+                <div class="demo-window" role="region" aria-label="MCP Hub spoke registry demo">
+                    <div class="demo-titlebar" aria-hidden="true">
+                        <div class="demo-dot red"></div>
+                        <div class="demo-dot yellow"></div>
+                        <div class="demo-dot green"></div>
+                        <div class="demo-url">mcp-hub.internal.eeoc.gov / api / spokes</div>
+                    </div>
+                    <div class="demo-body" style="padding:1.25rem;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+                            <div>
+                                <div style="font-size:13px; font-weight:700; color:var(--text-primary);">Spoke Registry</div>
+                                <div style="font-size:11px; color:var(--text-secondary);">Last full refresh: 2 min ago &mdash; 1 spoke active, 10 tools cataloged</div>
+                            </div>
+                            <span class="status-badge status-live" style="font-size:10px;" aria-label="ADR spoke healthy; other spokes pending registration">1 Healthy</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table" aria-label="MCP Hub spoke registry">
+                                <caption class="visually-hidden">MCP Hub spoke registry showing spoke name, URL, health status, number of tools, and time of last refresh</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Spoke</th>
+                                        <th scope="col">URL</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Tools</th>
+                                        <th scope="col">Last Refresh</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>ADR Portal</strong></td>
+                                        <td><span class="endpoint-path" style="font-size:11px;">adr.eeoc.gov/mcp</span></td>
+                                        <td><span class="pill-healthy"><span class="spoke-dot" aria-hidden="true"></span>Healthy</span></td>
+                                        <td>10</td>
+                                        <td style="font-size:11px; color:var(--text-muted);">2 min ago</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>OFS Triage</strong></td>
+                                        <td><span class="endpoint-path" style="font-size:11px; color:var(--text-muted);">Not yet registered</span></td>
+                                        <td><span class="pill-pending"><span class="spoke-dot-pending" aria-hidden="true"></span>Pending</span></td>
+                                        <td>0</td>
+                                        <td style="font-size:11px; color:var(--text-muted);">&mdash;</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>OGC Trial Tool</strong></td>
+                                        <td><span class="endpoint-path" style="font-size:11px; color:var(--text-muted);">Not yet registered</span></td>
+                                        <td><span class="pill-pending"><span class="spoke-dot-pending" aria-hidden="true"></span>Pending</span></td>
+                                        <td>0</td>
+                                        <td style="font-size:11px; color:var(--text-muted);">&mdash;</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>OCHCO Benefits</strong></td>
+                                        <td><span class="endpoint-path" style="font-size:11px; color:var(--text-muted);">Not yet registered</span></td>
+                                        <td><span class="pill-pending"><span class="spoke-dot-pending" aria-hidden="true"></span>Pending</span></td>
+                                        <td>0</td>
+                                        <td style="font-size:11px; color:var(--text-muted);">&mdash;</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>UDAP Analytics</strong></td>
+                                        <td><span class="endpoint-path" style="font-size:11px; color:var(--text-muted);">Not yet registered</span></td>
+                                        <td><span class="pill-pending"><span class="spoke-dot-pending" aria-hidden="true"></span>Pending</span></td>
+                                        <td>0</td>
+                                        <td style="font-size:11px; color:var(--text-muted);">&mdash;</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top:1rem; padding:0.75rem 1rem; background:var(--surface); border-radius:var(--radius); font-size:11px; font-family:'SF Mono','Fira Code',monospace; color:var(--text-secondary); border-left:3px solid var(--eeoc-gold);">
+                            GET /api/tools &rarr; 10 tools (10 ADR) &mdash; Triage, Trial Tool, OCHCO, UDAP spokes pending registration
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metadata sidebar -->
+            <div>
+                <div class="meta-card">
+                    <div class="meta-card-section">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list" aria-label="MCP Hub key features">
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> 5-minute spoke catalog refresh via Timer trigger</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Tool deduplication across spokes by name</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> HMAC-SHA256 signed audit log per invocation</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Spoke health monitoring with last-seen tracking</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> JSON-RPC 2.0 over HTTP &mdash; MCP 2025-03-26 spec</li>
+                        </ul>
+                    </div>
+                    <div class="meta-card-section">
+                        <h4>Infrastructure</h4>
+                        <span class="meta-pill">Azure Functions (Python)</span>
+                        <span class="meta-pill">Azure API Management</span>
+                        <span class="meta-pill">Azure Table Storage</span>
+                        <span class="meta-pill">Managed Identity</span>
+                    </div>
+                    <div class="meta-card-section">
+                        <div class="ai-callout">
+                            <h4>Protocol</h4>
+                            <ul>
+                                <li>tools/list &mdash; merged catalog from all healthy spokes</li>
+                                <li>tools/call &mdash; routed to spoke that owns the tool</li>
+                                <li>MCP_ENABLED=false safe default; no spoke calls at startup</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     4. OFS Triage
+     ================================================================ -->
+<section class="app-section app-section-bg" id="ofs-triage" aria-labelledby="triage-heading">
+    <div class="app-section-inner">
+
+        <div class="app-header">
+            <div class="app-header-left">
+                <div class="app-icon" style="background:#fef3c7; color:#92400e;" aria-hidden="true">
+                    <i class="bi bi-funnel-fill" aria-hidden="true"></i>
+                </div>
+                <div class="app-header-text">
+                    <h2 id="triage-heading">OFS Triage</h2>
+                    <div class="app-sub">Office of Federal Operations &mdash; Charge Intake and Program Routing</div>
+                </div>
+            </div>
+            <span class="status-badge status-progress" role="status">
+                <span class="visually-hidden">Status:</span>In Progress
+            </span>
+        </div>
+
+        <div class="app-columns">
+            <!-- Demo window -->
+            <div>
+                <div class="demo-window" role="region" aria-label="OFS Triage charge intake and AI classification demo">
+                    <div class="demo-titlebar" aria-hidden="true">
+                        <div class="demo-dot red"></div>
+                        <div class="demo-dot yellow"></div>
+                        <div class="demo-dot green"></div>
+                        <div class="demo-url">triage.eeoc.gov / intake / classify</div>
+                    </div>
+                    <div class="demo-body" style="display:grid; grid-template-columns:1fr 1fr; min-height:480px;">
+                        <!-- Left: intake form -->
+                        <div class="form-panel" style="border-right:1px solid var(--border);">
+                            <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:1rem;">Charge Intake</div>
+
+                            <label for="demo-charge-number">Charge Number</label>
+                            <input id="demo-charge-number" type="text" class="form-field" value="480-2026-00612" readonly aria-readonly="true">
+
+                            <label for="demo-respondent">Respondent</label>
+                            <input id="demo-respondent" type="text" class="form-field" value="Regional Medical Center East" readonly aria-readonly="true">
+
+                            <div style="font-size:11px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Basis of Discrimination</div>
+                            <div class="checkbox-group" role="group" aria-label="Basis of discrimination checkboxes">
+                                <label><input type="checkbox" checked aria-checked="true" tabindex="-1"> Race</label>
+                                <label><input type="checkbox" tabindex="-1"> Sex</label>
+                                <label><input type="checkbox" checked aria-checked="true" tabindex="-1"> Disability</label>
+                                <label><input type="checkbox" tabindex="-1"> Age</label>
+                                <label><input type="checkbox" checked aria-checked="true" tabindex="-1"> Retaliation</label>
+                            </div>
+
+                            <label for="demo-narrative">Charge Narrative</label>
+                            <textarea id="demo-narrative" class="form-field" readonly aria-readonly="true">Charging party states they were denied a requested accommodation for a documented mobility impairment and subsequently terminated within 10 days of filing the internal complaint. Three prior written requests for accommodation were declined without explanation.</textarea>
+                        </div>
+
+                        <!-- Right: AI result -->
+                        <div class="ai-result-panel">
+                            <div class="ai-result-header">AI Classification Result</div>
+
+                            <div class="classification-badge" aria-label="Classification: Priority A — Full Investigation">Priority A &mdash; Full Investigation</div>
+
+                            <div class="result-row">
+                                <span class="rl">Basis detected</span>
+                                <span class="rv">Disability + Retaliation</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="rl">Statute(s)</span>
+                                <span class="rv">ADA Title I; Section 504</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="rl">Recommended track</span>
+                                <span class="rv">Mediation</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="rl">Temporal proximity</span>
+                                <span class="rv">10 days (high weight)</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="rl">Prior complaints</span>
+                                <span class="rv">3 documented requests</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="rl">Confidence</span>
+                                <span class="rv">
+                                    <span class="confidence-bar-wrap">
+                                        <span class="confidence-bar" role="progressbar" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100" aria-label="Confidence: 94%">
+                                            <span class="confidence-bar-fill" style="width:94%;"></span>
+                                        </span>
+                                        94%
+                                    </span>
+                                </span>
+                            </div>
+                            <div style="margin-top:1rem; padding:0.75rem; background:#fff3cd; border-radius:5px; font-size:11px; color:#92400e; border:1px solid #fde68a;">
+                                <strong>Human review required</strong> before any routing action. AI output is advisory only.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metadata sidebar -->
+            <div>
+                <div class="meta-card">
+                    <div class="meta-card-section">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list" aria-label="OFS Triage key features">
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Multi-basis detection across all protected classes</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Statute identification (Title VII, ADA, ADEA, EPA, GINA)</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> RAG-powered precedent search against prior charges</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Quarterly report generation for OFS leadership</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Stop sequences on all AI calls &mdash; no legal conclusions</li>
+                        </ul>
+                    </div>
+                    <div class="meta-card-section">
+                        <h4>Infrastructure</h4>
+                        <span class="meta-pill">Flask (Python 3.13)</span>
+                        <span class="meta-pill">3x Function Apps</span>
+                        <span class="meta-pill">Azure AI Search (RAG)</span>
+                        <span class="meta-pill">Azure OpenAI GPT-4o</span>
+                        <span class="meta-pill">Redis Sessions</span>
+                    </div>
+                    <div class="meta-card-section">
+                        <div class="ai-callout">
+                            <h4>AI Capabilities</h4>
+                            <ul>
+                                <li>Classification with stop sequences ["Legal Advice:", "Legal Conclusion:"]</li>
+                                <li>RAG retrieval against prior charge corpus</li>
+                                <li>Narrative parsing for temporal proximity signals</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     5. OGC Trial Tool
+     ================================================================ -->
+<section class="app-section" id="ogc-trial" aria-labelledby="trial-heading">
+    <div class="app-section-inner">
+
+        <div class="app-header">
+            <div class="app-header-left">
+                <div class="app-icon" style="background:#dbeafe; color:#1e40af;" aria-hidden="true">
+                    <i class="bi bi-briefcase-fill" aria-hidden="true"></i>
+                </div>
+                <div class="app-header-text">
+                    <h2 id="trial-heading">OGC Trial Tool</h2>
+                    <div class="app-sub">Office of General Counsel &mdash; Attorney Trial Preparation</div>
+                </div>
+            </div>
+            <span class="status-badge status-progress" role="status">
+                <span class="visually-hidden">Status:</span>In Progress
+            </span>
+        </div>
+
+        <div class="app-columns">
+            <!-- Demo window -->
+            <div>
+                <div class="demo-window" role="region" aria-label="OGC Trial Tool case file viewer and AI analysis demo">
+                    <div class="demo-titlebar" aria-hidden="true">
+                        <div class="demo-dot red"></div>
+                        <div class="demo-dot yellow"></div>
+                        <div class="demo-dot green"></div>
+                        <div class="demo-url">trialtool.eeoc.gov / cases / EEOC-v-Premier-2025-0312</div>
+                    </div>
+                    <div class="demo-body">
+                        <div style="display:grid; grid-template-columns:200px 1fr; min-height:480px;">
+                            <!-- Document list -->
+                            <ul class="doc-list" role="list" aria-label="Case documents">
+                                <li class="active" aria-current="true">
+                                    <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Complaint.pdf
+                                </li>
+                                <li>
+                                    <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Response.pdf
+                                </li>
+                                <li>
+                                    <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Deposition_Jones.pdf
+                                </li>
+                                <li>
+                                    <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Deposition_Ramos.pdf
+                                </li>
+                                <li>
+                                    <i class="bi bi-file-earmark-text" aria-hidden="true"></i> Evidence_Exhibit_A.pdf
+                                </li>
+                                <li>
+                                    <i class="bi bi-file-earmark-text" aria-hidden="true"></i> Evidence_Exhibit_B.pdf
+                                </li>
+                                <li>
+                                    <i class="bi bi-file-earmark-spreadsheet" aria-hidden="true"></i> Payroll_Records.xlsx
+                                </li>
+                            </ul>
+
+                            <!-- Analysis panel -->
+                            <div class="analysis-panel">
+                                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
+                                    <div style="font-size:13px; font-weight:700; color:var(--text-primary);">AI Analysis &mdash; Complaint.pdf</div>
+                                    <span style="font-size:10px; color:var(--text-muted);">HMAC-SHA256 signed &bull; audit-id: 3f9b2c7a</span>
+                                </div>
+
+                                <div class="analysis-block">
+                                    <h4>Key Facts Extracted</h4>
+                                    <ul>
+                                        <li>Plaintiff employed as RN from March 2019 through August 2025</li>
+                                        <li>Termination notice issued 12 days after filing internal harassment complaint</li>
+                                        <li>Salary gap of 18% vs. male colleagues in equivalent role documented in Payroll_Records.xlsx</li>
+                                        <li>Prior verbal warning records not disclosed during pre-termination review</li>
+                                    </ul>
+                                </div>
+
+                                <div class="analysis-block">
+                                    <h4>Timeline Events</h4>
+                                    <ul>
+                                        <li>Mar 2019 &mdash; Plaintiff hired at Grade 9, Step 1</li>
+                                        <li>Jul 2025 &mdash; Internal harassment complaint filed with HR</li>
+                                        <li>Aug 6, 2025 &mdash; Termination notice issued</li>
+                                        <li>Aug 20, 2025 &mdash; EEOC charge filed (480-2025-08841)</li>
+                                    </ul>
+                                </div>
+
+                                <div class="analysis-block">
+                                    <h4>Witnesses Identified</h4>
+                                    <ul>
+                                        <li>M. Jones (deposed) &mdash; direct supervisor, present at termination meeting</li>
+                                        <li>C. Ramos (deposed) &mdash; HR Director, received initial complaint</li>
+                                        <li>T. Watkins (not yet deposed) &mdash; cited in Exhibit A as witness to pattern conduct</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metadata sidebar -->
+            <div>
+                <div class="meta-card">
+                    <div class="meta-card-section">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list" aria-label="OGC Trial Tool key features">
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> PDF and DOCX text extraction with Azure AI Document Intelligence</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Case timeline construction from extracted dates</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Witness management with deposition status tracking</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Word Add-in for in-document AI assistance</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> RAG search across the full enforcement file</li>
+                        </ul>
+                    </div>
+                    <div class="meta-card-section">
+                        <h4>Infrastructure</h4>
+                        <span class="meta-pill">Flask (Python 3.13)</span>
+                        <span class="meta-pill">Azure App Service</span>
+                        <span class="meta-pill">Azure AI Document Intelligence</span>
+                        <span class="meta-pill">Azure AI Search</span>
+                        <span class="meta-pill">Azure OpenAI GPT-4o</span>
+                    </div>
+                    <div class="meta-card-section">
+                        <div class="ai-callout">
+                            <h4>AI Capabilities</h4>
+                            <ul>
+                                <li>Document-level fact extraction with citation tracing</li>
+                                <li>Timeline event extraction from unstructured text</li>
+                                <li>Cross-document witness and entity resolution</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     6. OCHCO Benefits Validation
+     ================================================================ -->
+<section class="app-section app-section-bg" id="ochco-benefits" aria-labelledby="ochco-heading">
+    <div class="app-section-inner">
+
+        <div class="app-header">
+            <div class="app-header-left">
+                <div class="app-icon" style="background:#f3e8ff; color:#6d28d9;" aria-hidden="true">
+                    <i class="bi bi-calculator-fill" aria-hidden="true"></i>
+                </div>
+                <div class="app-header-text">
+                    <h2 id="ochco-heading">OCHCO Benefits Validation</h2>
+                    <div class="app-sub">Office of the Chief Human Capital Officer &mdash; Benefits Coding and Overpayment Detection</div>
+                </div>
+            </div>
+            <span class="status-badge status-progress" role="status">
+                <span class="visually-hidden">Status:</span>In Progress
+            </span>
+        </div>
+
+        <div class="app-columns">
+            <!-- Demo window -->
+            <div>
+                <div class="demo-window" role="region" aria-label="OCHCO Benefits Validation results demo">
+                    <div class="demo-titlebar" aria-hidden="true">
+                        <div class="demo-dot red"></div>
+                        <div class="demo-dot yellow"></div>
+                        <div class="demo-dot green"></div>
+                        <div class="demo-url">ochco.eeoc.gov / validation / batch / BV-2026-0519</div>
+                    </div>
+                    <div class="demo-body" style="padding:1.25rem;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+                            <div>
+                                <div style="font-size:13px; font-weight:700; color:var(--text-primary);">Batch Validation Results</div>
+                                <div style="font-size:11px; color:var(--text-secondary);">Batch BV-2026-0519 &mdash; Run: May 19, 2026 06:02 EDT &mdash; 4 records</div>
+                            </div>
+                            <div>
+                                <span class="pill-valid" aria-label="3 records valid"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> 3 Valid</span>
+                                &nbsp;
+                                <span class="pill-discrepancy" aria-label="1 discrepancy detected"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> 1 Discrepancy</span>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table" aria-label="Benefits validation results">
+                                <caption class="visually-hidden">Benefits coding validation results showing personnel action, employee, benefit code, expected value, actual value, and validation status</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Personnel Action</th>
+                                        <th scope="col">Employee</th>
+                                        <th scope="col">Code</th>
+                                        <th scope="col">Expected</th>
+                                        <th scope="col">Actual</th>
+                                        <th scope="col">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>PA-2026-04481</td>
+                                        <th scope="row" style="font-weight:500;">R. Thornton</th>
+                                        <td><span class="endpoint-path">FEHB-B2</span></td>
+                                        <td style="font-size:12px;">Biweekly $412.80</td>
+                                        <td style="font-size:12px;">Biweekly $412.80</td>
+                                        <td><span class="pill-valid"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> <span>Valid</span></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>PA-2026-04512</td>
+                                        <th scope="row" style="font-weight:500;">D. Nguyen</th>
+                                        <td><span class="endpoint-path">FEGLI-C</span></td>
+                                        <td style="font-size:12px;">$198,000 coverage</td>
+                                        <td style="font-size:12px;">$220,000 coverage</td>
+                                        <td>
+                                            <span class="pill-discrepancy">
+                                                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                                                <span>Discrepancy Detected</span>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>PA-2026-04537</td>
+                                        <th scope="row" style="font-weight:500;">M. Ellison</th>
+                                        <td><span class="endpoint-path">TSP-1</span></td>
+                                        <td style="font-size:12px;">5% Agency match</td>
+                                        <td style="font-size:12px;">5% Agency match</td>
+                                        <td><span class="pill-valid"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> <span>Valid</span></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>PA-2026-04563</td>
+                                        <th scope="row" style="font-weight:500;">S. Osei</th>
+                                        <td><span class="endpoint-path">FEHB-A1</span></td>
+                                        <td style="font-size:12px;">Biweekly $289.40</td>
+                                        <td style="font-size:12px;">Biweekly $289.40</td>
+                                        <td><span class="pill-valid"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> <span>Valid</span></span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top:1rem; padding:0.75rem 1rem; background:#fee2e2; border-radius:var(--radius); border:1px solid #fca5a5; font-size:12px; color:#7f1d1d;">
+                            <strong>Action required:</strong> PA-2026-04512 &mdash; FEGLI coverage amount exceeds grade/step ceiling for D. Nguyen (GS-12, Step 4). Review OPM FEGLI Handbook Table 3-B before processing payroll run.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metadata sidebar -->
+            <div>
+                <div class="meta-card">
+                    <div class="meta-card-section">
+                        <h4>Key Features</h4>
+                        <ul class="feature-list" aria-label="OCHCO Benefits Validation key features">
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> OPM rule cross-reference for FEHB, FEGLI, TSP, and CSRS/FERS</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Batch anomaly detection before payroll run</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Overpayment prevention with OPM table lookups</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> Corrective action tracking with audit trail</li>
+                            <li><i class="bi bi-check-circle-fill fi-icon" aria-hidden="true"></i> MCP spoke exposing validation tools to the Hub</li>
+                        </ul>
+                    </div>
+                    <div class="meta-card-section">
+                        <h4>Infrastructure</h4>
+                        <span class="meta-pill">Flask (Python 3.13)</span>
+                        <span class="meta-pill">Azure App Service</span>
+                        <span class="meta-pill">Azure Table Storage</span>
+                        <span class="meta-pill">MCP Spoke</span>
+                    </div>
+                    <div class="meta-card-section">
+                        <h4>Benefit Programs Covered</h4>
+                        <span class="meta-pill">FEHB</span>
+                        <span class="meta-pill">FEGLI</span>
+                        <span class="meta-pill">TSP</span>
+                        <span class="meta-pill">CSRS</span>
+                        <span class="meta-pill">FERS</span>
+                        <span class="meta-pill">FLTCIP</span>
+                    </div>
+                    <div class="meta-card-section">
+                        <div class="ai-callout">
+                            <h4>Detection Approach</h4>
+                            <ul>
+                                <li>Rule engine cross-references OPM tables per action type</li>
+                                <li>Anomaly detection flags deviations from grade/step ceilings</li>
+                                <li>All findings require human review before corrective action</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     7. UDAP Analytics
+     ================================================================ -->
+<section class="app-section" id="udap-analytics" aria-labelledby="udap-heading">
+    <div class="app-section-inner">
+
+        <div class="app-header">
+            <div class="app-header-left">
+                <div class="app-icon" style="background:#fff7ed; color:#c2410c;" aria-hidden="true">
+                    <i class="bi bi-graph-up-arrow" aria-hidden="true"></i>
+                </div>
+                <div class="app-header-text">
+                    <h2 id="udap-heading">Unified Data Analytics Platform (UDAP)</h2>
+                    <div class="app-sub">Cross-program analytics &mdash; AI assistant, Superset dashboards, JupyterHub notebooks</div>
+                </div>
+            </div>
+            <span class="status-badge status-progress" role="status">
+                <span class="visually-hidden">Status:</span>In Progress
+            </span>
+        </div>
+
+        <!-- Feature strip -->
+        <div class="card-grid" style="margin-bottom:2rem;">
+            <div class="card">
+                <div class="card-icon" style="background:#fff7ed; color:#c2410c;">
+                    <i class="bi bi-chat-text" aria-hidden="true"></i>
+                </div>
+                <h3>Natural Language Queries</h3>
+                <p>Ask questions in plain English across charge data, mediation outcomes, investigation
+                   metrics, and staffing KPIs. Results are returned as tables, charts, or prose summaries.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="background:#fff7ed; color:#c2410c;">
+                    <i class="bi bi-file-earmark-bar-graph" aria-hidden="true"></i>
+                </div>
+                <h3>Automated Narrative Generation</h3>
+                <p>Quarterly and annual reports drafted from live data. Leadership-facing language
+                   with HMAC-signed audit records on every AI-generated paragraph.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="background:#fff7ed; color:#c2410c;">
+                    <i class="bi bi-grid-1x2" aria-hidden="true"></i>
+                </div>
+                <h3>Superset Dashboards</h3>
+                <p>Interactive dashboards with charge volume trends, settlement rates by office,
+                   basis breakdowns, and time-to-resolution distributions. Drill-down by district,
+                   office, and time period.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="background:#fff7ed; color:#c2410c;">
+                    <i class="bi bi-journal-code" aria-hidden="true"></i>
+                </div>
+                <h3>JupyterHub Notebooks</h3>
+                <p>Ad-hoc analysis environment for data staff. Pre-configured with EEOC data
+                   connectors, PII masking utilities, and shared kernel access across the analytics team.</p>
+            </div>
+        </div>
+
+        <!-- Dashboard demo link card -->
+        <div class="udap-link-card" role="complementary" aria-label="Link to full UDAP analytics dashboard demo">
+            <h3>Full Dashboard Demo</h3>
+            <p>The Analytics page includes a live simulation of the UDAP natural language query interface,
+               charge volume bar charts with accessible data tables, settlement rate gauges,
+               and office-level performance breakdowns.</p>
+            <a href="analytics.html" class="btn btn-primary" style="font-size:14px;">
+                View Analytics Dashboard
+                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- Footer -->
+<footer class="site-footer">
+    <strong>U.S. Equal Employment Opportunity Commission</strong> &mdash; Office of the Chief Information Officer<br>
+    AI-Enabled Case Management Platform &bull; FedRAMP High &bull; NIST 800-53 Rev5 &bull; WCAG 2.1 AA
+</footer>
+
+</div><!-- /page-content -->
+
+<script src="js/site.js"></script>
+</body>
+</html>

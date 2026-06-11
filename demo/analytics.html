@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<!--
+  analytics.html — UDAP Analytics demo mockup.
+  Mirrors the actual ai-assistant app layout: government banner,
+  horizontal navbar (no sidebar), custom CSS framework.
+  Section 508 / WCAG 2.1 AA compliant.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <title>Unified Data Analytics Platform — EEOC Analytics Assistant</title>
+
+  <style>
+/* ============================================================
+   CSS Custom Properties — matches ai-assistant/static/css/app.css
+   ============================================================ */
+:root {
+  --navy:        #003366;
+  --blue:        #0066CC;
+  --gold:        #996600;
+  --light-blue:  #E8F1FB;
+  --white:       #FFFFFF;
+  --gray-100:    #F5F7FA;
+  --gray-200:    #E2E8F0;
+  --gray-700:    #4A5568;
+  --gray-900:    #1A1A1A;
+  --success:     #006400;
+  --error:       #B22222;
+  --focus-ring:  3px solid #005FCC;
+
+  --font-sans:   "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+  --font-mono:   "Source Code Pro", "Courier New", monospace;
+
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.12);
+  --shadow-md:   0 4px 12px rgba(0,0,0,0.15);
+
+  --nav-height:  56px;
+}
+
+/* ============================================================
+   Reset / base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  color: var(--gray-900);
+  background: var(--gray-100);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Visible keyboard focus for all interactive elements */
+*:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Suppress low-contrast default focus rings */
+.btn:focus, a:focus, input:focus, button:focus, select:focus, textarea:focus {
+  box-shadow: none !important;
+}
+
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
+}
+
+/* Skip navigation */
+.skip-nav {
+  position: absolute; top: -100%; left: 0;
+  background: var(--navy); color: var(--white);
+  padding: 8px 16px; z-index: 9999;
+  font-weight: 600; text-decoration: none;
+  border-radius: 0 0 var(--radius-sm) 0;
+}
+.skip-nav:focus { top: 0; }
+
+/* ============================================================
+   Government banner
+   ============================================================ */
+.gov-banner {
+  background: var(--gray-200);
+  font-size: 0.8rem;
+  padding: 4px 0;
+  border-bottom: 1px solid #C5D0DC;
+}
+.gov-banner__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--gray-700);
+}
+
+/* Flag icon — inline SVG substitute for demo (no static files) */
+.gov-flag {
+  display: inline-block;
+  width: 16px; height: 11px;
+  background: linear-gradient(
+    to bottom,
+    #B22234 0%, #B22234 14.3%,
+    #fff 14.3%, #fff 28.6%,
+    #B22234 28.6%, #B22234 42.9%,
+    #fff 42.9%, #fff 57.1%,
+    #B22234 57.1%, #B22234 71.4%,
+    #fff 71.4%, #fff 85.7%,
+    #B22234 85.7%, #B22234 100%
+  );
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Navigation — horizontal, no sidebar
+   ============================================================ */
+.navbar {
+  background: var(--navy);
+  border-bottom: 3px solid var(--gold);
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar__brand { display: flex; align-items: center; gap: 0.75rem; }
+
+/* EEOC logo placeholder for demo */
+.navbar__logo-placeholder {
+  height: 36px; width: 120px;
+  background: rgba(255,255,255,0.15);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700; color: var(--white);
+  letter-spacing: 0.05em;
+}
+
+.navbar__title {
+  color: var(--white);
+  font-size: 1.1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.navbar__links {
+  display: flex; list-style: none; gap: 0.25rem;
+  flex: 1; justify-content: center;
+}
+.navbar__link {
+  color: #D6E4F7; text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  transition: background 0.15s, color 0.15s;
+}
+.navbar__link:hover,
+.navbar__link:focus { color: var(--white); background: rgba(255,255,255,0.12); }
+.navbar__link--active {
+  color: var(--white);
+  border-bottom: 2px solid var(--gold);
+  padding-bottom: calc(0.5rem - 2px);
+}
+
+.navbar__user { display: flex; align-items: center; gap: 0.75rem; white-space: nowrap; }
+.navbar__username { color: #D6E4F7; font-size: 0.9rem; }
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 0.4rem;
+  font-family: var(--font-sans); font-size: 0.95rem; font-weight: 600;
+  line-height: 1;
+  min-height: 44px; min-width: 44px;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.btn--primary   { background: var(--navy); color: var(--white); }
+.btn--primary:hover, .btn--primary:focus { background: #002244; }
+.btn--secondary { background: var(--white); border-color: var(--navy); color: var(--navy); }
+.btn--secondary:hover, .btn--secondary:focus { background: var(--light-blue); }
+.btn--ghost     { background: transparent; color: var(--gray-700); border-color: var(--gray-200); }
+.btn--ghost:hover, .btn--ghost:focus { background: var(--gray-200); }
+.btn--sm        { min-height: 36px; padding: 0.3rem 0.875rem; font-size: 0.875rem; }
+
+/* ============================================================
+   Main content area
+   ============================================================ */
+main {
+  flex: 1;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* Page header */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.breadcrumb {
+  font-size: 0.8rem;
+  color: var(--gray-700);
+  margin-bottom: 0.25rem;
+}
+.breadcrumb a { color: var(--blue); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+.page-header__actions { display: flex; gap: 0.75rem; }
+
+/* ============================================================
+   Metric cards
+   ============================================================ */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.metric-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+}
+
+.metric-card__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--gray-700);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 0.25rem;
+}
+
+.metric-card__value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--navy);
+  line-height: 1.1;
+}
+
+.metric-card__change {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+.metric-card__change--up     { color: var(--success); }
+.metric-card__change--neutral { color: var(--gray-700); }
+
+/* ============================================================
+   Content cards
+   ============================================================ */
+.content-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.content-card h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Two-column split */
+.split-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* ============================================================
+   Chart wrappers
+   ============================================================ */
+.chart-wrap {
+  position: relative;
+  height: 260px;
+}
+
+.chart-wrap-lg {
+  position: relative;
+  height: 220px;
+}
+
+/* Accessible data table inside <details> */
+.chart-data-table {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  width: 100%;
+  border-collapse: collapse;
+}
+.chart-data-table th,
+.chart-data-table td {
+  padding: 4px 8px;
+  border: 1px solid var(--gray-200);
+  text-align: left;
+}
+.chart-data-table thead th {
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 700;
+}
+.chart-data-table tbody tr:hover { background: var(--light-blue); }
+
+details summary {
+  font-size: 0.75rem;
+  color: var(--blue);
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+details summary:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Chat panel — matches chat.html structure
+   ============================================================ */
+.chat-panel {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  height: 420px;
+  margin-bottom: 1rem;
+}
+
+.chat-panel__header {
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--gray-200);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chat-panel__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pulse-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.chat-panel__meta {
+  font-size: 0.75rem;
+  color: var(--gray-700);
+}
+
+/* Message list */
+.chat-messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.message {
+  display: flex;
+  gap: 0.75rem;
+  max-width: 800px;
+}
+
+.message--user {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.message--assistant { align-self: flex-start; }
+
+.message__avatar {
+  width: 36px; height: 36px; min-width: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700;
+  background: var(--navy); color: var(--white);
+  flex-shrink: 0;
+}
+
+.message--user .message__avatar { background: var(--gold); }
+
+.message__body {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.message--user .message__body {
+  background: var(--navy);
+  color: var(--white);
+  border-color: var(--navy);
+}
+
+.message__audit {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--gray-200);
+  font-size: 0.7rem;
+  color: var(--gray-700);
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Suggested queries */
+.chat-suggest-row {
+  padding: 0 1rem 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.chat-suggest {
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  color: var(--blue);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  min-height: 32px;
+  transition: background 0.1s, border-color 0.1s;
+}
+.chat-suggest:hover,
+.chat-suggest:focus { background: var(--light-blue); border-color: var(--blue); }
+
+/* Input row */
+.chat-input-area {
+  background: var(--white);
+  border-top: 1px solid var(--gray-200);
+  padding: 0.75rem 1rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.chat-input {
+  flex: 1;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gray-700);
+  border-radius: var(--radius-sm);
+  min-height: 44px;
+}
+.chat-input:focus { border-color: var(--blue); }
+
+/* ============================================================
+   Toast / Explainer system (shared demo.js compatible)
+   ============================================================ */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 420px;
+}
+
+.toast {
+  background: var(--navy);
+  color: var(--white);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  display: flex;
+  gap: 0.625rem;
+  align-items: flex-start;
+  animation: toast-in 0.3s ease;
+  border-left: 4px solid var(--gold);
+}
+
+.toast.toast-info  { border-left-color: var(--blue); }
+.toast.toast-mcp   { border-left-color: #6B4F9E; }
+.toast.toast-data  { border-left-color: var(--success); }
+
+.toast-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+.toast-body { flex: 1; }
+
+.toast-title {
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+  color: #C8A75A;
+}
+.toast.toast-info .toast-title  { color: #93c5fd; }
+.toast.toast-mcp .toast-title   { color: #c4b5fd; }
+.toast.toast-data .toast-title  { color: #6ee7b7; }
+
+.toast-text  { font-size: 0.75rem; color: rgba(255,255,255,0.85); }
+
+.toast-close {
+  background: none; border: none;
+  color: rgba(255,255,255,0.55); cursor: pointer;
+  font-size: 0.875rem; padding: 0 2px; flex-shrink: 0;
+  min-height: 24px; min-width: 24px;
+}
+.toast-close:hover { color: var(--white); }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.footer {
+  background: var(--navy);
+  color: #D6E4F7;
+  text-align: center;
+  padding: 0.875rem 1rem;
+  font-size: 0.8rem;
+  margin-top: auto;
+}
+.footer p + p { margin-top: 0.25rem; }
+.footer a { color: #A8C8EE; }
+.footer a:hover { color: var(--white); }
+.footer__notice { color: #8AAFD4; font-size: 0.75rem; }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 900px) {
+  .metrics-row { grid-template-columns: repeat(2, 1fr); }
+  .split-view  { grid-template-columns: 1fr; }
+  .navbar__links { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .btn--primary { border: 2px solid ButtonText; }
+  .message__body { border: 1px solid CanvasText; }
+  .metric-card { border: 1px solid CanvasText; }
+}
+  </style>
+</head>
+<body>
+
+<!-- Skip navigation — WCAG 2.4.1 -->
+<a class="skip-nav" href="#main-content">Skip to main content</a>
+
+<!-- SR announcer for live chat region (WCAG 4.1.3) -->
+<div id="chat-sr-announcer"
+     class="sr-only"
+     role="status"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+<!-- Toast container -->
+<div class="toast-container"
+     id="toast-container"
+     aria-live="polite"
+     aria-atomic="false"
+     data-toasts='[
+       {"type":"data","title":"Daily Metrics Push","text":"Settlement rates and resolution times are pushed from ADR Portal daily at 04:00 UTC via the UDAPAnalyticsPush Azure Function.","delay":3000,"duration":10000},
+       {"type":"mcp","title":"Cross-Application Query","text":"The AI assistant queries data aggregated from ADR metrics, Triage classifications, and ARC charge records via the MCP Hub.","delay":5000,"duration":10000},
+       {"type":"info","title":"Row-Level Security","text":"Dashboard data is filtered by office and role. Each user sees only the offices they are authorized to view.","delay":8000,"duration":10000}
+     ]'>
+</div>
+
+<!-- Government banner -->
+<div class="gov-banner">
+  <div class="gov-banner__inner">
+    <span class="gov-flag" aria-hidden="true"></span>
+    <span>An official website of the United States government</span>
+  </div>
+</div>
+
+<!-- Primary navigation — horizontal, matches layout.html -->
+<header role="banner">
+  <nav class="navbar" aria-label="Primary navigation">
+    <div class="navbar__brand">
+      <a href="index.html" class="navbar__logo-link" aria-label="EEOC Analytics Portal home">
+        <div class="navbar__logo-placeholder" aria-hidden="true">EEOC</div>
+      </a>
+      <span class="navbar__title">Analytics Assistant</span>
+    </div>
+
+    <ul class="navbar__links" role="list">
+      <li>
+        <a href="analytics.html" class="navbar__link navbar__link--active" aria-current="page">
+          Dashboards
+        </a>
+      </li>
+      <li>
+        <a href="analytics-chat.html" class="navbar__link">AI Assistant</a>
+      </li>
+      <li>
+        <a href="analytics-search.html" class="navbar__link">Narrative Search</a>
+      </li>
+      <li>
+        <a href="analytics-notebooks.html" class="navbar__link">Notebooks</a>
+      </li>
+      <li>
+        <a href="analytics-catalog.html" class="navbar__link">Data Catalog</a>
+      </li>
+      <li>
+        <a href="analytics-admin.html" class="navbar__link">Access Mgmt</a>
+      </li>
+    </ul>
+
+    <div class="navbar__user" aria-label="User menu">
+      <span class="navbar__username"
+            aria-label="Signed in as D. Gordon">
+        D. Gordon
+      </span>
+      <a href="index.html" class="btn btn--secondary btn--sm">Sign out</a>
+    </div>
+  </nav>
+</header>
+
+<!-- Main content -->
+<main id="main-content" role="main" tabindex="-1">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb">
+        <a href="index.html">EEOC AI Platform</a> /
+        <a href="#">Analytics</a> /
+        Executive Dashboard
+      </div>
+      <h1>Executive Dashboard &mdash; FY2025 Q3</h1>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn btn--ghost btn--sm" type="button"
+              aria-label="Export dashboard data">
+        Export
+      </button>
+      <button class="btn btn--primary btn--sm" type="button"
+              aria-label="Refresh dashboard data">
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== METRICS ROW ===== -->
+  <section aria-label="Key performance indicators">
+    <div class="metrics-row">
+
+      <div class="metric-card">
+        <div class="metric-card__label">National Settlement Rate</div>
+        <div class="metric-card__value">72.3%</div>
+        <div class="metric-card__change metric-card__change--up"
+             aria-label="Up 4.1 percentage points">
+          &#9650; up 4.1 pts
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-card__label">Avg Resolution Time</div>
+        <div class="metric-card__value">41 days</div>
+        <div class="metric-card__change metric-card__change--up"
+             aria-label="Down 6 days from prior quarter">
+          &#9660; down 6 days
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-card__label">Active Mediations</div>
+        <div class="metric-card__value">2,847</div>
+        <div class="metric-card__change metric-card__change--neutral">
+          across all offices
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-card__label">Charges Filed YTD</div>
+        <div class="metric-card__value">14,392</div>
+        <div class="metric-card__change metric-card__change--neutral">
+          +3.2% vs prior year
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== CHARTS ROW: BAR + DOUGHNUT ===== -->
+  <section aria-label="Settlement rate and case composition charts">
+    <div class="split-view">
+
+      <!-- Horizontal bar chart: Settlement Rate by Office -->
+      <div class="content-card">
+        <h2>Settlement Rate by Office</h2>
+        <div class="chart-wrap">
+          <canvas id="chartOfficeRate"
+                  role="img"
+                  aria-label="Horizontal bar chart showing settlement rates by EEOC district office. Philadelphia leads at 81.2 percent; Phoenix is lowest at 63.2 percent.">
+          </canvas>
+        </div>
+        <details>
+          <summary>Chart data is available in the table below.</summary>
+          <table class="chart-data-table" id="tableOfficeRate">
+            <caption class="sr-only">
+              Settlement rates by EEOC district office, FY2025 Q3
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Office</th>
+                <th scope="col">Settlement Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Philadelphia</th><td>81.2%</td></tr>
+              <tr><th scope="row">Chicago</th><td>79.8%</td></tr>
+              <tr><th scope="row">Dallas</th><td>78.4%</td></tr>
+              <tr><th scope="row">New York</th><td>74.1%</td></tr>
+              <tr><th scope="row">Atlanta</th><td>71.3%</td></tr>
+              <tr><th scope="row">Houston</th><td>68.9%</td></tr>
+              <tr><th scope="row">Los Angeles</th><td>66.4%</td></tr>
+              <tr><th scope="row">Phoenix</th><td>63.2%</td></tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+
+      <!-- Doughnut chart: Cases by Protected Basis -->
+      <div class="content-card">
+        <h2>Cases by Protected Basis</h2>
+        <div class="chart-wrap">
+          <canvas id="chartBasis"
+                  role="img"
+                  aria-label="Doughnut chart showing distribution of cases by protected basis. Race is largest at 34.2 percent, followed by Disability 22.1 percent, Sex/Gender 18.7 percent, Age 12.4 percent, Retaliation 8.3 percent, and Other 4.3 percent.">
+          </canvas>
+        </div>
+        <details>
+          <summary>Chart data is available in the table below.</summary>
+          <table class="chart-data-table" id="tableBasis">
+            <caption class="sr-only">
+              Cases by protected basis, FY2025 Q3
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Protected Basis</th>
+                <th scope="col">Percentage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Race</th><td>34.2%</td></tr>
+              <tr><th scope="row">Disability</th><td>22.1%</td></tr>
+              <tr><th scope="row">Sex / Gender</th><td>18.7%</td></tr>
+              <tr><th scope="row">Age</th><td>12.4%</td></tr>
+              <tr><th scope="row">Retaliation</th><td>8.3%</td></tr>
+              <tr><th scope="row">Other</th><td>4.3%</td></tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== LINE CHART: Monthly Mediation Volume ===== -->
+  <section aria-label="Monthly mediation volume trend">
+    <div class="content-card">
+      <h2>Monthly Mediation Volume (FY2025)</h2>
+      <div class="chart-wrap-lg">
+        <canvas id="chartMonthly"
+                role="img"
+                aria-label="Line chart showing monthly mediation volume October through May FY2025. Settled cases trend upward from 284 in October to 356 in May. No-agreement cases trend downward from 118 in October to 91 in May.">
+        </canvas>
+      </div>
+      <details>
+        <summary>Chart data is available in the table below.</summary>
+        <table class="chart-data-table" id="tableMonthly">
+          <caption class="sr-only">
+            Monthly mediation volume by outcome, FY2025 October through May
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Month</th>
+              <th scope="col">Settled</th>
+              <th scope="col">No Agreement</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">October</th><td>284</td><td>118</td></tr>
+            <tr><th scope="row">November</th><td>312</td><td>105</td></tr>
+            <tr><th scope="row">December</th><td>298</td><td>112</td></tr>
+            <tr><th scope="row">January</th><td>327</td><td>98</td></tr>
+            <tr><th scope="row">February</th><td>341</td><td>88</td></tr>
+            <tr><th scope="row">March</th><td>318</td><td>102</td></tr>
+            <tr><th scope="row">April</th><td>335</td><td>95</td></tr>
+            <tr><th scope="row">May</th><td>356</td><td>91</td></tr>
+          </tbody>
+        </table>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== AI ANALYTICS ASSISTANT ===== -->
+  <section aria-label="AI Analytics Assistant chat">
+    <div class="chat-panel" data-chat-id="analytics">
+
+      <div class="chat-panel__header">
+        <h2 class="chat-panel__title">
+          <span class="pulse-dot" role="img" aria-label="Online"></span>
+          Ask about EEOC data
+        </h2>
+        <span class="chat-panel__meta">MCP Hub &mdash; Multi-source</span>
+      </div>
+
+      <!-- Message list: role="log" for structural semantics.
+           New-message announcements go to #chat-sr-announcer (WCAG 4.1.3). -->
+      <div class="chat-messages"
+           role="log"
+           aria-live="polite"
+           aria-atomic="false"
+           aria-label="AI assistant conversation">
+
+        <!-- Welcome message -->
+        <article class="message message--assistant" aria-label="Assistant message">
+          <div class="message__avatar" aria-hidden="true">AI</div>
+          <div class="message__body">
+            <p>Hello, <strong>D. Gordon</strong>. I am the EEOC Analytics Assistant.</p>
+            <p>I can help you explore workforce and charge data using natural language.
+               I generate SQL queries against governed views — I can only read data, not modify it.</p>
+            <p>Try asking: <em>"Which offices need additional mediator staffing?"</em></p>
+          </div>
+        </article>
+
+        <!-- User message -->
+        <article class="message message--user" aria-label="You said">
+          <div class="message__avatar" aria-hidden="true">DG</div>
+          <div class="message__body">
+            Which offices need additional mediator staffing?
+          </div>
+        </article>
+
+        <!-- Assistant response -->
+        <article class="message message--assistant" aria-label="Assistant response">
+          <div class="message__avatar" aria-hidden="true">AI</div>
+          <div class="message__body">
+            <p>Phoenix and Los Angeles are operating above capacity. Phoenix has
+               34 active cases per mediator versus the 22-case national average,
+               contributing to the lowest settlement rate (63.2%). Los Angeles processes
+               a higher proportion of multi-basis charges (41% vs 28% nationally),
+               extending average resolution time to 58 days.</p>
+            <p>Denver (68% utilization) and Seattle (71%) have capacity for 8&ndash;12
+               temporary reassignments without impacting their caseloads.</p>
+            <div class="message__audit" aria-label="Audit information">
+              <span>HMAC-SHA256 verified</span>
+              <span>|</span>
+              <span>Audit ID: ana-5d8e2f1c</span>
+              <span>|</span>
+              <span>Human review required</span>
+            </div>
+          </div>
+        </article>
+
+      </div><!-- /.chat-messages -->
+
+      <!-- Suggested queries -->
+      <div class="chat-suggest-row" role="group" aria-label="Suggested queries">
+        <button class="chat-suggest" type="button">Settlement trends by quarter</button>
+        <button class="chat-suggest" type="button">Top offices by charge volume</button>
+        <button class="chat-suggest" type="button">Resource utilization analysis</button>
+        <button class="chat-suggest" type="button">Mediation success by basis</button>
+      </div>
+
+      <!-- Input row -->
+      <div class="chat-input-area" role="form" aria-label="Ask a question">
+        <label for="chatInput" class="sr-only">Ask a question about EEOC data</label>
+        <input type="text"
+               id="chatInput"
+               class="chat-input"
+               placeholder="Ask a question about EEOC data..."
+               maxlength="2000"
+               autocomplete="off"
+               aria-label="Your analytics question">
+        <button class="btn btn--primary btn--sm"
+                type="button"
+                id="chatSend"
+                aria-label="Send query to AI assistant">
+          &#9658; Send
+        </button>
+      </div>
+
+    </div><!-- /.chat-panel -->
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer" role="contentinfo">
+  <p>
+    <strong>U.S. Equal Employment Opportunity Commission</strong> |
+    <a href="https://www.eeoc.gov/accessibility">Accessibility</a> |
+    <a href="https://www.eeoc.gov/privacy-policy">Privacy Policy</a> |
+    <a href="#">Section 508</a>
+  </p>
+  <p class="footer__notice">
+    This system contains U.S. Government information. Unauthorized access is prohibited.
+    Usage is monitored and logged for security and compliance purposes.
+  </p>
+</footer>
+
+<!-- Chart.js 4.4.9 (pinned) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+
+<!-- Demo JS (toast system, chat wiring) -->
+<script src="js/demo.js"></script>
+
+<script>
+/* ---------------------------------------------------------------
+   Chart initialization — all colors verified >= 3:1 on white canvas.
+   Solid rgb() only — rgba() with opacity can drop below WCAG 1.4.11 3:1.
+   Source: narrative_search.html and 508 skill chart color table.
+--------------------------------------------------------------- */
+
+Chart.defaults.font.family = '"Source Sans Pro", "Helvetica Neue", Arial, sans-serif';
+/* #4A5568 — var(--gray-700) — 4.6:1 on white */
+Chart.defaults.color = '#4A5568';
+
+/* ---- 1. Settlement Rate by Office (horizontal bar) ---- */
+(function () {
+  'use strict';
+  var ctx = document.getElementById('chartOfficeRate').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: [
+        'Philadelphia', 'Chicago', 'Dallas', 'New York',
+        'Atlanta', 'Houston', 'Los Angeles', 'Phoenix'
+      ],
+      datasets: [{
+        label: 'Settlement Rate (%)',
+        data: [81.2, 79.8, 78.4, 74.1, 71.3, 68.9, 66.4, 63.2],
+        /*
+         * rgb(0, 51, 102) = var(--navy) #003366 — ~12:1 on white.
+         * Solid rgb() required; rgba opacity blends below 3:1 (WCAG 1.4.11).
+         */
+        backgroundColor: 'rgb(0, 51, 102)',
+        borderColor: 'rgb(0, 51, 102)',
+        borderWidth: 0,
+        borderRadius: 3
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function (c) { return ' ' + c.parsed.x + '%'; }
+          }
+        }
+      },
+      scales: {
+        x: {
+          min: 50, max: 100,
+          ticks: { callback: function (v) { return v + '%'; } },
+          grid: { color: 'rgb(226, 232, 240)' }
+        },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+}());
+
+/* ---- 2. Cases by Protected Basis (doughnut) ---- */
+(function () {
+  'use strict';
+  var ctx = document.getElementById('chartBasis').getContext('2d');
+  /*
+   * All segment colors verified >= 3:1 against white (#fff) canvas (WCAG 1.4.11):
+   *   #003366 ~12:1   #0066CC ~4.5:1   #006400 ~7.5:1
+   *   #7f6500 ~5.6:1   #b02a37 ~6.5:1   #4A5568 ~4.6:1
+   */
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Race', 'Disability', 'Sex / Gender', 'Age', 'Retaliation', 'Other'],
+      datasets: [{
+        data: [34.2, 22.1, 18.7, 12.4, 8.3, 4.3],
+        backgroundColor: [
+          'rgb(0, 51, 102)',    /* Race        — #003366 */
+          'rgb(0, 102, 204)',   /* Disability  — #0066CC */
+          'rgb(0, 100, 0)',     /* Sex/Gender  — #006400 */
+          'rgb(127, 101, 0)',   /* Age         — #7f6500 */
+          'rgb(176, 42, 55)',   /* Retaliation — #b02a37 */
+          'rgb(74, 85, 104)'   /* Other       — #4A5568 */
+        ],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      cutout: '55%',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: { padding: 12, font: { size: 11 } }
+        },
+        tooltip: {
+          callbacks: {
+            label: function (c) { return ' ' + c.label + ': ' + c.parsed + '%'; }
+          }
+        }
+      }
+    }
+  });
+}());
+
+/* ---- 3. Monthly Mediation Volume (line) ---- */
+(function () {
+  'use strict';
+  var ctx = document.getElementById('chartMonthly').getContext('2d');
+  /*
+   * Settled:      rgb(0, 100, 0)    = #006400 — 7.5:1 on white
+   * No Agreement: rgb(176, 42, 55)  = #b02a37 — 6.5:1 on white
+   */
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
+      datasets: [
+        {
+          label: 'Settled',
+          data: [284, 312, 298, 327, 341, 318, 335, 356],
+          borderColor: 'rgb(0, 100, 0)',
+          backgroundColor: 'rgb(0, 100, 0)',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.3,
+          fill: false
+        },
+        {
+          label: 'No Agreement',
+          data: [118, 105, 112, 98, 88, 102, 95, 91],
+          borderColor: 'rgb(176, 42, 55)',
+          backgroundColor: 'rgb(176, 42, 55)',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.3,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { font: { size: 12 }, padding: 16, usePointStyle: true }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          grid: { color: 'rgb(226, 232, 240)' },
+          ticks: { stepSize: 50 }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}());
+
+/* ---- Chat panel wiring (wraps demo.js initChat) ---- */
+(function () {
+  'use strict';
+  /* demo.js initChat() fires on DOMContentLoaded and wires .chat-panel
+     the same way it wires .chat-container. The class name differs, so
+     wire the single chat panel here directly in addition to demo.js. */
+  var panel = document.querySelector('.chat-panel');
+  if (!panel) return;
+
+  var input    = document.getElementById('chatInput');
+  var sendBtn  = document.getElementById('chatSend');
+  var messages = panel.querySelector('.chat-messages');
+  var announcer = document.getElementById('chat-sr-announcer');
+
+  var responses = [
+    { text: 'In FY2025 Q3, the ADR program resolved 847 mediations across 15 district offices. The national settlement rate was 72.3%, up 4.1 percentage points from Q2. Philadelphia (81.2%), Chicago (79.8%), and Dallas (78.4%) led in settlement rates.', auditId: 'ana-7f3a9e2c' },
+    { text: 'Race-based charges accounted for 34.2% of mediations (290 cases), followed by disability (22.1%) and sex/gender (18.7%). Settlement rates were highest for age-based charges (78.9%) and lowest for retaliation claims (64.1%).', auditId: 'ana-2b8c4d1e' },
+    { text: 'Phoenix and Los Angeles have the lowest settlement rates at 63.2% and 66.4%. Phoenix operates at 34 cases per mediator versus the 22-case national average. Denver (68% utilization) and Seattle (71%) have capacity for temporary reassignments.', auditId: 'ana-9d5f7a3b' }
+  ];
+  var idx = 0;
+
+  function sendMessage() {
+    var text = input.value.trim();
+    if (!text) return;
+
+    var userEl = document.createElement('article');
+    userEl.className = 'message message--user';
+    userEl.setAttribute('aria-label', 'You said');
+    userEl.innerHTML = '<div class="message__avatar" aria-hidden="true">DG</div>' +
+                       '<div class="message__body"></div>';
+    userEl.querySelector('.message__body').textContent = text;
+    messages.appendChild(userEl);
+    input.value = '';
+    messages.scrollTop = messages.scrollHeight;
+
+    setTimeout(function () {
+      var r = responses[idx % responses.length];
+      idx++;
+
+      var aiEl = document.createElement('article');
+      aiEl.className = 'message message--assistant';
+      aiEl.setAttribute('aria-label', 'Assistant response');
+      aiEl.innerHTML =
+        '<div class="message__avatar" aria-hidden="true">AI</div>' +
+        '<div class="message__body">' +
+          '<p></p>' +
+          '<div class="message__audit" aria-label="Audit information">' +
+            '<span>HMAC-SHA256 verified</span>' +
+            '<span>|</span>' +
+            '<span>Audit ID: ' + r.auditId + '</span>' +
+            '<span>|</span>' +
+            '<span>Human review required</span>' +
+          '</div>' +
+        '</div>';
+      aiEl.querySelector('p').textContent = r.text;
+      messages.appendChild(aiEl);
+      messages.scrollTop = messages.scrollHeight;
+
+      /* Announce new message to screen readers (WCAG 4.1.3) */
+      if (announcer) {
+        announcer.textContent = '';
+        setTimeout(function () {
+          announcer.textContent = 'Assistant: ' + r.text;
+        }, 100);
+      }
+    }, 600);
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  panel.querySelectorAll('.chat-suggest').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      input.value = btn.textContent.trim();
+      sendMessage();
+    });
+  });
+}());
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<!--
+  analytics-search.html — Narrative Search interface (demo mockup).
+  Mirrors the ai-assistant narrative_search.html structure and the analytics.html
+  custom CSS framework. Section 508 / WCAG 2.1 AA compliant.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <title>Narrative Search — EEOC Unified Data Analytics Platform</title>
+
+  <!-- Chart.js 4.4.9 (pinned) — loaded before body so the chart renders on DOMContentLoaded -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+
+  <style>
+/* ============================================================
+   CSS Custom Properties — matches analytics.html / ai-assistant app.css
+   ============================================================ */
+:root {
+  --navy:        #003366;
+  --blue:        #0066CC;
+  --gold:        #996600;
+  --light-blue:  #E8F1FB;
+  --white:       #FFFFFF;
+  --gray-100:    #F5F7FA;
+  --gray-200:    #E2E8F0;
+  --gray-700:    #4A5568;
+  --gray-900:    #1A1A1A;
+  --success:     #006400;
+  --error:       #B22222;
+  --focus-ring:  3px solid #005FCC;
+
+  --font-sans:   "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+  --font-mono:   "Source Code Pro", "Courier New", monospace;
+
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.12);
+  --shadow-md:   0 4px 12px rgba(0,0,0,0.15);
+
+  --nav-height:  56px;
+}
+
+/* ============================================================
+   Reset / base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  color: var(--gray-900);
+  background: var(--gray-100);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+*:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.btn:focus, a:focus, input:focus, button:focus, select:focus, textarea:focus {
+  box-shadow: none !important;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
+}
+
+.skip-nav {
+  position: absolute; top: -100%; left: 0;
+  background: var(--navy); color: var(--white);
+  padding: 8px 16px; z-index: 9999;
+  font-weight: 600; text-decoration: none;
+  border-radius: 0 0 var(--radius-sm) 0;
+}
+.skip-nav:focus { top: 0; }
+
+/* ============================================================
+   Government banner
+   ============================================================ */
+.gov-banner {
+  background: var(--gray-200);
+  font-size: 0.8rem;
+  padding: 4px 0;
+  border-bottom: 1px solid #C5D0DC;
+}
+.gov-banner__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--gray-700);
+}
+
+.gov-flag {
+  display: inline-block;
+  width: 16px; height: 11px;
+  background: linear-gradient(
+    to bottom,
+    #B22234 0%, #B22234 14.3%,
+    #fff 14.3%, #fff 28.6%,
+    #B22234 28.6%, #B22234 42.9%,
+    #fff 42.9%, #fff 57.1%,
+    #B22234 57.1%, #B22234 71.4%,
+    #fff 71.4%, #fff 85.7%,
+    #B22234 85.7%, #B22234 100%
+  );
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Navbar — horizontal
+   ============================================================ */
+.navbar {
+  background: var(--navy);
+  border-bottom: 3px solid var(--gold);
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar__brand { display: flex; align-items: center; gap: 0.75rem; }
+
+.navbar__logo-placeholder {
+  height: 36px; width: 120px;
+  background: rgba(255,255,255,0.15);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700; color: var(--white);
+  letter-spacing: 0.05em;
+}
+
+.navbar__title {
+  color: var(--white);
+  font-size: 1.1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.navbar__links {
+  display: flex; list-style: none; gap: 0.25rem;
+  flex: 1; justify-content: center;
+}
+.navbar__link {
+  color: #D6E4F7; text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  transition: background 0.15s, color 0.15s;
+}
+.navbar__link:hover,
+.navbar__link:focus { color: var(--white); background: rgba(255,255,255,0.12); }
+.navbar__link--active {
+  color: var(--white);
+  border-bottom: 2px solid var(--gold);
+  padding-bottom: calc(0.5rem - 2px);
+}
+
+.navbar__user { display: flex; align-items: center; gap: 0.75rem; white-space: nowrap; }
+.navbar__username { color: #D6E4F7; font-size: 0.9rem; }
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 0.4rem;
+  font-family: var(--font-sans); font-size: 0.95rem; font-weight: 600;
+  line-height: 1;
+  min-height: 44px; min-width: 44px;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.btn--primary   { background: var(--navy); color: var(--white); }
+.btn--primary:hover, .btn--primary:focus { background: #002244; }
+.btn--secondary { background: var(--white); border-color: var(--navy); color: var(--navy); }
+.btn--secondary:hover, .btn--secondary:focus { background: var(--light-blue); }
+.btn--ghost     { background: transparent; color: var(--gray-700); border-color: var(--gray-200); }
+.btn--ghost:hover, .btn--ghost:focus { background: var(--gray-200); }
+.btn--sm        { min-height: 36px; padding: 0.3rem 0.875rem; font-size: 0.875rem; }
+
+/* ============================================================
+   Main content area
+   ============================================================ */
+main {
+  flex: 1;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* Page header */
+.page-header { margin-bottom: 1.25rem; }
+
+.page-header h1 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.25rem;
+}
+
+.breadcrumb {
+  font-size: 0.8rem;
+  color: var(--gray-700);
+  margin-bottom: 0.4rem;
+}
+.breadcrumb a { color: var(--blue); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+.page-subtitle {
+  font-size: 0.9rem;
+  color: var(--gray-700);
+}
+
+/* ============================================================
+   Search form
+   ============================================================ */
+.search-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.search-input-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+  margin-bottom: 0.75rem;
+}
+
+.search-input {
+  flex: 1;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--gray-700);
+  border-radius: var(--radius-sm);
+  min-height: 44px;
+}
+.search-input:focus { border-color: var(--blue); }
+
+.search-help {
+  font-size: 0.8rem;
+  color: var(--gray-700);
+  margin-bottom: 0.875rem;
+}
+.search-help code {
+  font-family: var(--font-mono);
+  background: var(--gray-100);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+
+.search-type-fieldset {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.search-type-legend {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--navy);
+  padding: 0 4px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.radio-description {
+  font-size: 0.75rem;
+  color: var(--gray-700);
+}
+
+/* ============================================================
+   Search body: filter sidebar + results
+   ============================================================ */
+.search-body {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+/* Filter sidebar */
+.filter-sidebar {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.filter-sidebar__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.875rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.filter-group {
+  margin-bottom: 0.875rem;
+}
+
+.filter-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gray-700);
+  margin-bottom: 0.25rem;
+}
+
+.filter-select,
+.filter-input {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--gray-700);
+  border-radius: var(--radius-sm);
+  min-height: 36px;
+}
+.filter-select:focus,
+.filter-input:focus { border-color: var(--blue); }
+
+.filter-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+/* ============================================================
+   Results area
+   ============================================================ */
+.results-area {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Status bar */
+.search-status {
+  font-size: 0.85rem;
+  color: var(--gray-700);
+  padding: 0.5rem 0.875rem;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+}
+
+.search-status--results {
+  background: #EEF4EC;
+  border-color: var(--success);
+  color: var(--gray-900);
+  font-weight: 600;
+}
+
+/* Trend chart card */
+.trend-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.trend-card h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 1rem;
+}
+
+.chart-wrap {
+  position: relative;
+  height: 200px;
+}
+
+/* Accessible data table inside <details> */
+.chart-data-table {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  width: 100%;
+  border-collapse: collapse;
+}
+.chart-data-table th,
+.chart-data-table td {
+  padding: 4px 8px;
+  border: 1px solid var(--gray-200);
+  text-align: left;
+}
+.chart-data-table thead th {
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 700;
+}
+.chart-data-table tbody tr:hover { background: var(--light-blue); }
+
+details summary {
+  font-size: 0.75rem;
+  color: var(--blue);
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+details summary:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Results table card */
+.results-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.875rem;
+}
+
+.results-header h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.results-table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-200);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  min-width: 680px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 7px 10px;
+  border: 1px solid var(--gray-200);
+  text-align: left;
+  vertical-align: top;
+}
+
+.data-table thead th {
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.data-table tbody tr:hover { background: var(--light-blue); }
+
+/* Highlight matching terms in excerpt */
+mark {
+  background: #FFF3CD;
+  color: var(--gray-900);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.relevance-bar {
+  display: inline-block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--navy);
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.relevance-score {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+.results-row-count {
+  font-size: 0.8rem;
+  color: var(--gray-700);
+  margin-top: 0.5rem;
+}
+
+/* Excerpt cell */
+.narrative-snippet {
+  max-width: 360px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* Status badge */
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Solid bg + foreground combinations — all >= 4.5:1 verified */
+.status-badge--open     { background: #D1E8FF; color: #003366; }
+.status-badge--closed   { background: #E2E8F0; color: #1A1A1A; }
+.status-badge--mediation { background: #E8F5E9; color: #006400; }
+
+/* Data tier notice */
+.data-tier-notice {
+  background: var(--light-blue);
+  border: 1px solid #C5D0DC;
+  border-radius: var(--radius-sm);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8rem;
+  color: var(--gray-900);
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.footer {
+  background: var(--navy);
+  color: #D6E4F7;
+  text-align: center;
+  padding: 0.875rem 1rem;
+  font-size: 0.8rem;
+  margin-top: auto;
+}
+.footer p + p { margin-top: 0.25rem; }
+.footer a { color: #A8C8EE; }
+.footer a:hover { color: var(--white); }
+.footer__notice { color: #8AAFD4; font-size: 0.75rem; }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 900px) {
+  .search-body { grid-template-columns: 1fr; }
+  .navbar__links { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .btn--primary { border: 2px solid ButtonText; }
+  .status-badge { border: 1px solid CanvasText; }
+  .data-table thead th { border: 1px solid CanvasText; }
+}
+  </style>
+</head>
+<body>
+
+<!-- Skip navigation — WCAG 2.4.1 -->
+<a class="skip-nav" href="#main-content">Skip to main content</a>
+
+<!-- Government banner -->
+<div class="gov-banner">
+  <div class="gov-banner__inner">
+    <span class="gov-flag" aria-hidden="true"></span>
+    <span>An official website of the United States government</span>
+  </div>
+</div>
+
+<!-- Primary navigation -->
+<header role="banner">
+  <nav class="navbar" aria-label="Primary navigation">
+    <div class="navbar__brand">
+      <a href="analytics.html" class="navbar__logo-link" aria-label="EEOC Analytics Portal home">
+        <div class="navbar__logo-placeholder" aria-hidden="true">EEOC</div>
+      </a>
+      <span class="navbar__title">Analytics Assistant</span>
+    </div>
+
+    <ul class="navbar__links" role="list">
+      <li>
+        <a href="analytics.html" class="navbar__link">Dashboards</a>
+      </li>
+      <li>
+        <a href="analytics-chat.html" class="navbar__link">AI Assistant</a>
+      </li>
+      <li>
+        <a href="analytics-search.html" class="navbar__link navbar__link--active" aria-current="page">
+          Narrative Search
+        </a>
+      </li>
+      <li>
+        <a href="analytics-notebooks.html" class="navbar__link">Notebooks</a>
+      </li>
+      <li>
+        <a href="analytics-catalog.html" class="navbar__link">Data Catalog</a>
+      </li>
+      <li>
+        <a href="analytics-admin.html" class="navbar__link">Access Mgmt</a>
+      </li>
+    </ul>
+
+    <div class="navbar__user" aria-label="User menu">
+      <span class="navbar__username" aria-label="Signed in as D. Gordon">
+        D. Gordon
+      </span>
+      <a href="index.html" class="btn btn--secondary btn--sm">Sign out</a>
+    </div>
+  </nav>
+</header>
+
+<main id="main-content" role="main" tabindex="-1">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="analytics.html">EEOC Analytics</a> /
+      <span aria-current="page">Narrative Search</span>
+    </nav>
+    <h1>Narrative Search</h1>
+    <p class="page-subtitle">
+      Search EEOC charge narratives for keywords, phrases, and patterns.
+      Results are filtered by your role and region access.
+    </p>
+  </div>
+
+  <!-- Search form -->
+  <div class="search-card">
+    <form id="narrative-search-form"
+          role="search"
+          aria-label="Search charge narratives">
+
+      <div class="search-input-group">
+        <label for="search-input" class="sr-only">Search charge narratives</label>
+        <input type="text"
+               id="search-input"
+               class="search-input"
+               value="retaliation after internal complaint"
+               placeholder="Search charge narratives..."
+               maxlength="500"
+               required
+               aria-required="true"
+               aria-label="Search charge narratives"
+               aria-describedby="search-help-text">
+        <button type="submit"
+                id="search-btn"
+                class="btn btn--primary"
+                aria-label="Execute narrative search">
+          Search
+        </button>
+      </div>
+
+      <p id="search-help-text" class="search-help">
+        Use quotes for exact phrases, AND/OR/NOT for boolean logic, NEAR for proximity.
+        Example: <code>"hostile work environment" AND retaliation</code>
+      </p>
+
+      <fieldset class="search-type-fieldset">
+        <legend class="search-type-legend">Search Type</legend>
+        <label class="radio-label">
+          <input type="radio"
+                 name="search_type"
+                 value="CONTAINS"
+                 checked
+                 aria-describedby="contains-desc">
+          <span>Exact Match (CONTAINS)</span>
+        </label>
+        <span id="contains-desc" class="radio-description">
+          Boolean matching with support for phrases, AND, OR, NOT, NEAR operators.
+        </span>
+        <label class="radio-label">
+          <input type="radio"
+                 name="search_type"
+                 value="FREETEXT"
+                 aria-describedby="freetext-desc">
+          <span>Fuzzy Match (FREETEXT)</span>
+        </label>
+        <span id="freetext-desc" class="radio-description">
+          Stemmed and synonym-aware matching for broader results.
+        </span>
+      </fieldset>
+    </form>
+  </div>
+
+  <!-- Search body -->
+  <div class="search-body">
+
+    <!-- Filter sidebar -->
+    <aside class="filter-sidebar" aria-label="Search filters">
+      <h2 class="filter-sidebar__title">Filters</h2>
+
+      <div class="filter-group">
+        <label for="filter-basis" class="filter-label">Basis</label>
+        <select id="filter-basis" class="filter-select" aria-label="Filter by discrimination basis">
+          <option value="">All Bases</option>
+          <option value="Retaliation" selected>Retaliation</option>
+          <option value="Race">Race</option>
+          <option value="Sex">Sex</option>
+          <option value="Age">Age</option>
+          <option value="Disability">Disability</option>
+          <option value="National Origin">National Origin</option>
+          <option value="Religion">Religion</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-region" class="filter-label">Region</label>
+        <select id="filter-region" class="filter-select" aria-label="Filter by EEOC region">
+          <option value="">All Regions</option>
+          <option value="Northeast">Northeast</option>
+          <option value="Southeast">Southeast</option>
+          <option value="Midwest">Midwest</option>
+          <option value="Southwest">Southwest</option>
+          <option value="West">West</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-fy-start" class="filter-label">Fiscal Year From</label>
+        <input type="number"
+               id="filter-fy-start"
+               class="filter-input"
+               min="2000"
+               max="2030"
+               value="2024"
+               aria-label="Fiscal year range start">
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-fy-end" class="filter-label">Fiscal Year To</label>
+        <input type="number"
+               id="filter-fy-end"
+               class="filter-input"
+               min="2000"
+               max="2030"
+               value="2025"
+               aria-label="Fiscal year range end">
+      </div>
+
+      <div class="filter-actions">
+        <button id="apply-filters-btn"
+                class="btn btn--secondary btn--sm"
+                type="button"
+                aria-label="Apply filters to search results">
+          Apply Filters
+        </button>
+        <button id="clear-filters-btn"
+                class="btn btn--ghost btn--sm"
+                type="button"
+                aria-label="Clear all filters">
+          Clear Filters
+        </button>
+      </div>
+    </aside>
+
+    <!-- Results area -->
+    <div class="results-area" role="region" aria-label="Search results">
+
+      <!-- Status live region -->
+      <div id="search-status"
+           class="search-status search-status--results"
+           role="status"
+           aria-live="polite"
+           aria-atomic="true">
+        5 matching charges found in 142ms &mdash; showing results for:
+        <em>retaliation after internal complaint</em>
+      </div>
+
+      <!-- Trend chart -->
+      <section class="trend-card" aria-labelledby="trend-chart-heading">
+        <h2 id="trend-chart-heading">Retaliation Charges &mdash; Monthly Trend (FY2025)</h2>
+        <div class="chart-wrap">
+          <canvas id="trend-chart"
+                  role="img"
+                  aria-label="Bar chart showing retaliation charge counts by month for FY2025. Volume peaks in March at 412 charges and is lowest in October at 287.">
+          </canvas>
+        </div>
+        <details>
+          <summary>Chart data is available in the table below.</summary>
+          <table class="chart-data-table">
+            <caption class="sr-only">
+              Retaliation charge counts by month, FY2025 October through September
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Month</th>
+                <th scope="col">Retaliation Charges</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">October</th><td>287</td></tr>
+              <tr><th scope="row">November</th><td>304</td></tr>
+              <tr><th scope="row">December</th><td>298</td></tr>
+              <tr><th scope="row">January</th><td>321</td></tr>
+              <tr><th scope="row">February</th><td>345</td></tr>
+              <tr><th scope="row">March</th><td>412</td></tr>
+              <tr><th scope="row">April</th><td>388</td></tr>
+              <tr><th scope="row">May</th><td>363</td></tr>
+              <tr><th scope="row">June</th><td>341</td></tr>
+              <tr><th scope="row">July</th><td>329</td></tr>
+              <tr><th scope="row">August</th><td>356</td></tr>
+              <tr><th scope="row">September</th><td>371</td></tr>
+            </tbody>
+          </table>
+        </details>
+      </section>
+
+      <!-- Results table -->
+      <section class="results-card" aria-labelledby="results-heading">
+        <div class="results-header">
+          <h2 id="results-heading">Search Results</h2>
+          <button id="export-csv-btn"
+                  class="btn btn--secondary btn--sm"
+                  type="button"
+                  aria-label="Export search results as CSV">
+            Export CSV
+          </button>
+        </div>
+
+        <div class="results-table-wrapper"
+             role="region"
+             tabindex="0"
+             aria-label="Scrollable search results table">
+          <table id="results-table" class="data-table" aria-label="Narrative search results">
+            <caption class="sr-only">
+              Charge records matching search query: retaliation after internal complaint
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Charge ID</th>
+                <th scope="col">Basis</th>
+                <th scope="col">Region</th>
+                <th scope="col">Date Filed</th>
+                <th scope="col">Status</th>
+                <th scope="col">Narrative Excerpt</th>
+                <th scope="col">Relevance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">ADR-2025-44821</th>
+                <td>Retaliation</td>
+                <td>Northeast</td>
+                <td>2025-02-14</td>
+                <td><span class="status-badge status-badge--mediation">In Mediation</span></td>
+                <td class="narrative-snippet">
+                  Charging party filed an internal complaint with HR on January 3, 2025.
+                  Within two weeks, supervisor reduced hours and removed duties. Charging party
+                  alleges <mark>retaliation after internal complaint</mark> filing per 42 U.S.C. &sect;2000e-3.
+                </td>
+                <td class="relevance-score">
+                  <span class="relevance-bar" style="width:44px" aria-hidden="true"></span>
+                  0.94
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">ADR-2025-39107</th>
+                <td>Retaliation, Sex</td>
+                <td>Midwest</td>
+                <td>2025-01-07</td>
+                <td><span class="status-badge status-badge--open">Open</span></td>
+                <td class="narrative-snippet">
+                  Respondent terminated charging party three days after she filed an
+                  <mark>internal complaint</mark> regarding pay disparity. Charging party
+                  contends termination was <mark>retaliation</mark> for protected activity
+                  and that similarly situated male employees were not disciplined.
+                </td>
+                <td class="relevance-score">
+                  <span class="relevance-bar" style="width:40px" aria-hidden="true"></span>
+                  0.91
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">ADR-2025-51334</th>
+                <td>Retaliation</td>
+                <td>Southeast</td>
+                <td>2025-03-22</td>
+                <td><span class="status-badge status-badge--mediation">In Mediation</span></td>
+                <td class="narrative-snippet">
+                  Following an <mark>internal complaint</mark> about a hostile work environment,
+                  charging party was transferred to a lower-visibility role. Charging party states
+                  the transfer constitutes adverse action and <mark>retaliation</mark>
+                  for participation in a protected activity.
+                </td>
+                <td class="relevance-score">
+                  <span class="relevance-bar" style="width:37px" aria-hidden="true"></span>
+                  0.88
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">ADR-2024-98742</th>
+                <td>Retaliation, Race</td>
+                <td>Southwest</td>
+                <td>2024-11-30</td>
+                <td><span class="status-badge status-badge--closed">Settled</span></td>
+                <td class="narrative-snippet">
+                  Charging party submitted a written <mark>internal complaint</mark>
+                  alleging racial harassment. Respondent placed charging party on a
+                  performance improvement plan two weeks later. Charging party asserts
+                  the PIP was pretextual <mark>retaliation</mark>.
+                </td>
+                <td class="relevance-score">
+                  <span class="relevance-bar" style="width:33px" aria-hidden="true"></span>
+                  0.84
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">ADR-2025-22986</th>
+                <td>Retaliation, Disability</td>
+                <td>West</td>
+                <td>2025-04-10</td>
+                <td><span class="status-badge status-badge--open">Open</span></td>
+                <td class="narrative-snippet">
+                  After charging party requested reasonable accommodation and filed an
+                  <mark>internal complaint</mark> when it was denied, respondent
+                  changed shift assignments, increasing commute by 90 minutes.
+                  Charging party alleges this is <mark>retaliation after</mark> protected
+                  activity under ADA and Title VII.
+                </td>
+                <td class="relevance-score">
+                  <span class="relevance-bar" style="width:32px" aria-hidden="true"></span>
+                  0.81
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="results-row-count" aria-live="polite">
+          Showing 5 results. Data access: Tier 2 — de-identified excerpts.
+        </p>
+      </section>
+
+      <!-- Data access tier notice -->
+      <div class="data-tier-notice" role="note">
+        <strong>Data Access Level:</strong>
+        Tier 2 &mdash; De-identified narrative snippets available.
+        Results are filtered by your role (Analyst) with national access.
+      </div>
+
+    </div><!-- /.results-area -->
+  </div><!-- /.search-body -->
+
+</main>
+
+<!-- Footer -->
+<footer class="footer" role="contentinfo">
+  <p>
+    <strong>U.S. Equal Employment Opportunity Commission</strong> |
+    <a href="https://www.eeoc.gov/accessibility">Accessibility</a> |
+    <a href="https://www.eeoc.gov/privacy-policy">Privacy Policy</a> |
+    <a href="#">Section 508</a>
+  </p>
+  <p class="footer__notice">
+    This system contains U.S. Government information. Unauthorized access is prohibited.
+    Usage is monitored and logged for security and compliance purposes.
+  </p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  Chart.defaults.font.family = '"Source Sans Pro", "Helvetica Neue", Arial, sans-serif';
+  /* #4A5568 — var(--gray-700) — 4.6:1 on white */
+  Chart.defaults.color = '#4A5568';
+
+  /*
+   * Retaliation charges monthly trend — bar chart.
+   * Color: rgb(0, 82, 136) = #005288 — ~5.5:1 on white (WCAG 1.4.11 passes 3:1).
+   * Solid rgb() only — rgba() with opacity can drop below 3:1 on white canvas.
+   */
+  var ctx = document.getElementById('trend-chart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+      datasets: [{
+        label: 'Retaliation Charges',
+        data: [287, 304, 298, 321, 345, 412, 388, 363, 341, 329, 356, 371],
+        backgroundColor: 'rgb(0, 82, 136)',
+        borderColor: 'rgb(0, 82, 136)',
+        borderWidth: 0,
+        borderRadius: 3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function (c) { return ' ' + c.parsed.y + ' charges'; }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          min: 250,
+          grid: { color: 'rgb(226, 232, 240)' },
+          title: { display: true, text: 'Charge Count' },
+          ticks: { stepSize: 50 }
+        },
+        x: {
+          grid: { display: false },
+          title: { display: true, text: 'Month (FY2025)' }
+        }
+      }
+    }
+  });
+
+  /* Search form submission — demo: just scroll to results */
+  var form = document.getElementById('narrative-search-form');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var status = document.getElementById('search-status');
+      var term = document.getElementById('search-input').value.trim();
+      if (status && term) {
+        status.textContent = '5 matching charges found in 142ms — showing results for: ' + term;
+      }
+    });
+  }
+
+  /* Export CSV — builds from visible table rows */
+  var exportBtn = document.getElementById('export-csv-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function () {
+      var rows = [];
+      var headers = [];
+      document.querySelectorAll('#results-table thead th').forEach(function (th) {
+        headers.push('"' + th.textContent.trim() + '"');
+      });
+      rows.push(headers.join(','));
+      document.querySelectorAll('#results-table tbody tr').forEach(function (tr) {
+        var cells = [];
+        tr.querySelectorAll('th, td').forEach(function (cell) {
+          cells.push('"' + cell.textContent.trim().replace(/"/g, '""') + '"');
+        });
+        rows.push(cells.join(','));
+      });
+      var blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      var link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'narrative_search_results.csv';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+  }
+}());
+</script>
+
+</body>
+</html>

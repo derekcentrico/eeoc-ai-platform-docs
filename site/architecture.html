@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Platform Architecture — EEOC AI Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/site.css">
+    <style>
+        /* ---- Architecture page overrides ---- */
+
+        /* Focus indicators per 508 skill */
+        a:focus-visible,
+        .arch-node:focus-visible,
+        button:focus-visible {
+            outline: 2px solid #0a58ca;
+            outline-offset: 2px;
+            box-shadow: none;
+        }
+
+        /* ---- Full architecture diagram ---- */
+        .arch-diagram-full {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem 2rem;
+            margin: 2rem 0;
+            overflow-x: auto;
+        }
+
+        .arch-diagram-full .arch-tier {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 0;
+        }
+
+        .arch-tier-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .arch-divider {
+            border: none;
+            border-top: 1px dashed var(--border);
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        .arch-arrow-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .arch-arrow-row .arrow-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        /* Node variants — accessible contrast checked */
+        .arch-node-arc-legacy {
+            background: #f1f5f9;
+            color: #334155;
+            border: 2px dashed #94a3b8 !important;
+        }
+
+        .arch-node-arc-api {
+            background: #fff1f2;
+            color: #9f1239;
+        }
+
+        .arch-node-mcp {
+            background: var(--eeoc-navy);
+            color: #fff;
+            font-size: 15px;
+            padding: 16px 32px !important;
+        }
+
+        .arch-node-adr {
+            background: #ecfdf5;
+            color: #065f46;
+        }
+
+        .arch-node-triage {
+            background: #fffbeb;
+            color: #78350f;
+        }
+
+        .arch-node-trial {
+            background: #eff6ff;
+            color: #1e3a8a;
+        }
+
+        .arch-node-ochco {
+            background: #faf5ff;
+            color: #4c1d95;
+        }
+
+        .arch-node-udap {
+            background: #fff7ed;
+            color: #7c2d12;
+        }
+
+        /* ---- MCP detail code block ---- */
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: var(--radius);
+            padding: 1.25rem 1.5rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12px;
+            line-height: 1.7;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .code-block .tok-key { color: #7dd3fc; }
+        .code-block .tok-str { color: #86efac; }
+        .code-block .tok-num { color: #fde68a; }
+        .code-block .tok-punct { color: #94a3b8; }
+
+        /* ---- Auth architecture ---- */
+        .auth-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .auth-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            border-top: 3px solid var(--eeoc-gold);
+        }
+
+        .auth-card .auth-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .auth-card .auth-actor {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--eeoc-gold-dark);
+            margin-bottom: 0.75rem;
+        }
+
+        .auth-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.55;
+        }
+
+        .auth-card .auth-detail {
+            margin-top: 0.75rem;
+            font-size: 11px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            color: var(--text-secondary);
+            background: var(--surface);
+            border-radius: 4px;
+            padding: 6px 10px;
+        }
+
+        /* ---- MCP tool list ---- */
+        .tool-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tool-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-light);
+            font-size: 12px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            color: var(--text-primary);
+        }
+
+        .tool-item .tool-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            flex-shrink: 0;
+        }
+
+        /* ---- Azure table — cell alignment ---- */
+        .az-table th,
+        .az-table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .az-table th:first-child,
+        .az-table td:first-child {
+            text-align: left;
+        }
+
+        .az-check { color: #146c43; font-size: 16px; }
+        .az-dash  { color: #5a6472; font-size: 16px; }
+        .az-opt   {
+            font-size: 10px;
+            font-weight: 600;
+            color: #7f6500;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* ---- Data flow ---- */
+        .data-flow-diagram {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            flex-wrap: wrap;
+            margin: 1.5rem 0;
+        }
+
+        .df-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            background: #fff;
+            text-align: center;
+            min-width: 130px;
+        }
+
+        .df-node .df-icon {
+            font-size: 22px;
+            margin-bottom: 0.5rem;
+        }
+
+        .df-node .df-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+
+        .df-node .df-sub {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .df-arrow {
+            display: flex;
+            align-items: center;
+            padding: 0 0.25rem;
+            color: var(--text-muted);
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .df-arrow-label {
+            font-size: 10px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .df-arrow-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* node accent colors */
+        .df-arc   { border-color: #94a3b8; background: #f8fafc; }
+        .df-api   { border-color: #fca5a5; background: #fff1f2; }
+        .df-store { border-color: #93c5fd; background: #eff6ff; }
+        .df-adr   { border-color: #6ee7b7; background: #ecfdf5; }
+        .df-udap  { border-color: #fdba74; background: #fff7ed; }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 768px) {
+            .data-flow-diagram {
+                flex-direction: column;
+                align-items: center;
+            }
+            .df-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<a href="#main-content" class="visually-hidden-focusable" style="position:absolute;top:-40px;left:0;background:var(--eeoc-navy);color:#fff;padding:8px 16px;border-radius:0 0 6px 0;z-index:9999;transition:top 0.1s;" onfocus="this.style.top='0'" onblur="this.style.top='-40px'">Skip to main content</a>
+
+<!-- Navigation -->
+<nav class="site-nav" aria-label="Site navigation">
+    <a href="index.html" class="brand" aria-label="EEOC AI Platform — home">
+        <div class="brand-icon" aria-hidden="true">EE</div>
+        <div class="brand-text">EEOC <span>AI Platform</span></div>
+    </a>
+    <ul class="nav-links" role="list">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="architecture.html" class="active" aria-current="page">Architecture</a></li>
+        <li><a href="applications.html">Applications</a></li>
+        <li><a href="analytics.html">Analytics</a></li>
+        <li><a href="integration.html">Integration</a></li>
+        <li><a href="security.html">Security</a></li>
+    </ul>
+</nav>
+
+<div class="page-content">
+
+<!-- Page hero -->
+<section class="hero" style="padding:3.5rem 2rem 3rem;">
+    <div class="hero-content">
+        <div class="hero-badge">Platform Architecture</div>
+        <h1>How the Platform <span>Fits Together</span></h1>
+        <p class="subtitle">
+            Seven applications connected through a shared integration layer — ARC data flowing
+            through a single gateway, a central MCP Hub federating tools, and Azure-native
+            services handling auth, storage, and AI at every tier.
+        </p>
+    </div>
+</section>
+
+<main id="main-content">
+
+<!-- ============================================================
+     Section 1: Platform Architecture Diagram
+     ============================================================ -->
+<section class="section">
+    <div class="section-label">System Topology</div>
+    <h2 class="section-title">Platform Architecture Diagram</h2>
+    <p class="section-desc">
+        ARC is the system of record. The Integration API is the only service that talks to ARC.
+        The MCP Hub sits at the center of the platform, routing tool calls between spoke apps.
+        Click any node for details.
+    </p>
+
+    <div class="arch-diagram-full" role="img" aria-label="Platform architecture diagram showing ARC legacy system at the base, ARC Integration API as the gateway, MCP Hub at the center, and five spoke applications: ADR Portal, OFS Triage, OGC Trial Tool, OCHCO Benefits, and UDAP Analytics">
+
+        <!-- Tier: Spoke Applications -->
+        <div class="arch-tier-label">Spoke Applications</div>
+        <div class="arch-tier" id="arch-tier-spokes">
+
+            <div class="arch-node arch-node-adr" data-component="adr"
+                 tabindex="0" role="button"
+                 aria-label="ADR Portal — click for details"
+                 aria-pressed="false">
+                <i class="bi bi-people" aria-hidden="true"></i>
+                ADR Portal
+                <span class="status-badge status-live" style="font-size:9px;" aria-label="Status: Live">Live</span>
+            </div>
+
+            <div class="arch-node arch-node-triage" data-component="triage"
+                 tabindex="0" role="button"
+                 aria-label="OFS Triage — click for details"
+                 aria-pressed="false">
+                <i class="bi bi-funnel" aria-hidden="true"></i>
+                OFS Triage
+            </div>
+
+            <div class="arch-node arch-node-trial" data-component="trial-tool"
+                 tabindex="0" role="button"
+                 aria-label="OGC Trial Tool — click for details"
+                 aria-pressed="false">
+                <i class="bi bi-briefcase" aria-hidden="true"></i>
+                OGC Trial Tool
+            </div>
+
+            <div class="arch-node arch-node-ochco" data-component="ochco"
+                 tabindex="0" role="button"
+                 aria-label="OCHCO Benefits Validation — click for details"
+                 aria-pressed="false">
+                <i class="bi bi-calculator" aria-hidden="true"></i>
+                OCHCO Benefits
+            </div>
+
+            <div class="arch-node arch-node-udap" data-component="dashboard"
+                 tabindex="0" role="button"
+                 aria-label="UDAP Analytics Dashboard — click for details"
+                 aria-pressed="false">
+                <i class="bi bi-graph-up" aria-hidden="true"></i>
+                UDAP Analytics
+            </div>
+
+        </div><!-- /spoke tier -->
+
+        <!-- Arrows up to Hub -->
+        <div class="arch-arrow-row" aria-hidden="true">
+            <i class="bi bi-arrow-up-down"></i>
+            <span class="arrow-label">JSON-RPC 2.0 / MCP tool calls — HTTPS + Managed Identity</span>
+        </div>
+
+        <!-- Tier: MCP Hub -->
+        <div class="arch-tier-label">Integration Layer</div>
+        <div class="arch-tier">
+            <div class="arch-node arch-node-mcp" data-component="mcp-hub"
+                 tabindex="0" role="button"
+                 aria-label="MCP Hub — click for details"
+                 aria-pressed="false">
+                <i class="bi bi-diagram-3" aria-hidden="true"></i>
+                MCP Hub &mdash; Azure Functions + APIM
+            </div>
+        </div>
+
+        <!-- Arrow down to API -->
+        <div class="arch-arrow-row" aria-hidden="true">
+            <i class="bi bi-arrow-down"></i>
+            <span class="arrow-label">REST / charge data ingestion</span>
+        </div>
+
+        <!-- Tier: ARC Integration API -->
+        <div class="arch-tier-label">Data Gateway</div>
+        <div class="arch-tier">
+            <div class="arch-node arch-node-arc-api" data-component="arc-api"
+                 tabindex="0" role="button"
+                 aria-label="ARC Integration API — click for details"
+                 aria-pressed="false">
+                <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+                ARC Integration API
+            </div>
+        </div>
+
+        <!-- Arrow down to ARC -->
+        <div class="arch-arrow-row" aria-hidden="true">
+            <i class="bi bi-arrow-down"></i>
+            <span class="arrow-label">Authenticated SOAP/REST — read-only, watermark-paginated</span>
+        </div>
+
+        <!-- Tier: ARC Legacy -->
+        <div class="arch-tier-label">System of Record</div>
+        <div class="arch-tier">
+            <div class="arch-node arch-node-arc-legacy" data-component="arc"
+                 tabindex="0" role="button"
+                 aria-label="ARC Legacy System — click for details"
+                 aria-pressed="false">
+                <i class="bi bi-server" aria-hidden="true"></i>
+                ARC Legacy System
+                <span style="font-size:10px; color:#64748b; font-weight:400;">(read-only)</span>
+            </div>
+        </div>
+
+        <!-- Detail panel -->
+        <div id="arch-detail" style="display:none; margin-top:1.5rem; text-align:left; max-width:640px; margin-left:auto; margin-right:auto; padding:1.25rem; background:var(--surface); border-radius:var(--radius); border-left:3px solid var(--eeoc-gold);" aria-live="polite" aria-atomic="true"></div>
+
+    </div><!-- /arch-diagram-full -->
+
+    <p style="text-align:center; font-size:13px; color:var(--text-muted);">
+        <i class="bi bi-cursor" aria-hidden="true"></i>
+        Click or press Enter on any component to see its role, endpoints, and Azure services.
+    </p>
+</section>
+
+
+<!-- ============================================================
+     Section 2: Azure Deployment Topology
+     ============================================================ -->
+<section class="section-dark">
+    <div class="section-inner">
+        <div class="section-label">Azure Deployment</div>
+        <h2 class="section-title">Azure Resource Topology</h2>
+        <p class="section-desc">
+            Every application runs on Azure Commercial under FedRAMP High controls.
+            Shared services (Key Vault, App Gateway/WAF, Application Insights) serve
+            the full platform. Per-app resources are provisioned in each app's resource group.
+        </p>
+
+        <div style="overflow-x:auto;">
+            <table class="comparison-table az-table" aria-label="Azure resource allocation by application">
+                <caption class="visually-hidden">
+                    Azure service allocation across the EEOC AI Platform applications.
+                    A check mark means the resource is required. A dash means not needed. Optional means used in some configurations.
+                </caption>
+                <thead>
+                    <tr>
+                        <th scope="col" style="min-width:180px;">Azure Resource</th>
+                        <th scope="col">ADR</th>
+                        <th scope="col">ARC<br>Integration</th>
+                        <th scope="col">MCP Hub</th>
+                        <th scope="col">UDAP<br>Dashboard</th>
+                        <th scope="col">Triage</th>
+                        <th scope="col">OGC<br>Trial Tool</th>
+                        <th scope="col">OCHCO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">App Service</th>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Azure Functions</th>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — 2 Function Apps"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — primary host"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — ETL pipeline"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — 3 Function Apps"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Storage Account</th>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — documents + WORM audit blobs"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Key Vault</th>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Redis Cache</th>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — session store"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — catalog cache"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — session store"></i></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Azure OpenAI</th>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — agreement drafting, chat"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No — spokes own AI calls"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — NL query assistant"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — charge classification"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — legal research"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — anomaly summarization"></i></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">PostgreSQL</th>
+                        <td><span class="az-opt" aria-label="Optional — migration mode, default off">Optional</span></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — analytics data store"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Azure AI Search</th>
+                        <td><span class="az-opt" aria-label="Optional">Optional</span></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — RAG document search"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Service Bus</th>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — charge event queue"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — metrics ingestion"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                        <td><i class="bi bi-dash az-dash" aria-label="No"></i></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">App Gateway + WAF</th>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — platform-shared"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — platform-shared"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — platform-shared"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — platform-shared"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — platform-shared"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — platform-shared"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes — platform-shared"></i></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Application Insights</th>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                        <td><i class="bi bi-check-circle az-check" aria-label="Yes"></i></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div><!-- /overflow wrapper -->
+
+        <p style="font-size:12px; color:var(--text-muted); margin-top:1rem;">
+            App Gateway + WAF is a shared platform resource provisioned once per environment.
+            All per-app resources are isolated in separate Azure resource groups.
+        </p>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     Section 3: MCP Protocol Detail
+     ============================================================ -->
+<section class="section">
+    <div class="section-label">Model Context Protocol</div>
+    <h2 class="section-title">MCP Hub — Protocol and Tool Catalog</h2>
+    <p class="section-desc">
+        The Hub implements MCP over streamable HTTP. Each spoke registers its tools at startup.
+        The Hub merges all spoke catalogs into a single endpoint for AI agent consumers.
+    </p>
+
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom:2rem;">
+        <div class="card">
+            <div class="card-icon" style="background:#eff6ff; color:#1e3a8a;">
+                <i class="bi bi-code-square" aria-hidden="true"></i>
+            </div>
+            <h3>JSON-RPC 2.0 over Streamable HTTP</h3>
+            <p>
+                All MCP calls use JSON-RPC 2.0 request/response framing transported over HTTPS.
+                Streaming responses (for long-running tool calls) use HTTP chunked transfer.
+                No WebSocket dependency — compatible with APIM throttling and request logging.
+            </p>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:#f0fdf4; color:#065f46;">
+                <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+            </div>
+            <h3>Tool Discovery — 5-Minute Cycle</h3>
+            <p>
+                The Hub polls each spoke's <code>/api/mcp/tools</code> health endpoint every 5 minutes.
+                New tools registered by a spoke app appear in the merged catalog within one poll cycle.
+                Spokes that fail health checks are marked unavailable and removed from the catalog
+                until they recover.
+            </p>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:#faf5ff; color:#4c1d95;">
+                <i class="bi bi-shield-lock" aria-hidden="true"></i>
+            </div>
+            <h3>Spoke Registration Contract</h3>
+            <p>
+                Each spoke registers four fields: <code>name</code> (unique identifier),
+                <code>url</code> (base URL for tool calls), <code>auth_scope</code>
+                (the Entra ID scope the Hub requests), and <code>health_endpoint</code>
+                (polled every 5 minutes). Authentication uses Managed Identity — no shared secrets.
+            </p>
+        </div>
+    </div>
+
+    <!-- Tool catalog JSON sample -->
+    <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.5rem;">Sample Tool Catalog Response</h3>
+    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:0.75rem;">
+        <code>GET /api/tools</code> returns the merged catalog from all active spokes.
+        Each entry includes the tool schema so AI agents can construct calls without
+        additional lookups.
+    </p>
+
+    <pre class="code-block" aria-label="Sample MCP tool catalog JSON response" role="region"><code><span class="tok-punct">{</span>
+  <span class="tok-key">"jsonrpc"</span><span class="tok-punct">:</span> <span class="tok-str">"2.0"</span><span class="tok-punct">,</span>
+  <span class="tok-key">"result"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span>
+    <span class="tok-key">"tools"</span><span class="tok-punct">:</span> <span class="tok-punct">[</span>
+      <span class="tok-punct">{</span>
+        <span class="tok-key">"name"</span><span class="tok-punct">:</span>        <span class="tok-str">"list_cases"</span><span class="tok-punct">,</span>
+        <span class="tok-key">"spoke"</span><span class="tok-punct">:</span>       <span class="tok-str">"adr"</span><span class="tok-punct">,</span>
+        <span class="tok-key">"description"</span><span class="tok-punct">:</span> <span class="tok-str">"List mediation cases with optional status and office filters"</span><span class="tok-punct">,</span>
+        <span class="tok-key">"auth_scope"</span><span class="tok-punct">:</span>  <span class="tok-str">"api://eeoc-adr/.default"</span><span class="tok-punct">,</span>
+        <span class="tok-key">"parameters"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span>
+          <span class="tok-key">"status"</span><span class="tok-punct">:</span>     <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"string"</span><span class="tok-punct">,</span> <span class="tok-key">"optional"</span><span class="tok-punct">:</span> <span class="tok-num">true</span> <span class="tok-punct">}</span><span class="tok-punct">,</span>
+          <span class="tok-key">"office_id"</span><span class="tok-punct">:</span>  <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"string"</span><span class="tok-punct">,</span> <span class="tok-key">"optional"</span><span class="tok-punct">:</span> <span class="tok-num">true</span> <span class="tok-punct">}</span><span class="tok-punct">,</span>
+          <span class="tok-key">"limit"</span><span class="tok-punct">:</span>      <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"integer"</span><span class="tok-punct">,</span> <span class="tok-key">"default"</span><span class="tok-punct">:</span> <span class="tok-num">25</span> <span class="tok-punct">}</span>
+        <span class="tok-punct">}</span>
+      <span class="tok-punct">}</span><span class="tok-punct">,</span>
+      <span class="tok-punct">{</span>
+        <span class="tok-key">"name"</span><span class="tok-punct">:</span>        <span class="tok-str">"get_case"</span><span class="tok-punct">,</span>
+        <span class="tok-key">"spoke"</span><span class="tok-punct">:</span>       <span class="tok-str">"adr"</span><span class="tok-punct">,</span>
+        <span class="tok-key">"description"</span><span class="tok-punct">:</span> <span class="tok-str">"Retrieve full case record including parties, status, and documents"</span><span class="tok-punct">,</span>
+        <span class="tok-key">"auth_scope"</span><span class="tok-punct">:</span>  <span class="tok-str">"api://eeoc-adr/.default"</span><span class="tok-punct">,</span>
+        <span class="tok-key">"parameters"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span>
+          <span class="tok-key">"case_id"</span><span class="tok-punct">:</span>    <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"string"</span><span class="tok-punct">,</span> <span class="tok-key">"required"</span><span class="tok-punct">:</span> <span class="tok-num">true</span> <span class="tok-punct">}</span>
+        <span class="tok-punct">}</span>
+      <span class="tok-punct">}</span>
+    <span class="tok-punct">]</span><span class="tok-punct">,</span>
+    <span class="tok-key">"catalog_refreshed_at"</span><span class="tok-punct">:</span> <span class="tok-str">"2026-05-21T14:05:00Z"</span><span class="tok-punct">,</span>
+    <span class="tok-key">"active_spokes"</span><span class="tok-punct">:</span>        <span class="tok-num">1</span><span class="tok-punct">,</span>
+    <span class="tok-key">"total_tools"</span><span class="tok-punct">:</span>          <span class="tok-num">10</span>
+  <span class="tok-punct">}</span>
+<span class="tok-punct">}</span></code></pre>
+    <p style="font-size:12px; color:var(--text-muted); margin-top:0.5rem;">
+        Only the ADR spoke is currently deployed. Additional spokes will register as applications are deployed.
+    </p>
+
+    <!-- ADR exposed tools -->
+    <h3 style="font-size:1rem; font-weight:700; margin-top:2rem; margin-bottom:0.5rem;">ADR Portal — Exposed MCP Tools</h3>
+    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:0;">
+        The ADR Portal registers 10 tools with the Hub at startup.
+        All tool calls require <code>api://eeoc-adr/.default</code> scope and are
+        authenticated via Managed Identity from the Hub.
+    </p>
+    <div class="tool-list" role="list" aria-label="ADR Portal MCP tools">
+        <div class="tool-item" role="listitem">
+            <span class="tool-dot" aria-hidden="true"></span>
+            list_cases
+        </div>
+        <div class="tool-item" role="listitem">
+            <span class="tool-dot" aria-hidden="true"></span>
+            get_case
+        </div>
+        <div class="tool-item" role="listitem">
+            <span class="tool-dot" aria-hidden="true"></span>
+            get_case_chat
+        </div>
+        <div class="tool-item" role="listitem">
+            <span class="tool-dot" aria-hidden="true"></span>
+            get_case_documents
+        </div>
+        <div class="tool-item" role="listitem">
+            <span class="tool-dot" aria-hidden="true"></span>
+            create_case
+        </div>
+        <div class="tool-item" role="listitem">
+            <span class="tool-dot" aria-hidden="true"></span>
+            update_case_metadata
+        </div>
+        <div class="tool-item" role="listitem">
+            <span class="tool-dot" aria-hidden="true"></span>
+            post_chat_message
+        </div>
+        <div class="tool-item" role="listitem">
+            <span class="tool-dot" aria-hidden="true"></span>
+            add_participant
+        </div>
+        <div class="tool-item" role="listitem">
+            <span class="tool-dot" aria-hidden="true"></span>
+            remove_participant
+        </div>
+        <div class="tool-item" role="listitem">
+            <span class="tool-dot" aria-hidden="true"></span>
+            reassign_case
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     Section 4: Data Flow Diagram
+     ============================================================ -->
+<section class="section-dark">
+    <div class="section-inner">
+        <div class="section-label">Data Flow</div>
+        <h2 class="section-title">End-to-End Data Path</h2>
+        <p class="section-desc">
+            Charge data originates in ARC and moves forward through the platform in a
+            single direction. No application writes back to ARC. Analytics consumes
+            from ADR rather than polling ARC directly.
+        </p>
+
+        <!-- Visual flow diagram -->
+        <div class="data-flow-diagram" role="img" aria-label="Data flow diagram: ARC to Integration API to Azure Table Storage to ADR case management to UDAP Analytics">
+
+            <div class="df-node df-arc">
+                <div class="df-icon" aria-hidden="true">
+                    <i class="bi bi-server" style="color:#475569;"></i>
+                </div>
+                <div class="df-name">ARC</div>
+                <div class="df-sub">System of Record</div>
+            </div>
+
+            <div class="df-arrow-wrap" aria-hidden="true">
+                <div class="df-arrow"><i class="bi bi-arrow-right"></i></div>
+                <div class="df-arrow-label">15-min poll</div>
+            </div>
+
+            <div class="df-node df-api">
+                <div class="df-icon" aria-hidden="true">
+                    <i class="bi bi-arrow-left-right" style="color:#9f1239;"></i>
+                </div>
+                <div class="df-name">Integration API</div>
+                <div class="df-sub">FastAPI gateway</div>
+            </div>
+
+            <div class="df-arrow-wrap" aria-hidden="true">
+                <div class="df-arrow"><i class="bi bi-arrow-right"></i></div>
+                <div class="df-arrow-label">JSON events</div>
+            </div>
+
+            <div class="df-node df-store">
+                <div class="df-icon" aria-hidden="true">
+                    <i class="bi bi-table" style="color:#1e3a8a;"></i>
+                </div>
+                <div class="df-name">Azure Table<br>Storage</div>
+                <div class="df-sub">Staging layer</div>
+            </div>
+
+            <div class="df-arrow-wrap" aria-hidden="true">
+                <div class="df-arrow"><i class="bi bi-arrow-right"></i></div>
+                <div class="df-arrow-label">case pickup</div>
+            </div>
+
+            <div class="df-node df-adr">
+                <div class="df-icon" aria-hidden="true">
+                    <i class="bi bi-people" style="color:#065f46;"></i>
+                </div>
+                <div class="df-name">ADR Portal</div>
+                <div class="df-sub">Case management</div>
+            </div>
+
+            <div class="df-arrow-wrap" aria-hidden="true">
+                <div class="df-arrow"><i class="bi bi-arrow-right"></i></div>
+                <div class="df-arrow-label">daily metrics</div>
+            </div>
+
+            <div class="df-node df-udap">
+                <div class="df-icon" aria-hidden="true">
+                    <i class="bi bi-graph-up" style="color:#7c2d12;"></i>
+                </div>
+                <div class="df-name">UDAP Analytics</div>
+                <div class="df-sub">Dashboards + NL query</div>
+            </div>
+
+        </div><!-- /data-flow-diagram -->
+
+        <!-- Flow steps detail -->
+        <div class="flow-steps" style="margin-top:2rem;">
+
+            <div class="flow-step">
+                <div class="step-number" aria-hidden="true">1</div>
+                <div class="step-content">
+                    <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.25rem;">ARC to Integration API</h3>
+                    <p>
+                        The Integration API polls ARC every 15 minutes using watermark-based
+                        pagination. Only cases eligible for mediation are retrieved. The caller
+                        authenticates with Managed Identity; SSRF protections prevent requests
+                        to unintended hosts.
+                    </p>
+                    <div class="step-detail">GET /arc/v1/mediation/eligible-cases?watermark={ts}&amp;limit=100 &rarr; 200 OK (JSON)</div>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number" aria-hidden="true">2</div>
+                <div class="step-content">
+                    <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.25rem;">Staging in Azure Table Storage</h3>
+                    <p>
+                        Retrieved charge records land in Azure Table Storage with a
+                        <code>pending</code> row status. The Integration API deduplicates
+                        by charge number before writing. No PII is logged at any point
+                        in this path.
+                    </p>
+                    <div class="step-detail">Table: arc_charges_staging — PartitionKey: office_id, RowKey: charge_number</div>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number" aria-hidden="true">3</div>
+                <div class="step-content">
+                    <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.25rem;">ADR Picks Up Pending Cases</h3>
+                    <p>
+                        An ADR Azure Function triggers on the Table Storage queue every 5 minutes,
+                        reads <code>pending</code> rows, creates case records in PostgreSQL,
+                        assigns them to the appropriate district office queue, and marks the
+                        staging row <code>processed</code>.
+                    </p>
+                    <div class="step-detail">AzureStorageQueueTrigger &rarr; create_case() &rarr; UPDATE staging SET status='processed'</div>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number" aria-hidden="true">4</div>
+                <div class="step-content">
+                    <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.25rem;">ADR Pushes Daily Metrics to UDAP</h3>
+                    <p>
+                        Each night, an ADR Function App publishes aggregated outcome metrics
+                        (settlement rate, time-to-resolution, disposition counts by office)
+                        to the UDAP data-middleware ingest endpoint. No individual charge data
+                        or PII crosses this boundary — only aggregates.
+                    </p>
+                    <div class="step-detail">POST /ingest/adr/daily-metrics &rarr; data-middleware ETL &rarr; PostgreSQL &rarr; Superset</div>
+                </div>
+            </div>
+
+        </div><!-- /flow-steps -->
+    </div>
+</section>
+
+
+<!-- ============================================================
+     Section 5: Authentication Architecture
+     ============================================================ -->
+<section class="section">
+    <div class="section-label">Authentication</div>
+    <h2 class="section-title">Authentication Architecture</h2>
+    <p class="section-desc">
+        Four distinct authentication paths cover every actor in the platform.
+        All paths terminate at Azure Entra ID. No application stores credentials
+        — secrets live in Key Vault, service-to-service auth uses Managed Identity.
+    </p>
+
+    <div class="auth-row">
+
+        <div class="auth-card">
+            <div class="auth-actor">EEOC Staff</div>
+            <div class="auth-title">Azure Entra ID (OIDC)</div>
+            <p>
+                Staff authenticate with their <code>@eeoc.gov</code> identity via
+                Azure Entra ID. Browser-based applications use the standard OIDC
+                authorization code flow. Sessions are stored in Redis — no cookie
+                serialization.
+            </p>
+            <div class="auth-detail">
+                Entra ID &rarr; OIDC auth code &rarr; Redis session<br>
+                Scope: openid profile email groups
+            </div>
+        </div>
+
+        <div class="auth-card">
+            <div class="auth-actor">External Parties</div>
+            <div class="auth-title">Login.gov OIDC + PKCE</div>
+            <p>
+                Respondents, charging parties, and other external users authenticate
+                through Login.gov. The platform uses PKCE with
+                <code>private_key_jwt</code> client assertion — no client secret
+                transmitted over the network.
+            </p>
+            <div class="auth-detail">
+                Login.gov &rarr; PKCE + private_key_jwt &rarr; Redis session<br>
+                IAL2 identity assurance required for document submission
+            </div>
+        </div>
+
+        <div class="auth-card">
+            <div class="auth-actor">Service-to-Service</div>
+            <div class="auth-title">Managed Identity</div>
+            <p>
+                Inter-service calls (Hub to spokes, Function Apps to storage,
+                Integration API to ARC) use Azure Managed Identity. No credentials
+                are configured, rotated, or stored — identity comes from the
+                Azure control plane.
+            </p>
+            <div class="auth-detail">
+                Managed Identity &rarr; Entra ID token &rarr; target resource<br>
+                X-Request-ID propagated through every hop (RFC 7807)
+            </div>
+        </div>
+
+        <div class="auth-card">
+            <div class="auth-actor">AI Audit Trail</div>
+            <div class="auth-title">HMAC-SHA256 Signed Records</div>
+            <p>
+                Every AI generation — prompt, response, model version, and timestamp —
+                is signed with HMAC-SHA256 using a key stored in Key Vault. Records
+                are written to Azure Blob immutable storage with a 7-year WORM lock.
+                NARA-compliant; verified during the 2025 OIG inquiry.
+            </p>
+            <div class="auth-detail">
+                AI output &rarr; HMAC-SHA256(KV key) &rarr; Blob WORM<br>
+                Retention: 7 years per NARA 2023-0002
+            </div>
+        </div>
+
+    </div><!-- /auth-row -->
+
+    <!-- Auth flow summary table -->
+    <h3 style="font-size:1rem; font-weight:700; margin-top:2.5rem; margin-bottom:0.75rem;">Auth Path Summary</h3>
+    <div style="overflow-x:auto;">
+        <table class="data-table" aria-label="Authentication path summary by actor type">
+            <caption class="visually-hidden">
+                Summary of authentication mechanisms by actor: actor type, protocol, credential storage, and session mechanism.
+            </caption>
+            <thead>
+                <tr>
+                    <th scope="col">Actor</th>
+                    <th scope="col">Protocol</th>
+                    <th scope="col">Credential Storage</th>
+                    <th scope="col">Session</th>
+                    <th scope="col">MFA</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">EEOC Staff (@eeoc.gov)</th>
+                    <td>OIDC auth code</td>
+                    <td>None (Entra ID managed)</td>
+                    <td>Redis</td>
+                    <td>
+                        <i class="bi bi-check-circle" aria-hidden="true" style="color:#146c43;"></i>
+                        <span class="visually-hidden">Yes</span>
+                        Entra Conditional Access
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">External parties</th>
+                    <td>Login.gov OIDC + PKCE</td>
+                    <td>Key Vault (private key)</td>
+                    <td>Redis</td>
+                    <td>
+                        <i class="bi bi-check-circle" aria-hidden="true" style="color:#146c43;"></i>
+                        <span class="visually-hidden">Yes</span>
+                        Login.gov IAL2
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Service-to-service</th>
+                    <td>Managed Identity</td>
+                    <td>None (Azure control plane)</td>
+                    <td>N/A (stateless)</td>
+                    <td><span style="color:#5a6472;">N/A</span></td>
+                </tr>
+                <tr>
+                    <th scope="row">AI audit signing</th>
+                    <td>HMAC-SHA256</td>
+                    <td>Key Vault (HMAC key)</td>
+                    <td>N/A (event-scoped)</td>
+                    <td><span style="color:#5a6472;">N/A</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div><!-- /overflow wrapper -->
+</section>
+
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <strong>U.S. Equal Employment Opportunity Commission</strong> &mdash; Office of the Chief Information Officer<br>
+    AI-Enabled Case Management Platform &bull; FedRAMP High &bull; NIST 800-53 Rev5 &bull; WCAG 2.1 AA
+</footer>
+
+</div><!-- /page-content -->
+
+<script src="js/site.js"></script>
+<script>
+/* Architecture page — keyboard support for arch nodes */
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.arch-node[role="button"]').forEach(function (node) {
+        node.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                node.click();
+            }
+        });
+
+        /* keep aria-pressed in sync with active class */
+        node.addEventListener('click', function () {
+            document.querySelectorAll('.arch-node[role="button"]').forEach(function (n) {
+                n.setAttribute('aria-pressed', 'false');
+            });
+            node.setAttribute('aria-pressed', 'true');
+        });
+    });
+});
+</script>
+
+</body>
+</html>

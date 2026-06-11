@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<!--
+  analytics-admin.html — Access Management interface (demo mockup).
+  Mirrors the ai-assistant admin.html structure and the analytics.html
+  custom CSS framework. Section 508 / WCAG 2.1 AA compliant.
+  Requires Admin role — nav link labeled "Access Mgmt" is active.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <title>Access Management — EEOC Unified Data Analytics Platform</title>
+
+  <style>
+/* ============================================================
+   CSS Custom Properties — matches analytics.html / ai-assistant app.css
+   ============================================================ */
+:root {
+  --navy:        #003366;
+  --blue:        #0066CC;
+  --gold:        #996600;
+  --light-blue:  #E8F1FB;
+  --white:       #FFFFFF;
+  --gray-100:    #F5F7FA;
+  --gray-200:    #E2E8F0;
+  --gray-700:    #4A5568;
+  --gray-900:    #1A1A1A;
+  --success:     #006400;
+  --error:       #B22222;
+  --focus-ring:  3px solid #005FCC;
+  --warn:        #7F6500;
+
+  --font-sans:   "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+  --font-mono:   "Source Code Pro", "Courier New", monospace;
+
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.12);
+  --shadow-md:   0 4px 12px rgba(0,0,0,0.15);
+
+  --nav-height:  56px;
+}
+
+/* ============================================================
+   Reset / base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  color: var(--gray-900);
+  background: var(--gray-100);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+*:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.btn:focus, a:focus, input:focus, button:focus, select:focus, textarea:focus {
+  box-shadow: none !important;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
+}
+
+.skip-nav {
+  position: absolute; top: -100%; left: 0;
+  background: var(--navy); color: var(--white);
+  padding: 8px 16px; z-index: 9999;
+  font-weight: 600; text-decoration: none;
+  border-radius: 0 0 var(--radius-sm) 0;
+}
+.skip-nav:focus { top: 0; }
+
+/* ============================================================
+   Government banner
+   ============================================================ */
+.gov-banner {
+  background: var(--gray-200);
+  font-size: 0.8rem;
+  padding: 4px 0;
+  border-bottom: 1px solid #C5D0DC;
+}
+.gov-banner__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--gray-700);
+}
+
+.gov-flag {
+  display: inline-block;
+  width: 16px; height: 11px;
+  background: linear-gradient(
+    to bottom,
+    #B22234 0%, #B22234 14.3%,
+    #fff 14.3%, #fff 28.6%,
+    #B22234 28.6%, #B22234 42.9%,
+    #fff 42.9%, #fff 57.1%,
+    #B22234 57.1%, #B22234 71.4%,
+    #fff 71.4%, #fff 85.7%,
+    #B22234 85.7%, #B22234 100%
+  );
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Navbar — horizontal
+   ============================================================ */
+.navbar {
+  background: var(--navy);
+  border-bottom: 3px solid var(--gold);
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar__brand { display: flex; align-items: center; gap: 0.75rem; }
+
+.navbar__logo-placeholder {
+  height: 36px; width: 120px;
+  background: rgba(255,255,255,0.15);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700; color: var(--white);
+  letter-spacing: 0.05em;
+}
+
+.navbar__title {
+  color: var(--white);
+  font-size: 1.1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.navbar__links {
+  display: flex; list-style: none; gap: 0.25rem;
+  flex: 1; justify-content: center;
+}
+.navbar__link {
+  color: #D6E4F7; text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  transition: background 0.15s, color 0.15s;
+}
+.navbar__link:hover,
+.navbar__link:focus { color: var(--white); background: rgba(255,255,255,0.12); }
+.navbar__link--active {
+  color: var(--white);
+  border-bottom: 2px solid var(--gold);
+  padding-bottom: calc(0.5rem - 2px);
+}
+
+.navbar__user { display: flex; align-items: center; gap: 0.75rem; white-space: nowrap; }
+.navbar__username { color: #D6E4F7; font-size: 0.9rem; }
+
+/* Admin badge in navbar */
+.role-badge {
+  background: rgba(153, 102, 0, 0.25);
+  border: 1px solid var(--gold);
+  color: #FFD966;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: 0.04em;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 0.4rem;
+  font-family: var(--font-sans); font-size: 0.95rem; font-weight: 600;
+  line-height: 1;
+  min-height: 44px; min-width: 44px;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.btn--primary   { background: var(--navy); color: var(--white); }
+.btn--primary:hover, .btn--primary:focus { background: #002244; }
+.btn--secondary { background: var(--white); border-color: var(--navy); color: var(--navy); }
+.btn--secondary:hover, .btn--secondary:focus { background: var(--light-blue); }
+.btn--ghost     { background: transparent; color: var(--gray-700); border-color: var(--gray-200); }
+.btn--ghost:hover, .btn--ghost:focus { background: var(--gray-200); }
+.btn--danger    { background: var(--error); color: var(--white); border-color: var(--error); }
+.btn--danger:hover, .btn--danger:focus { background: #8B0000; border-color: #8B0000; }
+.btn--sm        { min-height: 36px; padding: 0.3rem 0.875rem; font-size: 0.875rem; }
+.btn--xs        { min-height: 30px; min-width: 30px; padding: 0.2rem 0.6rem; font-size: 0.8rem; }
+
+/* ============================================================
+   Main content area
+   ============================================================ */
+main {
+  flex: 1;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* Page header */
+.page-header { margin-bottom: 1.25rem; }
+
+.page-header h1 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.2rem;
+}
+
+.breadcrumb {
+  font-size: 0.8rem;
+  color: var(--gray-700);
+  margin-bottom: 0.4rem;
+}
+.breadcrumb a { color: var(--blue); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+.page-description {
+  font-size: 0.9rem;
+  color: var(--gray-700);
+}
+
+/* Admin layout: main content + audit sidebar */
+.admin-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 1rem;
+  align-items: start;
+}
+
+/* ============================================================
+   Tab navigation (ARIA tablist pattern)
+   ============================================================ */
+.admin-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--gray-200);
+  margin-bottom: 0;
+  background: var(--white);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  border: 1px solid var(--gray-200);
+  border-bottom: none;
+}
+
+.admin-tabs__tab {
+  padding: 0.625rem 1.125rem;
+  border: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  min-height: 44px;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.admin-tabs__tab:hover { color: var(--navy); }
+.admin-tabs__tab[aria-selected="true"] {
+  color: var(--navy);
+  border-bottom-color: var(--navy);
+  background: var(--white);
+}
+
+/* ============================================================
+   Tab panels
+   ============================================================ */
+.admin-panel {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-top: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  padding: 1.25rem;
+}
+
+/* ============================================================
+   User table
+   ============================================================ */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 8px 10px;
+  border: 1px solid var(--gray-200);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.data-table thead th {
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.data-table tbody tr:hover { background: var(--light-blue); }
+
+/* Status and role badges
+   All badge color combinations verified >= 4.5:1 (WCAG 1.4.3). */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Role badges — color + text, never color alone (WCAG 1.4.1) */
+.badge--admin     { background: #FFF0CC; color: #5C3D00; border: 1px solid #C89000; }
+.badge--analyst   { background: #D6E8FF; color: #003366; border: 1px solid #0066CC; }
+.badge--director  { background: #E8D5F5; color: #3D0066; border: 1px solid #7B2FBE; }
+.badge--steward   { background: #D4EDDA; color: #006400; border: 1px solid #006400; }
+.badge--viewer    { background: var(--gray-200); color: #1A1A1A; border: 1px solid #737373; }
+
+/* Account status */
+.badge--active    { background: #D4EDDA; color: var(--success); border: 1px solid var(--success); }
+.badge--inactive  { background: var(--gray-200); color: var(--gray-700); border: 1px solid #737373; }
+.badge--suspended { background: #F8D7DA; color: var(--error); border: 1px solid var(--error); }
+
+/* User email */
+.user-email { font-family: var(--font-mono); font-size: 0.78rem; }
+
+/* Action cell */
+.action-cell { white-space: nowrap; display: flex; gap: 4px; }
+
+/* ============================================================
+   RLS configuration panel
+   ============================================================ */
+.rls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.875rem;
+  margin-top: 1rem;
+}
+
+.rls-card {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 0.875rem;
+  background: var(--gray-100);
+}
+
+.rls-card__role {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.rls-card__offices {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rls-card__office {
+  font-size: 0.78rem;
+  color: var(--gray-700);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.rls-check {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: 2px;
+  background: var(--white);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.rls-check--on {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.rls-check--on::after {
+  content: '';
+  position: absolute;
+  left: 3px; top: 1px;
+  width: 5px; height: 8px;
+  border: 2px solid var(--white);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.rls-all-offices {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* ============================================================
+   Role assignment form
+   ============================================================ */
+.role-form-card {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-top: 1.25rem;
+}
+
+.role-form-card h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.875rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.form-field { display: flex; flex-direction: column; gap: 0.25rem; }
+
+.form-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gray-700);
+}
+
+.form-input,
+.form-select {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--gray-700);
+  border-radius: var(--radius-sm);
+  min-height: 40px;
+  background: var(--white);
+}
+.form-input:focus,
+.form-select:focus { border-color: var(--blue); }
+
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--gray-700);
+}
+
+/* Alert region */
+.admin-alert {
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  margin-top: 0.75rem;
+}
+.admin-alert--success {
+  background: #D4EDDA;
+  border: 1px solid var(--success);
+  color: var(--success);
+}
+.admin-alert--error {
+  background: #F8D7DA;
+  border: 1px solid var(--error);
+  color: var(--error);
+}
+
+/* ============================================================
+   Audit sidebar
+   ============================================================ */
+.admin-audit {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  position: sticky;
+  top: calc(var(--nav-height) + 1.5rem);
+}
+
+.admin-audit h2 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.875rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.audit-list { list-style: none; }
+
+.audit-item {
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 0.78rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.audit-item:last-child { border-bottom: none; }
+
+.audit-item__action {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.audit-item__detail { color: var(--gray-700); }
+
+.audit-item__time {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--gray-700);
+}
+
+.audit-item--grant .audit-item__action { color: var(--success); }
+.audit-item--revoke .audit-item__action { color: var(--error); }
+.audit-item--modify .audit-item__action { color: var(--warn); }
+
+/* Section subheadings within panels */
+.panel-section-heading {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 1.25rem 0 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.footer {
+  background: var(--navy);
+  color: #D6E4F7;
+  text-align: center;
+  padding: 0.875rem 1rem;
+  font-size: 0.8rem;
+  margin-top: auto;
+}
+.footer p + p { margin-top: 0.25rem; }
+.footer a { color: #A8C8EE; }
+.footer a:hover { color: var(--white); }
+.footer__notice { color: #8AAFD4; font-size: 0.75rem; }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1100px) {
+  .admin-layout { grid-template-columns: 1fr; }
+  .admin-audit { position: static; }
+}
+
+@media (max-width: 900px) {
+  .navbar__links { display: none; }
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .btn--primary { border: 2px solid ButtonText; }
+  .badge { border: 1px solid CanvasText; }
+  .rls-check--on { border: 2px solid Highlight; }
+  .data-table thead th { border: 1px solid CanvasText; }
+}
+  </style>
+</head>
+<body>
+
+<!-- Skip navigation — WCAG 2.4.1 -->
+<a class="skip-nav" href="#main-content">Skip to main content</a>
+
+<!-- Government banner -->
+<div class="gov-banner">
+  <div class="gov-banner__inner">
+    <span class="gov-flag" aria-hidden="true"></span>
+    <span>An official website of the United States government</span>
+  </div>
+</div>
+
+<!-- Primary navigation -->
+<header role="banner">
+  <nav class="navbar" aria-label="Primary navigation">
+    <div class="navbar__brand">
+      <a href="analytics.html" class="navbar__logo-link" aria-label="EEOC Analytics Portal home">
+        <div class="navbar__logo-placeholder" aria-hidden="true">EEOC</div>
+      </a>
+      <span class="navbar__title">Analytics Assistant</span>
+    </div>
+
+    <ul class="navbar__links" role="list">
+      <li>
+        <a href="analytics.html" class="navbar__link">Dashboards</a>
+      </li>
+      <li>
+        <a href="analytics-chat.html" class="navbar__link">AI Assistant</a>
+      </li>
+      <li>
+        <a href="analytics-search.html" class="navbar__link">Narrative Search</a>
+      </li>
+      <li>
+        <a href="analytics-notebooks.html" class="navbar__link">Notebooks</a>
+      </li>
+      <li>
+        <a href="analytics-catalog.html" class="navbar__link">Data Catalog</a>
+      </li>
+      <li>
+        <a href="analytics-admin.html" class="navbar__link navbar__link--active" aria-current="page">
+          Access Mgmt
+        </a>
+      </li>
+    </ul>
+
+    <div class="navbar__user" aria-label="User menu">
+      <span class="role-badge" aria-label="Role: Administrator">ADMIN</span>
+      <span class="navbar__username" aria-label="Signed in as D. Gordon">
+        D. Gordon
+      </span>
+      <a href="index.html" class="btn btn--secondary btn--sm">Sign out</a>
+    </div>
+  </nav>
+</header>
+
+<main id="main-content" role="main" tabindex="-1">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="analytics.html">EEOC Analytics</a> /
+      <span aria-current="page">Access Management</span>
+    </nav>
+    <h1>Access Management</h1>
+    <p class="page-description">
+      Manage user roles, office access, and row-level security for UDAP users.
+      Changes are audit-logged and take effect immediately.
+    </p>
+  </div>
+
+  <div class="admin-layout">
+
+    <!-- Main admin content -->
+    <div>
+
+      <!-- Tab navigation — ARIA tablist (admin.html pattern) -->
+      <div class="admin-tabs"
+           role="tablist"
+           aria-label="Access management views">
+        <button class="admin-tabs__tab"
+                role="tab"
+                id="tab-users"
+                aria-selected="true"
+                aria-controls="panel-users"
+                tabindex="0">
+          User Access
+        </button>
+        <button class="admin-tabs__tab"
+                role="tab"
+                id="tab-rls"
+                aria-selected="false"
+                aria-controls="panel-rls"
+                tabindex="-1">
+          Row-Level Security
+        </button>
+        <button class="admin-tabs__tab"
+                role="tab"
+                id="tab-roles"
+                aria-selected="false"
+                aria-controls="panel-roles"
+                tabindex="-1">
+          Role Assignment
+        </button>
+      </div>
+
+      <!-- Tab panel: User Access -->
+      <section class="admin-panel"
+               role="tabpanel"
+               id="panel-users"
+               aria-labelledby="tab-users">
+
+        <!-- User table -->
+        <div style="overflow-x: auto;" role="region" tabindex="0" aria-label="Scrollable user access table">
+          <table class="data-table" aria-label="UDAP user access roster">
+            <caption class="sr-only">
+              User accounts with roles, office access, last login date, and account status
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Role</th>
+                <th scope="col">Office Access</th>
+                <th scope="col">Last Login</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Derek Gordon</th>
+                <td class="user-email">dgordon@eeoc.gov</td>
+                <td><span class="badge badge--admin">Admin</span></td>
+                <td>All offices (national)</td>
+                <td>2026-05-21</td>
+                <td><span class="badge badge--active">Active</span></td>
+                <td>
+                  <div class="action-cell">
+                    <button class="btn btn--ghost btn--xs" type="button"
+                            aria-label="Edit access for Derek Gordon">
+                      Edit
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Maria Chen</th>
+                <td class="user-email">mchen@eeoc.gov</td>
+                <td><span class="badge badge--director">Director</span></td>
+                <td>All offices (national)</td>
+                <td>2026-05-20</td>
+                <td><span class="badge badge--active">Active</span></td>
+                <td>
+                  <div class="action-cell">
+                    <button class="btn btn--ghost btn--xs" type="button"
+                            aria-label="Edit access for Maria Chen">
+                      Edit
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">James Patel</th>
+                <td class="user-email">jpatel@eeoc.gov</td>
+                <td><span class="badge badge--analyst">Analyst</span></td>
+                <td>Northeast, Midwest</td>
+                <td>2026-05-19</td>
+                <td><span class="badge badge--active">Active</span></td>
+                <td>
+                  <div class="action-cell">
+                    <button class="btn btn--ghost btn--xs" type="button"
+                            aria-label="Edit access for James Patel">
+                      Edit
+                    </button>
+                    <button class="btn btn--danger btn--xs" type="button"
+                            aria-label="Revoke access for James Patel">
+                      Revoke
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Sandra Williams</th>
+                <td class="user-email">swilliams@eeoc.gov</td>
+                <td><span class="badge badge--analyst">Analyst</span></td>
+                <td>Southeast, Southwest</td>
+                <td>2026-05-18</td>
+                <td><span class="badge badge--active">Active</span></td>
+                <td>
+                  <div class="action-cell">
+                    <button class="btn btn--ghost btn--xs" type="button"
+                            aria-label="Edit access for Sandra Williams">
+                      Edit
+                    </button>
+                    <button class="btn btn--danger btn--xs" type="button"
+                            aria-label="Revoke access for Sandra Williams">
+                      Revoke
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Robert Kim</th>
+                <td class="user-email">rkim@eeoc.gov</td>
+                <td><span class="badge badge--steward">Data Steward</span></td>
+                <td>All offices (national)</td>
+                <td>2026-05-15</td>
+                <td><span class="badge badge--active">Active</span></td>
+                <td>
+                  <div class="action-cell">
+                    <button class="btn btn--ghost btn--xs" type="button"
+                            aria-label="Edit access for Robert Kim">
+                      Edit
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Yolanda Reyes</th>
+                <td class="user-email">yreyes@eeoc.gov</td>
+                <td><span class="badge badge--analyst">Analyst</span></td>
+                <td>West</td>
+                <td>2026-05-14</td>
+                <td><span class="badge badge--active">Active</span></td>
+                <td>
+                  <div class="action-cell">
+                    <button class="btn btn--ghost btn--xs" type="button"
+                            aria-label="Edit access for Yolanda Reyes">
+                      Edit
+                    </button>
+                    <button class="btn btn--danger btn--xs" type="button"
+                            aria-label="Revoke access for Yolanda Reyes">
+                      Revoke
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Thomas Adeyemi</th>
+                <td class="user-email">tadeyemi@eeoc.gov</td>
+                <td><span class="badge badge--viewer">Viewer</span></td>
+                <td>Midwest</td>
+                <td>2026-05-02</td>
+                <td><span class="badge badge--inactive">Inactive</span></td>
+                <td>
+                  <div class="action-cell">
+                    <button class="btn btn--ghost btn--xs" type="button"
+                            aria-label="Edit access for Thomas Adeyemi">
+                      Edit
+                    </button>
+                    <button class="btn btn--danger btn--xs" type="button"
+                            aria-label="Revoke access for Thomas Adeyemi">
+                      Revoke
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Lisa Thornton</th>
+                <td class="user-email">lthornton@eeoc.gov</td>
+                <td><span class="badge badge--analyst">Analyst</span></td>
+                <td>Northeast</td>
+                <td>2026-03-18</td>
+                <td><span class="badge badge--suspended">Suspended</span></td>
+                <td>
+                  <div class="action-cell">
+                    <button class="btn btn--ghost btn--xs" type="button"
+                            aria-label="Edit access for Lisa Thornton">
+                      Edit
+                    </button>
+                    <button class="btn btn--ghost btn--xs" type="button"
+                            aria-label="Reinstate access for Lisa Thornton">
+                      Reinstate
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Alert region -->
+        <div role="alert"
+             aria-live="assertive"
+             id="user-alert"
+             class="admin-alert"
+             hidden></div>
+
+      </section>
+
+      <!-- Tab panel: Row-Level Security -->
+      <section class="admin-panel"
+               role="tabpanel"
+               id="panel-rls"
+               aria-labelledby="tab-rls"
+               hidden>
+
+        <p style="font-size:0.875rem; color:var(--gray-700); margin-bottom:0.875rem;">
+          Row-Level Security (RLS) restricts which office data each role can query.
+          Analysts see only their assigned regions. Directors and Admins see all offices.
+          Data Stewards see all offices for data quality purposes only.
+        </p>
+
+        <div class="rls-grid" role="list" aria-label="Role to office access mapping">
+
+          <div class="rls-card" role="listitem">
+            <div class="rls-card__role">
+              <span class="badge badge--admin">Admin</span>
+            </div>
+            <p class="rls-all-offices">All offices — unrestricted</p>
+          </div>
+
+          <div class="rls-card" role="listitem">
+            <div class="rls-card__role">
+              <span class="badge badge--director">Director</span>
+            </div>
+            <p class="rls-all-offices">All offices — read only</p>
+          </div>
+
+          <div class="rls-card" role="listitem">
+            <div class="rls-card__role">
+              <span class="badge badge--steward">Data Steward</span>
+            </div>
+            <p class="rls-all-offices">All offices — data quality scope</p>
+          </div>
+
+          <div class="rls-card" role="listitem">
+            <div class="rls-card__role">
+              <span class="badge badge--analyst">Analyst — Northeast</span>
+            </div>
+            <ul class="rls-card__offices" aria-label="Accessible offices for Analyst Northeast role">
+              <li class="rls-card__office">
+                <span class="rls-check rls-check--on" aria-hidden="true"></span>
+                <span>New York</span>
+                <span class="sr-only">(access granted)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check rls-check--on" aria-hidden="true"></span>
+                <span>Philadelphia</span>
+                <span class="sr-only">(access granted)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check rls-check--on" aria-hidden="true"></span>
+                <span>Boston</span>
+                <span class="sr-only">(access granted)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check" aria-hidden="true"></span>
+                <span>Chicago</span>
+                <span class="sr-only">(access denied)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check" aria-hidden="true"></span>
+                <span>Dallas</span>
+                <span class="sr-only">(access denied)</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="rls-card" role="listitem">
+            <div class="rls-card__role">
+              <span class="badge badge--analyst">Analyst — Southeast</span>
+            </div>
+            <ul class="rls-card__offices" aria-label="Accessible offices for Analyst Southeast role">
+              <li class="rls-card__office">
+                <span class="rls-check rls-check--on" aria-hidden="true"></span>
+                <span>Atlanta</span>
+                <span class="sr-only">(access granted)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check rls-check--on" aria-hidden="true"></span>
+                <span>Miami</span>
+                <span class="sr-only">(access granted)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check rls-check--on" aria-hidden="true"></span>
+                <span>Charlotte</span>
+                <span class="sr-only">(access granted)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check" aria-hidden="true"></span>
+                <span>Dallas</span>
+                <span class="sr-only">(access denied)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check" aria-hidden="true"></span>
+                <span>Phoenix</span>
+                <span class="sr-only">(access denied)</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="rls-card" role="listitem">
+            <div class="rls-card__role">
+              <span class="badge badge--analyst">Analyst — West</span>
+            </div>
+            <ul class="rls-card__offices" aria-label="Accessible offices for Analyst West role">
+              <li class="rls-card__office">
+                <span class="rls-check rls-check--on" aria-hidden="true"></span>
+                <span>Los Angeles</span>
+                <span class="sr-only">(access granted)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check rls-check--on" aria-hidden="true"></span>
+                <span>Phoenix</span>
+                <span class="sr-only">(access granted)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check rls-check--on" aria-hidden="true"></span>
+                <span>Seattle</span>
+                <span class="sr-only">(access granted)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check rls-check--on" aria-hidden="true"></span>
+                <span>Denver</span>
+                <span class="sr-only">(access granted)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check" aria-hidden="true"></span>
+                <span>Houston</span>
+                <span class="sr-only">(access denied)</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="rls-card" role="listitem">
+            <div class="rls-card__role">
+              <span class="badge badge--viewer">Viewer</span>
+            </div>
+            <ul class="rls-card__offices" aria-label="Accessible offices for Viewer role">
+              <li class="rls-card__office">
+                <span class="rls-check rls-check--on" aria-hidden="true"></span>
+                <span>Assigned region only</span>
+                <span class="sr-only">(access granted)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check" aria-hidden="true"></span>
+                <span>Narrative search</span>
+                <span class="sr-only">(no access)</span>
+              </li>
+              <li class="rls-card__office">
+                <span class="rls-check" aria-hidden="true"></span>
+                <span>AI Assistant</span>
+                <span class="sr-only">(no access)</span>
+              </li>
+            </ul>
+          </div>
+
+        </div><!-- /.rls-grid -->
+
+      </section>
+
+      <!-- Tab panel: Role Assignment -->
+      <section class="admin-panel"
+               role="tabpanel"
+               id="panel-roles"
+               aria-labelledby="tab-roles"
+               hidden>
+
+        <p style="font-size:0.875rem; color:var(--gray-700); margin-bottom:0.875rem;">
+          Assign or change a user's role and office access. All changes require justification
+          and are logged to the audit trail. Role changes take effect within 5 minutes.
+        </p>
+
+        <!-- Role assignment form -->
+        <div class="role-form-card">
+          <h3>Assign Role</h3>
+          <form id="form-role-assign" novalidate aria-label="Role assignment form">
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="assign-email" class="form-label">User Email</label>
+                <input type="email"
+                       id="assign-email"
+                       class="form-input"
+                       placeholder="analyst@eeoc.gov"
+                       aria-required="true"
+                       required
+                       autocomplete="email">
+              </div>
+              <div class="form-field">
+                <label for="assign-role" class="form-label">Role</label>
+                <select id="assign-role" class="form-select" aria-required="true" required>
+                  <option value="">Select role...</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Director">Director</option>
+                  <option value="Analyst">Analyst</option>
+                  <option value="Data Steward">Data Steward</option>
+                  <option value="Viewer">Viewer</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="assign-scope" class="form-label">Office Scope</label>
+                <select id="assign-scope" class="form-select" aria-required="true" required>
+                  <option value="">Select scope...</option>
+                  <option value="national">National (all offices)</option>
+                  <option value="Northeast">Northeast</option>
+                  <option value="Southeast">Southeast</option>
+                  <option value="Midwest">Midwest</option>
+                  <option value="Southwest">Southwest</option>
+                  <option value="West">West</option>
+                </select>
+              </div>
+              <div class="form-field" style="grid-column: 1 / -1;">
+                <label for="assign-justification" class="form-label">Justification</label>
+                <input type="text"
+                       id="assign-justification"
+                       class="form-input"
+                       placeholder="Reason for role assignment..."
+                       maxlength="500"
+                       aria-required="true"
+                       required
+                       aria-describedby="justification-hint">
+                <span class="form-hint" id="justification-hint">
+                  Required. Entered in the access change audit trail.
+                </span>
+              </div>
+              <div style="grid-column: 1 / -1; display:flex; gap:0.5rem; margin-top:0.25rem;">
+                <button type="submit" class="btn btn--primary btn--sm">
+                  Assign Role
+                </button>
+                <button type="reset" class="btn btn--ghost btn--sm">
+                  Clear
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Alert region -->
+        <div role="alert"
+             aria-live="assertive"
+             id="role-alert"
+             class="admin-alert"
+             hidden></div>
+
+        <!-- Current role assignments summary -->
+        <h3 class="panel-section-heading">Current Assignments</h3>
+
+        <div style="overflow-x: auto;" role="region" tabindex="0" aria-label="Scrollable role assignments table">
+          <table class="data-table" aria-label="Current role assignments">
+            <caption class="sr-only">
+              Current user role and office scope assignments
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Role</th>
+                <th scope="col">Office Scope</th>
+                <th scope="col">Assigned By</th>
+                <th scope="col">Assigned Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Derek Gordon</th>
+                <td><span class="badge badge--admin">Admin</span></td>
+                <td>National</td>
+                <td>System</td>
+                <td>2025-10-01</td>
+              </tr>
+              <tr>
+                <th scope="row">Maria Chen</th>
+                <td><span class="badge badge--director">Director</span></td>
+                <td>National</td>
+                <td>dgordon@eeoc.gov</td>
+                <td>2025-10-15</td>
+              </tr>
+              <tr>
+                <th scope="row">James Patel</th>
+                <td><span class="badge badge--analyst">Analyst</span></td>
+                <td>Northeast, Midwest</td>
+                <td>dgordon@eeoc.gov</td>
+                <td>2025-11-02</td>
+              </tr>
+              <tr>
+                <th scope="row">Sandra Williams</th>
+                <td><span class="badge badge--analyst">Analyst</span></td>
+                <td>Southeast, Southwest</td>
+                <td>dgordon@eeoc.gov</td>
+                <td>2025-11-02</td>
+              </tr>
+              <tr>
+                <th scope="row">Robert Kim</th>
+                <td><span class="badge badge--steward">Data Steward</span></td>
+                <td>National</td>
+                <td>dgordon@eeoc.gov</td>
+                <td>2025-12-01</td>
+              </tr>
+              <tr>
+                <th scope="row">Yolanda Reyes</th>
+                <td><span class="badge badge--analyst">Analyst</span></td>
+                <td>West</td>
+                <td>mchen@eeoc.gov</td>
+                <td>2026-01-14</td>
+              </tr>
+              <tr>
+                <th scope="row">Thomas Adeyemi</th>
+                <td><span class="badge badge--viewer">Viewer</span></td>
+                <td>Midwest</td>
+                <td>dgordon@eeoc.gov</td>
+                <td>2026-02-07</td>
+              </tr>
+              <tr>
+                <th scope="row">Lisa Thornton</th>
+                <td><span class="badge badge--analyst">Analyst</span></td>
+                <td>Northeast</td>
+                <td>dgordon@eeoc.gov</td>
+                <td>2025-10-22</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </section>
+
+    </div><!-- /admin main column -->
+
+    <!-- Audit trail sidebar -->
+    <aside class="admin-audit" aria-label="Recent access changes">
+      <h2>Recent Changes</h2>
+
+      <ul class="audit-list" id="audit-trail" aria-live="polite" aria-atomic="false">
+        <li class="audit-item audit-item--grant">
+          <span class="audit-item__action">Access granted</span>
+          <span class="audit-item__detail">yreyes@eeoc.gov &rarr; Analyst / West</span>
+          <span class="audit-item__detail">By: mchen@eeoc.gov</span>
+          <span class="audit-item__time">2026-05-19 14:32 UTC</span>
+        </li>
+        <li class="audit-item audit-item--modify">
+          <span class="audit-item__action">Scope modified</span>
+          <span class="audit-item__detail">jpatel@eeoc.gov: added Midwest</span>
+          <span class="audit-item__detail">By: dgordon@eeoc.gov</span>
+          <span class="audit-item__time">2026-05-17 09:11 UTC</span>
+        </li>
+        <li class="audit-item audit-item--grant">
+          <span class="audit-item__action">Role elevated</span>
+          <span class="audit-item__detail">rkim@eeoc.gov &rarr; Data Steward</span>
+          <span class="audit-item__detail">By: dgordon@eeoc.gov</span>
+          <span class="audit-item__time">2026-05-15 16:04 UTC</span>
+        </li>
+        <li class="audit-item audit-item--revoke">
+          <span class="audit-item__action">Account suspended</span>
+          <span class="audit-item__detail">lthornton@eeoc.gov</span>
+          <span class="audit-item__detail">By: dgordon@eeoc.gov</span>
+          <span class="audit-item__time">2026-03-18 11:22 UTC</span>
+        </li>
+        <li class="audit-item audit-item--grant">
+          <span class="audit-item__action">Access granted</span>
+          <span class="audit-item__detail">tadeyemi@eeoc.gov &rarr; Viewer / Midwest</span>
+          <span class="audit-item__detail">By: dgordon@eeoc.gov</span>
+          <span class="audit-item__time">2026-02-07 10:45 UTC</span>
+        </li>
+      </ul>
+    </aside>
+
+  </div><!-- /.admin-layout -->
+
+</main>
+
+<!-- Footer -->
+<footer class="footer" role="contentinfo">
+  <p>
+    <strong>U.S. Equal Employment Opportunity Commission</strong> |
+    <a href="https://www.eeoc.gov/accessibility">Accessibility</a> |
+    <a href="https://www.eeoc.gov/privacy-policy">Privacy Policy</a> |
+    <a href="#">Section 508</a>
+  </p>
+  <p class="footer__notice">
+    This system contains U.S. Government information. Unauthorized access is prohibited.
+    Usage is monitored and logged for security and compliance purposes.
+  </p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /*
+   * ARIA tablist keyboard navigation per APG:
+   * - Arrow keys move focus and select tabs
+   * - Tab / Shift+Tab move focus out of the tablist
+   */
+  var tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+  var panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+
+  function activateTab(tab) {
+    /* Deactivate all */
+    tabs.forEach(function (t) {
+      t.setAttribute('aria-selected', 'false');
+      t.setAttribute('tabindex', '-1');
+    });
+    panels.forEach(function (p) {
+      p.hidden = true;
+    });
+
+    /* Activate selected */
+    tab.setAttribute('aria-selected', 'true');
+    tab.setAttribute('tabindex', '0');
+    var panelId = tab.getAttribute('aria-controls');
+    var panel = document.getElementById(panelId);
+    if (panel) { panel.hidden = false; }
+  }
+
+  tabs.forEach(function (tab, i) {
+    tab.addEventListener('click', function () {
+      activateTab(tab);
+    });
+
+    tab.addEventListener('keydown', function (e) {
+      var idx = tabs.indexOf(e.currentTarget);
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        var next = tabs[(idx + 1) % tabs.length];
+        activateTab(next);
+        next.focus();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        var prev = tabs[(idx - 1 + tabs.length) % tabs.length];
+        activateTab(prev);
+        prev.focus();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        activateTab(tabs[0]);
+        tabs[0].focus();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        activateTab(tabs[tabs.length - 1]);
+        tabs[tabs.length - 1].focus();
+      }
+    });
+  });
+
+  /* Role assignment form — demo feedback */
+  var form = document.getElementById('form-role-assign');
+  var alert = document.getElementById('role-alert');
+  if (form && alert) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = document.getElementById('assign-email').value.trim();
+      var role  = document.getElementById('assign-role').value;
+      var scope = document.getElementById('assign-scope').value;
+      if (!email || !role || !scope) {
+        alert.textContent = 'All required fields must be completed before submitting.';
+        alert.className = 'admin-alert admin-alert--error';
+        alert.hidden = false;
+        return;
+      }
+      alert.textContent = 'Role assigned: ' + email + ' → ' + role + ' / ' + scope + '. Change logged to audit trail.';
+      alert.className = 'admin-alert admin-alert--success';
+      alert.hidden = false;
+      form.reset();
+    });
+  }
+
+  /* Edit/Revoke/Reinstate buttons — demo feedback */
+  document.querySelectorAll('[aria-label^="Edit access"]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      /* In the real app, this opens a modal or navigates to the Role Assignment tab.
+         For the demo, switch to the Role Assignment panel. */
+      activateTab(document.getElementById('tab-roles'));
+      document.getElementById('tab-roles').focus();
+    });
+  });
+
+  document.querySelectorAll('[aria-label^="Revoke access"]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var userAlert = document.getElementById('user-alert');
+      var name = btn.getAttribute('aria-label').replace('Revoke access for ', '');
+      if (userAlert) {
+        userAlert.textContent = 'Access revoked for ' + name + '. Change logged to audit trail.';
+        userAlert.className = 'admin-alert admin-alert--success';
+        userAlert.hidden = false;
+        /* Update the row status badge */
+        var row = btn.closest('tr');
+        if (row) {
+          var statusBadge = row.querySelector('.badge--active');
+          if (statusBadge) {
+            statusBadge.textContent = 'Revoked';
+            statusBadge.className = 'badge badge--suspended';
+          }
+        }
+      }
+    });
+  });
+}());
+</script>
+
+</body>
+</html>
