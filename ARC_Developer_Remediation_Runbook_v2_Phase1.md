@@ -13,7 +13,8 @@ outline in `ARC_Developer_Remediation_Runbook.md` when v2 is assembled.
 
 **Objective:** clear the dependency-CVE backlog across all severities and remove
 the framework conditions that produced it. The base report scanned CRITICAL and
-HIGH only; the full-severity backlog (CRITICAL through LOW, ~398 findings) is in
+HIGH only; the full-severity backlog (CRITICAL through LOW; Grype counts 752,
+Trivy 398 across the two scanners) is in
 `ARC_Secondary_Scan_Findings_2026-06-10.md`. Those findings collapse into the
 package clusters below, because one bump clears every finding tied to that
 package at once.
@@ -59,7 +60,7 @@ card is the full set and confirms the Phase 0 patches stuck.
 
 | Package | Current | Target (latest stable, verify) | Direct/Transitive | Notes |
 |---|---|---|---|---|
-| logback-core / logback-classic | 1.0.7, 1.1.8, 1.2.9 | 1.5.x | Transitive (via Spring/parent) | 1.5.x needs SLF4J 2.x; aligns with the Spring uplift in P1-02 |
+| logback-core / logback-classic | 1.0.7, 1.1.8, 1.2.9 | 1.5.x | Transitive (via Spring/parent) | 1.5.x needs SLF4J 2.x; aligns with the Spring uplift in P1-01 |
 | tika-core / tika-parsers | 1.5, 1.24.1, 1.28.5 | 3.x | Mixed (direct in some poms) | 1.x to 3.x is an API migration, not a bump; parser invocation changes. Ties to P0-14/P0-15 |
 | log4j (1.x) | 1.2.16 | reload4j 1.2.25 (drop-in) or log4j2 2.24.x | Transitive | log4j 1.x is end-of-life. reload4j is the API-compatible interim; log4j2 is the real target |
 | axis | 1.4 | Migrate off Axis 1 (JAX-WS / CXF) | Transitive (legacy SOAP) | Axis 1.4 is unmaintained since 2006. Retire, do not patch |
@@ -104,7 +105,7 @@ work; the code-site triage is P0-15.
 | xstream | 1.4.9 | 1.4.21 | Transitive | 102 findings across all severities (the secondary report's 39 was the MEDIUM/LOW slice), the largest single cluster. After bump, call `XStream.setupDefaultSecurity` with an explicit allowlist wherever it reads external input |
 | snakeyaml | 1.18 | 2.3 | Transitive | 2.x changes the default constructor to `SafeConstructor`; code that relied on arbitrary-type loading needs review |
 | jettison | 1.2 | 1.5.4 | Transitive | JSON/XML stream parser, DoS and entity issues |
-| commons-beanutils | 1.9.4 | 1.11.x | Transitive | Known property-access gadget |
+| commons-beanutils | 1.9.4 | 1.11.0 (or commons-beanutils2 2.0.0-M2) | Transitive | CVE-2025-48734: `declaredClass` property-access gadget; 1.11.0 suppresses it by default |
 
 **Steps**
 1. Apply the bumps as managed overrides (all four are transitive).

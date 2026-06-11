@@ -91,8 +91,9 @@ Re-verify before reuse. Source: full-severity Grype/Trivy on `eeoc-arc-payloads/
 ### Estate sizing
 - 48 repos, ~30,129 source files.
 - Build manifests: **39 pom.xml, 12 build.gradle, 15 package.json = 66**.
-- Dependency findings: ~398 all-severity (CRIT 43 / HIGH 335 / MED ~336 / LOW 38
-  per Grype). Trivy CRIT 17 / HIGH 181 / MED 179 / LOW 21.
+- Dependency findings (the two scanners count differently; keep them separate):
+  Grype 752 all-severity (CRIT 43 / HIGH 335 / MED 336 / LOW 38).
+  Trivy 398 (CRIT 17 / HIGH 181 / MED 179 / LOW 21).
 - Distinct vulnerable packages: ~61 (Trivy names), 114 package+version (Grype).
 
 ### Phase 1 high-fan-out clusters (current versions verified in scan)
