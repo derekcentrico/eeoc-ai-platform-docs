@@ -566,7 +566,7 @@ traversal, each high-impact on its own.
 
 **Verify**
 ```bash
-grep -rnE --include='*.java' 'Runtime.getRuntime\(\).exec|ProcessBuilder|getRealPath|new File\([^)]*request' . | grep -iv test   # each remaining site reviewed and constrained
+grep -rnE --include='*.java' 'Runtime\.getRuntime\(\)\.exec|ProcessBuilder|getRealPath|new File\([^)]*request' . | grep -iv test   # each remaining site reviewed and constrained
 ```
 
 ### P2-17 - SAST taint-flow analysis and review-queue triage
