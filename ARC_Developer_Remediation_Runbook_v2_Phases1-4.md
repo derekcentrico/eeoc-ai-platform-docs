@@ -511,7 +511,7 @@ services, including a dedicated utility:
 
 **Verify**
 ```bash
-grep -rn --include='*.java' 'PBEWithMD5AndDES\|DesEncrypter\|getInstance("DES' .   # expect: no output
+grep -rnE --include='*.java' 'PBEWithMD5AndDES|DesEncrypter|getInstance\(\s*"DES' .   # expect: no output (covers DES, DESede, spaced args)
 ```
 
 ### P1-13 - Replace remaining deprecated base images
@@ -542,7 +542,7 @@ non-reproducible). Each carries its own OS-package CVE backlog.
 
 **Verify**
 ```bash
-grep -rhn --include='Dockerfile*' '^FROM' . | grep -iE 'buster|:latest|^FROM nginx$|openjdk:11'   # expect: no output
+grep -rhnE --include='Dockerfile*' '^FROM\s' . | grep -iE 'buster|:latest|^FROM\s+nginx\s*$|openjdk:11'   # expect: no output
 ```
 
 ### P1-14 - New-service language standard
@@ -965,7 +965,8 @@ input into native SQL is a direct injection.
 
 **Verify**
 ```bash
-grep -rnE --include='*.java' 'createQuery\(.*\+|createNativeQuery\(.*\+' . | grep -iv test | wc -l   # trends to 0 (value-bearing concat)
+# indicative only: catches inline concat. Also review variable-built queries (String sql = "..." + x; em.createQuery(sql))
+grep -rnE --include='*.java' 'createQuery\(.*\+|createNativeQuery\(.*\+|"(SELECT|INSERT|UPDATE|DELETE)[^"]*"\s*\+' . | grep -iv test | wc -l   # trends to 0
 ```
 
 ### P2-12 - Exception handling and stack-trace cleanup
@@ -996,7 +997,7 @@ fixes the log path).
 
 **Verify**
 ```bash
-grep -rn --include='*.java' 'printStackTrace()' . | wc -l   # expect: 0
+grep -rnE --include='*.java' 'printStackTrace\s*\(\s*\)' . | wc -l   # expect: 0
 ```
 
 ### P2-13 - Harden session cookie configuration
@@ -1689,7 +1690,7 @@ against the gates this phase established.
 |---|---|---|---|
 | 1.0 | 2026-06-10 | Derek Gordon / OCIO | Consolidated Phases 1-4 task cards into one runbook |
 | 1.1 | 2026-06-12 | Derek Gordon / OCIO | Add integration-readiness cards (P1-11, P2-10, P4-07); reinforce MEDIUM/LOW coverage; review fixes |
-| 1.2 | 2026-06-12 | Derek Gordon / OCIO | Close coverage gaps: crypto, SQLi, exceptions, sessions, base images, USWDS, navigation, test coverage, Alfresco, archival, language standard, feature flags |
+| 1.2 | 2026-06-12 | Derek Gordon / OCIO | Close coverage gaps: 12 cards (crypto, SQLi, exceptions, sessions, base images, USWDS, nav, coverage, Alfresco, archival, language, feature flags); verify-command robustness |
 
 Assembled from `ARC_Developer_Remediation_Runbook_v2_Phase{1,2,3,4}.md`. Phase 0
 is delivered separately. Coverage matrix: `ARC_Coverage_Traceability_Matrix.md`.

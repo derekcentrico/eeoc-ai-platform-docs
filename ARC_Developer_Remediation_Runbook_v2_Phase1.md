@@ -479,7 +479,7 @@ services, including a dedicated utility:
 
 **Verify**
 ```bash
-grep -rn --include='*.java' 'PBEWithMD5AndDES\|DesEncrypter\|getInstance("DES' .   # expect: no output
+grep -rnE --include='*.java' 'PBEWithMD5AndDES|DesEncrypter|getInstance\(\s*"DES' .   # expect: no output (covers DES, DESede, spaced args)
 ```
 
 ### P1-13 - Replace remaining deprecated base images
@@ -510,7 +510,7 @@ non-reproducible). Each carries its own OS-package CVE backlog.
 
 **Verify**
 ```bash
-grep -rhn --include='Dockerfile*' '^FROM' . | grep -iE 'buster|:latest|^FROM nginx$|openjdk:11'   # expect: no output
+grep -rhnE --include='Dockerfile*' '^FROM\s' . | grep -iE 'buster|:latest|^FROM\s+nginx\s*$|openjdk:11'   # expect: no output
 ```
 
 ### P1-14 - New-service language standard

@@ -387,7 +387,8 @@ input into native SQL is a direct injection.
 
 **Verify**
 ```bash
-grep -rnE --include='*.java' 'createQuery\(.*\+|createNativeQuery\(.*\+' . | grep -iv test | wc -l   # trends to 0 (value-bearing concat)
+# indicative only: catches inline concat. Also review variable-built queries (String sql = "..." + x; em.createQuery(sql))
+grep -rnE --include='*.java' 'createQuery\(.*\+|createNativeQuery\(.*\+|"(SELECT|INSERT|UPDATE|DELETE)[^"]*"\s*\+' . | grep -iv test | wc -l   # trends to 0
 ```
 
 ### P2-12 - Exception handling and stack-trace cleanup
@@ -418,7 +419,7 @@ fixes the log path).
 
 **Verify**
 ```bash
-grep -rn --include='*.java' 'printStackTrace()' . | wc -l   # expect: 0
+grep -rnE --include='*.java' 'printStackTrace\s*\(\s*\)' . | wc -l   # expect: 0
 ```
 
 ### P2-13 - Harden session cookie configuration
