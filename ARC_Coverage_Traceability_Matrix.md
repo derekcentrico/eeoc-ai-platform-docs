@@ -137,7 +137,7 @@ All twelve were added:
 
 Card steps were spot-checked against the current source:
 
-- P1-12 crypto: `PBEWithMD5AndDES` confirmed at `RespondentPortal/.../DesEncrypter.java:41`, 10 sites across RespondentPortal and FedSep.
+- P1-12 crypto: `PBEWithMD5AndDES` confirmed at `RespondentPortal/.../DesEncrypter.java:41`; the Verify pattern returns 30 occurrences (15 after removing nested-checkout duplicates) across five files in RespondentPortal and FedSep.
 - P2-11 SQL: ~286 value-concatenating query sites confirmed, heaviest in ImsNXG (e.g. `DocumentManager.java:146`).
 - P2-12 exceptions: 1,546 broad catches and 590 `printStackTrace()` confirmed.
 - P2-13 sessions: 176 `HttpSession` usages confirmed.

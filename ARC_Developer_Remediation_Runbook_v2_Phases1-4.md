@@ -252,8 +252,15 @@ the Tika and POI 5.3.0 seen elsewhere.
 
 **Verify**
 ```bash
-grep -rhn 'tika-core\|name: .tika-core\|<artifactId>poi' --include='pom.xml' --include='build.gradle' . \
-  | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | sort -u   # expect: one Tika line, one POI line
+# Read installed versions from the scanner, not the manifests: POI is declared
+# group/name/version in Gradle and split across lines in Maven poms, so an
+# inline manifest version-extract misses it.
+grype dir:. --output json | python3 -c "import json,sys,collections; \
+  d=json.load(sys.stdin); v=collections.defaultdict(set); \
+  [v[m['artifact']['name']].add(m['artifact']['version']) \
+   for m in d['matches'] if m['artifact']['name'] in ('tika-core','tika-parsers','poi','poi-ooxml')]; \
+  print({k:sorted(x) for k,x in v.items()})"
+# expect: one Tika line and one POI line as modules converge
 ```
 
 ### P1-05 - npm CRITICAL packages
@@ -498,9 +505,12 @@ curl -fsSL https://<service-url>/v3/api-docs | python3 -c "import json,sys; json
 
 **Why:** `PBEWithMD5AndDES` pairs a broken hash (MD5) with a broken cipher
 (56-bit DES, brute-forceable in hours). Anything protected with it should be
-treated as recoverable by an attacker. It appears at 10 sites across two
-services, including a dedicated utility:
-`RespondentPortal-ims-aks/.../utility/DesEncrypter.java:41` and FedSep.
+treated as recoverable by an attacker. The Verify pattern returns 30 occurrences
+(15 after removing nested-checkout duplicates) across five files in two services,
+including a dedicated utility:
+`RespondentPortal-ims-aks/.../utility/DesEncrypter.java:41` and FedSep
+(`FedSepAppCache.java`, `hearingappeal/.../ValidateUtils.java`,
+`util/DesEncrypter.java`).
 
 **Steps**
 1. Replace the DES/MD5 scheme with AES-256-GCM (authenticated encryption). Derive
@@ -553,7 +563,9 @@ non-reproducible). Each carries its own OS-package CVE backlog.
 
 **Verify**
 ```bash
-grep -rhnE --include='Dockerfile*' '^FROM\s' . | grep -iE 'buster|:latest|^FROM\s+nginx\s*$|openjdk:11'   # expect: no output
+# No -n: the line-number prefix would push the FROM token off the start of line
+# and break the anchored nginx sub-pattern, hiding the untagged-nginx images.
+grep -rhE --include='Dockerfile*' '^FROM\s' . | grep -iE 'buster|:latest|^FROM\s+nginx\s*$|openjdk:11'   # expect: no output
 ```
 
 ### P1-14 - New-service language standard
@@ -1224,7 +1236,12 @@ move that requires component changes.
 
 **Verify**
 ```bash
-grep -rh '"@angular/core"' */package.json 2>/dev/null | sort -u   # one version line
+# Recurse (ImsNXG-NG keeps its app under client/, so a one-level */package.json
+# glob misses it) and collapse nested self-copies.
+grep -rl --include=package.json '"@angular/core"' . | grep -v node_modules \
+  | sed -E 's#([^/]+)/\1/#\1/#' | sort -u \
+  | while read f; do echo "$f -> $(grep '@angular/core' "$f" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"; done
+# expect: one version line across all three apps
 ```
 
 ### P3-03 - Section 508: text alternatives, language, keyboard access
@@ -1314,8 +1331,9 @@ every change.
 
 **Verify**
 ```bash
-# per frontend: axe test target exists and runs
-grep -rln 'axe-core\|@axe-core' */package.json 2>/dev/null
+# per frontend: axe test target exists and runs (recurse so nested frontends
+# such as ImsNXG-NG/client are included, not just root-level package.json)
+grep -rln --include=package.json 'axe-core\|@axe-core' . | grep -v node_modules
 ```
 
 ---

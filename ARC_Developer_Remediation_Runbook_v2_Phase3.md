@@ -104,7 +104,12 @@ move that requires component changes.
 
 **Verify**
 ```bash
-grep -rh '"@angular/core"' */package.json 2>/dev/null | sort -u   # one version line
+# Recurse (ImsNXG-NG keeps its app under client/, so a one-level */package.json
+# glob misses it) and collapse nested self-copies.
+grep -rl --include=package.json '"@angular/core"' . | grep -v node_modules \
+  | sed -E 's#([^/]+)/\1/#\1/#' | sort -u \
+  | while read f; do echo "$f -> $(grep '@angular/core' "$f" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"; done
+# expect: one version line across all three apps
 ```
 
 ### P3-03 - Section 508: text alternatives, language, keyboard access
@@ -194,8 +199,9 @@ every change.
 
 **Verify**
 ```bash
-# per frontend: axe test target exists and runs
-grep -rln 'axe-core\|@axe-core' */package.json 2>/dev/null
+# per frontend: axe test target exists and runs (recurse so nested frontends
+# such as ImsNXG-NG/client are included, not just root-level package.json)
+grep -rln --include=package.json 'axe-core\|@axe-core' . | grep -v node_modules
 ```
 
 ---
