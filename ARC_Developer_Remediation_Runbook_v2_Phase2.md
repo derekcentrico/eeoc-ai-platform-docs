@@ -356,6 +356,133 @@ curl -s -o /dev/null -w '%{http_code}\n' https://<arc-service>/<protected-endpoi
 
 ---
 
+### P2-11 - Remediate SQL injection
+
+| | |
+|---|---|
+| **Severity** | HIGH |
+| **Source** | base report 6.5; audit 4.9 / Phase 2.4 |
+
+**Why:** native queries and string-built queries appear at ~1,900 sites; the
+real injection surface is the subset that concatenates a value into the query
+text, ~286 sites, concentrated in ImsNXG (e.g.
+`ImsNXG/.../service/DocumentManager.java:146`). Any one that concatenates request
+input into native SQL is a direct injection.
+
+**Steps**
+1. Triage the ~286 concatenation sites: separate those that concatenate a
+   request-derived value (real injection) from those that concatenate an internal
+   constant (lower risk, still fix for consistency).
+2. Convert to parameter binding: JPA named/positional parameters
+   (`setParameter`), or `PreparedStatement` placeholders. Never concatenate a
+   value into the query string.
+3. Where a dynamic identifier (table/column) must be interpolated, validate it
+   against an allowlist of known identifiers; never bind it from user input.
+4. Add a SAST rule (the Java equivalent of Bandit B608) to fail the build on new
+   string-concatenated queries.
+
+**Done when**
+- [ ] No query concatenates a request-derived value; all values are bound.
+- [ ] Dynamic identifiers are allowlisted, not user-supplied.
+
+**Verify**
+```bash
+# indicative only: catches inline concat. Also review variable-built queries (String sql = "..." + x; em.createQuery(sql))
+grep -rnE --include='*.java' 'createQuery\(.*\+|createNativeQuery\(.*\+|"(SELECT|INSERT|UPDATE|DELETE)[^"]*"\s*\+' . | grep -iv test | wc -l   # trends to 0
+```
+
+### P2-12 - Exception handling and stack-trace cleanup
+
+| | |
+|---|---|
+| **Severity** | MEDIUM |
+| **Source** | base report 6.10; audit 4.14 |
+
+**Why:** 1,546 broad `catch (Exception)` blocks swallow specific failures, and
+590 `printStackTrace()` calls write stack traces to stdout/stderr, leaking class
+names, paths, and SQL fragments and bypassing the masking pipeline. This is the
+logging cleanup that P2-10 defers to (RFC 7807 fixes the response path; this
+fixes the log path).
+
+**Steps**
+1. Replace `printStackTrace()` with a structured logger call at the appropriate
+   level, logging a message and the exception, never the raw trace to stdout.
+2. Narrow broad `catch (Exception)` to the specific exceptions actually thrown;
+   where a catch-all is genuinely needed, log and rethrow or handle explicitly.
+3. Route through the platform logging pattern so PII masking (Phase 0 P0-13)
+   applies on the log path.
+
+**Done when**
+- [ ] No `printStackTrace()` in application code.
+- [ ] Broad catches narrowed or justified; exceptions logged via the structured
+      logger.
+
+**Verify**
+```bash
+grep -rnE --include='*.java' 'printStackTrace\s*\(\s*\)' . | wc -l   # expect: 0
+```
+
+### P2-13 - Harden session cookie configuration
+
+| | |
+|---|---|
+| **Severity** | MEDIUM |
+| **Source** | base report 6.8; audit 4.13 |
+
+**Why:** 176 `HttpSession` usages with no secure cookie configuration. Beyond the
+timeout fix (Phase 0 P0-06), the session cookie itself needs the security flags,
+or the session is exposed to theft over HTTP and to script access.
+
+**Steps**
+1. Set the session cookie flags on every service: `Secure` (HTTPS only),
+   `HttpOnly` (no script access), and `SameSite=Lax` (or `Strict` where no
+   cross-site flow needs it).
+2. For Spring Boot, set `server.servlet.session.cookie.secure/http-only/same-site`;
+   for the JBoss/servlet services, set them in `web.xml` `<cookie-config>`.
+3. Confirm session fixation protection is enabled (Spring Security default;
+   verify on the servlet services).
+
+**Done when**
+- [ ] Every service sets Secure, HttpOnly, and SameSite on the session cookie.
+
+**Verify**
+```bash
+curl -s -I https://<service-url>/<login> | grep -i 'set-cookie'   # shows Secure; HttpOnly; SameSite
+```
+
+### P2-14 - Feature-flag gating and audit-logging conformance
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (platform conformance) |
+| **Source** | audit 2.8 |
+
+**Why:** the platform standard gates every outbound integration behind a boolean
+environment flag that defaults off, so a service starts and passes its health
+check in standalone mode with all integrations disabled. ARC services must adopt
+this so integration (P2-10, P4-07) is opt-in per environment, and any AI-mediated
+action carries the platform audit record.
+
+**Steps**
+1. Gate each outbound integration behind a default-off environment flag
+   (matching `MCP_ENABLED`/`MCP_PROTOCOL_ENABLED` and the per-integration
+   pattern); the service must be healthy with all flags false.
+2. For any AI-mediated capability, emit the HMAC-signed, 7-year WORM audit record
+   (the platform AI-audit standard; see P4-07).
+
+**Done when**
+- [ ] Every outbound integration is behind a default-off flag; health passes with
+      all integrations disabled.
+- [ ] AI-mediated actions emit the signed, WORM-retained audit record.
+
+**Verify**
+```bash
+# service starts healthy with all integration flags off
+<run health check with integration flags unset/false>   # expect: healthy
+```
+
+---
+
 ## Phase 2 exit gate
 
 - [ ] Every endpoint resolves to an explicit authorization rule; default-deny
@@ -370,6 +497,10 @@ curl -s -o /dev/null -w '%{http_code}\n' https://<arc-service>/<protected-endpoi
 - [ ] CSRF posture explicit and justified per service (P2-09).
 - [ ] Authenticated integration boundary enforced; ARC accepts only the gateway
       identity, returns RFC 7807, and propagates X-Request-ID (P2-10).
+- [ ] SQL queries parameterized; no value concatenation (P2-11).
+- [ ] No printStackTrace; broad catches narrowed; exceptions logged safely (P2-12).
+- [ ] Session cookies set Secure, HttpOnly, SameSite (P2-13).
+- [ ] Integrations behind default-off flags; AI actions audited (P2-14).
 
 ---
 

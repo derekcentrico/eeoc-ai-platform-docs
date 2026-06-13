@@ -254,6 +254,81 @@ grep -rln 'contract' <gateway-repo>/tests/ <ci-config>
 
 ---
 
+### P4-08 - Raise test coverage
+
+| | |
+|---|---|
+| **Severity** | MEDIUM |
+| **Source** | base report 6.4; audit 4.3 |
+
+**Why:** test coverage is near zero (the audit measured roughly 5% on core
+business services and 3% on support services). Every other phase changes code,
+and without tests the changes ship unverified and regress silently.
+
+**Steps**
+1. Set coverage targets per tier: 60% line coverage on core business services,
+   50% on support services.
+2. Backfill tests on the highest-risk paths first: the auth boundary (P2-01,
+   P2-10), the upload/parse paths (P0-14), and the crypto and SQL changes
+   (P1-12, P2-11).
+3. Add a coverage gate to CI (P4-01) that ratchets: coverage may not drop below
+   the current number on any change.
+
+**Done when**
+- [ ] Core services at 60%, support services at 50% line coverage.
+- [ ] CI enforces a non-decreasing coverage ratchet.
+
+**Verify**
+```bash
+# coverage report meets the tier target (tool varies: jacoco for Java, pytest-cov for Python)
+<run coverage> && echo "core >= 60% / support >= 50%"
+```
+
+### P4-09 - Resolve the Alfresco end-of-life decision
+
+| | |
+|---|---|
+| **Severity** | MEDIUM |
+| **Source** | audit 4.1 |
+
+**Why:** Alfresco 6.2.2 is end-of-life (it is the content repository behind the
+`alfresco-share` and `alfresco-content-repository` images in P1-13). An EOL
+content platform accrues unpatched CVEs and blocks the base-image cleanup.
+
+**Steps**
+1. Make the decision explicitly: upgrade to a supported Alfresco line, migrate
+   the content to the platform's content store, or retire if the capability is
+   no longer needed.
+2. Whichever path, record it and sequence the P1-13 Alfresco base-image work
+   behind it.
+
+**Done when**
+- [ ] A recorded Alfresco decision (upgrade / migrate / retire) with an owner.
+- [ ] The P1-13 Alfresco images are resolved per that decision.
+
+### P4-10 - Repository archival policy
+
+| | |
+|---|---|
+| **Severity** | LOW (governance) |
+| **Source** | audit 4.6 |
+
+**Why:** stale, superseded, and proof-of-concept repos are a reuse risk even when
+not deployed. A developer looking for code to copy will find the old patterns,
+hardcoded credentials, DES encryption, and `ObjectInputStream` usage, and carry
+them into new work. This complements the consolidation in P4-06.
+
+**Steps**
+1. Define an archival policy: repos past an inactivity threshold, or marked
+   superseded/PoC, are archived (read-only) or deleted.
+2. Add a visible banner or README note on archived repos warning against reuse.
+3. Apply the policy as part of the P4-06 consolidation sweep.
+
+**Done when**
+- [ ] Archival policy documented and applied; stale/PoC repos archived.
+
+---
+
 ## Phase 4 exit gate
 
 - [ ] Standard security gate runs in every repo, blocking on CRITICAL/HIGH (P4-01).
@@ -264,6 +339,9 @@ grep -rln 'contract' <gateway-repo>/tests/ <ci-config>
 - [ ] Dormant/duplicate repos retired; nested checkouts removed (P4-06).
 - [ ] ARC governed through the gateway-fronted MCP spoke; contract tests and
       end-to-end tracing in place; AI-mediated capabilities audited (P4-07).
+- [ ] Test coverage at tier targets; CI coverage ratchet in place (P4-08).
+- [ ] Alfresco EOL decision recorded and actioned (P4-09).
+- [ ] Repository archival policy documented and applied (P4-10).
 
 ---
 

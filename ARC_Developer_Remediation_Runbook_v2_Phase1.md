@@ -446,6 +446,94 @@ re-plumbing each service.
 curl -fsSL https://<service-url>/v3/api-docs | python3 -c "import json,sys; json.load(sys.stdin)" && echo OK
 ```
 
+### P1-12 - Replace broken cryptography
+
+| | |
+|---|---|
+| **Severity** | CRITICAL |
+| **Source** | base report 6.6; audit 4.1 / Phase 1.4 |
+
+**Why:** `PBEWithMD5AndDES` pairs a broken hash (MD5) with a broken cipher
+(56-bit DES, brute-forceable in hours). Anything protected with it should be
+treated as recoverable by an attacker. It appears at 10 sites across two
+services, including a dedicated utility:
+`RespondentPortal-ims-aks/.../utility/DesEncrypter.java:41` and FedSep.
+
+**Steps**
+1. Replace the DES/MD5 scheme with AES-256-GCM (authenticated encryption). Derive
+   keys with a modern KDF (PBKDF2-HMAC-SHA256 with a high iteration count, or
+   Argon2) and a per-value random salt and IV; do not reuse the hardcoded salt.
+2. Pull the key from Key Vault (Phase 0 P0-01..04 pattern), never a constant.
+3. Re-encrypt existing stored ciphertext: decrypt with the legacy routine once
+   during a migration window, re-encrypt with AES-256-GCM, then remove the legacy
+   decryptor.
+4. Delete `DesEncrypter` and any `PBEWithMD5AndDES` references.
+
+**Do NOT**
+- Do not leave the legacy decrypt path in place "for old data" after migration;
+  it is a downgrade gadget.
+
+**Done when**
+- [ ] No `PBEWithMD5AndDES`, `DesEncrypter`, or bare `DES` cipher remains.
+- [ ] Stored values are re-encrypted with AES-256-GCM; keys come from Key Vault.
+
+**Verify**
+```bash
+grep -rnE --include='*.java' 'PBEWithMD5AndDES|DesEncrypter|getInstance\(\s*"DES' .   # expect: no output (covers DES, DESede, spaced args)
+```
+
+### P1-13 - Replace remaining deprecated base images
+
+| | |
+|---|---|
+| **Severity** | HIGH |
+| **Source** | base report 2.5; audit Phase 1.3 |
+
+**Why:** beyond the JBoss base (P1-09), the estate still ships end-of-life or
+unpinned base images: `debian:buster-slim` (EOL), `alfresco/alfresco-share:6.2.2`
+and `alfresco-content-repository:6.2.2.23` (EOL, see P4-09), `openjdk:11-jre-slim`
+(superseded), and untagged `FROM nginx` (a moving `:latest` that makes builds
+non-reproducible). Each carries its own OS-package CVE backlog.
+
+**Steps**
+1. Rebase Java services onto a current `eclipse-temurin` JRE image on the chosen
+   LTS (P1-10).
+2. Pin every base image to a digest or explicit version; replace untagged
+   `nginx` with `nginx:<version>-alpine`.
+3. Replace `debian:buster-slim` with a supported slim base.
+4. The Alfresco images depend on the P4-09 Alfresco decision; rebase or retire
+   per that outcome.
+
+**Done when**
+- [ ] No EOL or untagged base image in any Dockerfile.
+- [ ] Every `FROM` is pinned to a version or digest.
+
+**Verify**
+```bash
+grep -rhnE --include='Dockerfile*' '^FROM\s' . | grep -iE 'buster|:latest|^FROM\s+nginx\s*$|openjdk:11'   # expect: no output
+```
+
+### P1-14 - New-service language standard
+
+| | |
+|---|---|
+| **Severity** | LOW (governance) |
+| **Source** | audit Phase 1.6 |
+
+**Why:** when a JBoss/JSF service is fully rewritten (not just migrated), it
+should land on the platform's standard stack rather than perpetuating the legacy
+one. The rest of the EEOC platform runs Python 3.13 with Flask or FastAPI.
+
+**Steps**
+1. For any service slated for full rewrite (not in-place migration), default to
+   Python 3.13 / Flask or FastAPI, matching the platform standard.
+2. Record the decision per service; a straight migration that preserves the Java
+   service stays Java on the current LTS (P1-10).
+
+**Done when**
+- [ ] Rewrite candidates have a recorded target-stack decision aligned to the
+      platform standard.
+
 ---
 
 ## Phase 1 exit gate
@@ -459,6 +547,9 @@ curl -fsSL https://<service-url>/v3/api-docs | python3 -c "import json,sys; json
 - [ ] JBoss base image retired or remaining services deferred to Phase 3 (P1-09).
 - [ ] Runtimes consolidated onto the chosen LTS (P1-10).
 - [ ] Each service publishes a versioned OpenAPI contract (P1-11).
+- [ ] Broken crypto replaced with AES-256-GCM; no PBEWithMD5AndDES/DES (P1-12).
+- [ ] No EOL or untagged base images; all pinned (P1-13).
+- [ ] Rewrite candidates have a recorded target-stack decision (P1-14).
 - [ ] Full-severity re-scan: no CRITICAL/HIGH dependency findings remain; the
       MEDIUM/LOW cleared by the cluster bumps is confirmed gone, and any residual
       MEDIUM/LOW is tracked into the Phase 4 monitoring backlog (P4-03).

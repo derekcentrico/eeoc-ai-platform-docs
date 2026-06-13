@@ -200,6 +200,52 @@ grep -rln 'axe-core\|@axe-core' */package.json 2>/dev/null
 
 ---
 
+### P3-06 - Standardize frontends on USWDS
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (508 and consistency) |
+| **Source** | audit Phase 3.3 |
+
+**Why:** AttorneyPortal already uses USWDS 3.7 (the US Web Design System). Its
+base components ship WCAG 2.1 AA compliance and the federal standard look and
+feel. Standardizing the other frontends on USWDS reduces the per-component 508
+work in P3-03/P3-04 and gives the suite one design system.
+
+**Steps**
+1. Adopt USWDS in each Angular frontend as the component and design-token base,
+   using AttorneyPortal (USWDS 3.7) as the reference.
+2. Replace bespoke components with USWDS equivalents where one exists; the
+   built-in accessibility carries the 508 baseline.
+3. Keep the EEOC contrast overrides where the design system defaults fall short
+   of the platform 4.5:1 / 3:1 requirements.
+
+**Done when**
+- [ ] Each frontend uses USWDS for its base components and tokens.
+
+### P3-07 - Cross-application navigation
+
+| | |
+|---|---|
+| **Severity** | LOW (UX consistency) |
+| **Source** | audit Phase 3.5 |
+
+**Why:** users should move between the ARC portals and the rest of the EEOC
+application suite without friction: one login, consistent navigation, consistent
+look and feel. This builds on the unified auth from Phase 2 and the USWDS
+baseline (P3-06).
+
+**Steps**
+1. Adopt a shared navigation pattern and header across the portals, aligned with
+   the platform's cross-application navigation.
+2. Reuse the single sign-on established by the auth work so a user does not
+   re-authenticate moving between portals.
+
+**Done when**
+- [ ] Portals share a consistent navigation and a single sign-on session.
+
+---
+
 ## Phase 3 exit gate
 
 - [ ] No deployable service serves JSP/XHTML; JBoss image removed (P3-01).
@@ -207,6 +253,8 @@ grep -rln 'axe-core\|@axe-core' */package.json 2>/dev/null
 - [ ] Images, language, and keyboard access remediated in retained UIs (P3-03).
 - [ ] Forms, tables, charts, and ARIA meet 508 (P3-04).
 - [ ] axe-core 508 gate in CI for every frontend (P3-05).
+- [ ] Frontends standardized on USWDS (P3-06).
+- [ ] Cross-application navigation and single sign-on across portals (P3-07).
 
 ---
 
