@@ -14,7 +14,8 @@ plan, assembled from the per-phase v2 files into one reference. Phase 0
 This document supersedes the Phases 1-4 outline in
 `ARC_Developer_Remediation_Runbook.md`. The card content matches the per-phase
 v2 files; each phase was drafted with a four-loop verification pass against the
-`eeoc-arc-payloads/` source.
+`eeoc-arc-payloads/` source. Coverage against every audit finding and phased-plan
+task is tracked in `ARC_Coverage_Traceability_Matrix.md`.
 
 Beyond clearing the security backlog, the plan modernizes ARC into an
 integration-ready upstream: a published API contract (P1-11), an authenticated
@@ -35,10 +36,10 @@ capabilities can consume ARC safely without re-plumbing each service.
 
 | Phase | Theme | Timeline | Cards |
 |---|---|---|---|
-| 1 | Dependency modernization, JBoss retirement, runtime consolidation, API contract | months 2-6 | P1-01..P1-11 |
-| 2 | Security architecture (authz, injection, validation, SSRF, rate limiting, headers, integration boundary) | months 4-9 | P2-01..P2-10 |
-| 3 | Frontend modernization and Section 508 | months 6-12 | P3-01..P3-05 |
-| 4 | Consolidation, continuous security, governed integration surface | months 10-18 | P4-01..P4-07 |
+| 1 | Dependency modernization, crypto, JBoss/runtime, base images, API contract | months 2-6 | P1-01..P1-14 |
+| 2 | Security architecture (authz, injection, SQLi, validation, SSRF, rate limiting, headers, sessions, integration boundary) | months 4-9 | P2-01..P2-14 |
+| 3 | Frontend modernization, 508, USWDS, cross-app navigation | months 6-12 | P3-01..P3-07 |
+| 4 | Consolidation, continuous security, governed integration, test coverage, Alfresco, archival | months 10-18 | P4-01..P4-10 |
 
 The ~200 MEDIUM/LOW dependency findings are not a separate backlog: they are
 cleared by the same Phase 1 cluster bumps that clear CRITICAL/HIGH (one bump per
@@ -47,7 +48,7 @@ the Phase 4 monitoring backlog (P4-03).
 
 ---
 
-## Phase 1 - Dependency Modernization, JBoss Retirement, Runtime Consolidation, API Contract
+## Phase 1 - Dependency Modernization, Cryptography, JBoss/Runtime, Base Images, API Contract
 
 **Objective:** clear the dependency-CVE backlog across all severities and remove
 the framework conditions that produced it. The base report scanned CRITICAL and
@@ -477,6 +478,94 @@ re-plumbing each service.
 curl -fsSL https://<service-url>/v3/api-docs | python3 -c "import json,sys; json.load(sys.stdin)" && echo OK
 ```
 
+### P1-12 - Replace broken cryptography
+
+| | |
+|---|---|
+| **Severity** | CRITICAL |
+| **Source** | base report 6.6; audit 4.1 / Phase 1.4 |
+
+**Why:** `PBEWithMD5AndDES` pairs a broken hash (MD5) with a broken cipher
+(56-bit DES, brute-forceable in hours). Anything protected with it should be
+treated as recoverable by an attacker. It appears at 10 sites across two
+services, including a dedicated utility:
+`RespondentPortal-ims-aks/.../utility/DesEncrypter.java:41` and FedSep.
+
+**Steps**
+1. Replace the DES/MD5 scheme with AES-256-GCM (authenticated encryption). Derive
+   keys with a modern KDF (PBKDF2-HMAC-SHA256 with a high iteration count, or
+   Argon2) and a per-value random salt and IV; do not reuse the hardcoded salt.
+2. Pull the key from Key Vault (Phase 0 P0-01..04 pattern), never a constant.
+3. Re-encrypt existing stored ciphertext: decrypt with the legacy routine once
+   during a migration window, re-encrypt with AES-256-GCM, then remove the legacy
+   decryptor.
+4. Delete `DesEncrypter` and any `PBEWithMD5AndDES` references.
+
+**Do NOT**
+- Do not leave the legacy decrypt path in place "for old data" after migration;
+  it is a downgrade gadget.
+
+**Done when**
+- [ ] No `PBEWithMD5AndDES`, `DesEncrypter`, or bare `DES` cipher remains.
+- [ ] Stored values are re-encrypted with AES-256-GCM; keys come from Key Vault.
+
+**Verify**
+```bash
+grep -rn --include='*.java' 'PBEWithMD5AndDES\|DesEncrypter\|getInstance("DES' .   # expect: no output
+```
+
+### P1-13 - Replace remaining deprecated base images
+
+| | |
+|---|---|
+| **Severity** | HIGH |
+| **Source** | base report 2.5; audit Phase 1.3 |
+
+**Why:** beyond the JBoss base (P1-09), the estate still ships end-of-life or
+unpinned base images: `debian:buster-slim` (EOL), `alfresco/alfresco-share:6.2.2`
+and `alfresco-content-repository:6.2.2.23` (EOL, see P4-09), `openjdk:11-jre-slim`
+(superseded), and untagged `FROM nginx` (a moving `:latest` that makes builds
+non-reproducible). Each carries its own OS-package CVE backlog.
+
+**Steps**
+1. Rebase Java services onto a current `eclipse-temurin` JRE image on the chosen
+   LTS (P1-10).
+2. Pin every base image to a digest or explicit version; replace untagged
+   `nginx` with `nginx:<version>-alpine`.
+3. Replace `debian:buster-slim` with a supported slim base.
+4. The Alfresco images depend on the P4-09 Alfresco decision; rebase or retire
+   per that outcome.
+
+**Done when**
+- [ ] No EOL or untagged base image in any Dockerfile.
+- [ ] Every `FROM` is pinned to a version or digest.
+
+**Verify**
+```bash
+grep -rhn --include='Dockerfile*' '^FROM' . | grep -iE 'buster|:latest|^FROM nginx$|openjdk:11'   # expect: no output
+```
+
+### P1-14 - New-service language standard
+
+| | |
+|---|---|
+| **Severity** | LOW (governance) |
+| **Source** | audit Phase 1.6 |
+
+**Why:** when a JBoss/JSF service is fully rewritten (not just migrated), it
+should land on the platform's standard stack rather than perpetuating the legacy
+one. The rest of the EEOC platform runs Python 3.13 with Flask or FastAPI.
+
+**Steps**
+1. For any service slated for full rewrite (not in-place migration), default to
+   Python 3.13 / Flask or FastAPI, matching the platform standard.
+2. Record the decision per service; a straight migration that preserves the Java
+   service stays Java on the current LTS (P1-10).
+
+**Done when**
+- [ ] Rewrite candidates have a recorded target-stack decision aligned to the
+      platform standard.
+
 ---
 
 ### Phase 1 exit gate
@@ -490,12 +579,14 @@ curl -fsSL https://<service-url>/v3/api-docs | python3 -c "import json,sys; json
 - [ ] JBoss base image retired or remaining services deferred to Phase 3 (P1-09).
 - [ ] Runtimes consolidated onto the chosen LTS (P1-10).
 - [ ] Each service publishes a versioned OpenAPI contract (P1-11).
+- [ ] Broken crypto replaced with AES-256-GCM; no PBEWithMD5AndDES/DES (P1-12).
+- [ ] No EOL or untagged base images; all pinned (P1-13).
+- [ ] Rewrite candidates have a recorded target-stack decision (P1-14).
 - [ ] Full-severity re-scan: no CRITICAL/HIGH dependency findings remain; the
       MEDIUM/LOW cleared by the cluster bumps is confirmed gone, and any residual
       MEDIUM/LOW is tracked into the Phase 4 monitoring backlog (P4-03).
 
 ---
-
 
 ---
 
@@ -843,6 +934,132 @@ curl -s -o /dev/null -w '%{http_code}\n' https://<arc-service>/<protected-endpoi
 
 ---
 
+### P2-11 - Remediate SQL injection
+
+| | |
+|---|---|
+| **Severity** | HIGH |
+| **Source** | base report 6.5; audit 4.9 / Phase 2.4 |
+
+**Why:** native queries and string-built queries appear at ~1,900 sites; the
+real injection surface is the subset that concatenates a value into the query
+text, ~286 sites, concentrated in ImsNXG (e.g.
+`ImsNXG/.../service/DocumentManager.java:146`). Any one that concatenates request
+input into native SQL is a direct injection.
+
+**Steps**
+1. Triage the ~286 concatenation sites: separate those that concatenate a
+   request-derived value (real injection) from those that concatenate an internal
+   constant (lower risk, still fix for consistency).
+2. Convert to parameter binding: JPA named/positional parameters
+   (`setParameter`), or `PreparedStatement` placeholders. Never concatenate a
+   value into the query string.
+3. Where a dynamic identifier (table/column) must be interpolated, validate it
+   against an allowlist of known identifiers; never bind it from user input.
+4. Add a SAST rule (the Java equivalent of Bandit B608) to fail the build on new
+   string-concatenated queries.
+
+**Done when**
+- [ ] No query concatenates a request-derived value; all values are bound.
+- [ ] Dynamic identifiers are allowlisted, not user-supplied.
+
+**Verify**
+```bash
+grep -rnE --include='*.java' 'createQuery\(.*\+|createNativeQuery\(.*\+' . | grep -iv test | wc -l   # trends to 0 (value-bearing concat)
+```
+
+### P2-12 - Exception handling and stack-trace cleanup
+
+| | |
+|---|---|
+| **Severity** | MEDIUM |
+| **Source** | base report 6.10; audit 4.14 |
+
+**Why:** 1,546 broad `catch (Exception)` blocks swallow specific failures, and
+590 `printStackTrace()` calls write stack traces to stdout/stderr, leaking class
+names, paths, and SQL fragments and bypassing the masking pipeline. This is the
+logging cleanup that P2-10 defers to (RFC 7807 fixes the response path; this
+fixes the log path).
+
+**Steps**
+1. Replace `printStackTrace()` with a structured logger call at the appropriate
+   level, logging a message and the exception, never the raw trace to stdout.
+2. Narrow broad `catch (Exception)` to the specific exceptions actually thrown;
+   where a catch-all is genuinely needed, log and rethrow or handle explicitly.
+3. Route through the platform logging pattern so PII masking (Phase 0 P0-13)
+   applies on the log path.
+
+**Done when**
+- [ ] No `printStackTrace()` in application code.
+- [ ] Broad catches narrowed or justified; exceptions logged via the structured
+      logger.
+
+**Verify**
+```bash
+grep -rn --include='*.java' 'printStackTrace()' . | wc -l   # expect: 0
+```
+
+### P2-13 - Harden session cookie configuration
+
+| | |
+|---|---|
+| **Severity** | MEDIUM |
+| **Source** | base report 6.8; audit 4.13 |
+
+**Why:** 176 `HttpSession` usages with no secure cookie configuration. Beyond the
+timeout fix (Phase 0 P0-06), the session cookie itself needs the security flags,
+or the session is exposed to theft over HTTP and to script access.
+
+**Steps**
+1. Set the session cookie flags on every service: `Secure` (HTTPS only),
+   `HttpOnly` (no script access), and `SameSite=Lax` (or `Strict` where no
+   cross-site flow needs it).
+2. For Spring Boot, set `server.servlet.session.cookie.secure/http-only/same-site`;
+   for the JBoss/servlet services, set them in `web.xml` `<cookie-config>`.
+3. Confirm session fixation protection is enabled (Spring Security default;
+   verify on the servlet services).
+
+**Done when**
+- [ ] Every service sets Secure, HttpOnly, and SameSite on the session cookie.
+
+**Verify**
+```bash
+curl -s -I https://<service-url>/<login> | grep -i 'set-cookie'   # shows Secure; HttpOnly; SameSite
+```
+
+### P2-14 - Feature-flag gating and audit-logging conformance
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (platform conformance) |
+| **Source** | audit 2.8 |
+
+**Why:** the platform standard gates every outbound integration behind a boolean
+environment flag that defaults off, so a service starts and passes its health
+check in standalone mode with all integrations disabled. ARC services must adopt
+this so integration (P2-10, P4-07) is opt-in per environment, and any AI-mediated
+action carries the platform audit record.
+
+**Steps**
+1. Gate each outbound integration behind a default-off environment flag
+   (matching `MCP_ENABLED`/`MCP_PROTOCOL_ENABLED` and the per-integration
+   pattern); the service must be healthy with all flags false.
+2. For any AI-mediated capability, emit the HMAC-signed, 7-year WORM audit record
+   (the platform AI-audit standard; see P4-07).
+
+**Done when**
+- [ ] Every outbound integration is behind a default-off flag; health passes with
+      all integrations disabled.
+- [ ] AI-mediated actions emit the signed, WORM-retained audit record.
+
+**Verify**
+```bash
+# service starts healthy with all integration flags off
+<run health check with integration flags unset/false>   # expect: healthy
+```
+
+---
+
 ### Phase 2 exit gate
 
 - [ ] Every endpoint resolves to an explicit authorization rule; default-deny
@@ -857,13 +1074,16 @@ curl -s -o /dev/null -w '%{http_code}\n' https://<arc-service>/<protected-endpoi
 - [ ] CSRF posture explicit and justified per service (P2-09).
 - [ ] Authenticated integration boundary enforced; ARC accepts only the gateway
       identity, returns RFC 7807, and propagates X-Request-ID (P2-10).
+- [ ] SQL queries parameterized; no value concatenation (P2-11).
+- [ ] No printStackTrace; broad catches narrowed; exceptions logged safely (P2-12).
+- [ ] Session cookies set Secure, HttpOnly, SameSite (P2-13).
+- [ ] Integrations behind default-off flags; AI actions audited (P2-14).
 
 ---
 
-
 ---
 
-## Phase 3 - Frontend Modernization and Section 508
+## Phase 3 - Frontend Modernization, Section 508, USWDS, Navigation
 
 **Objective:** retire the legacy server-rendered frontend tier, bring the Angular
 applications onto one current version, and make the remediable frontends meet
@@ -1051,6 +1271,52 @@ grep -rln 'axe-core\|@axe-core' */package.json 2>/dev/null
 
 ---
 
+### P3-06 - Standardize frontends on USWDS
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (508 and consistency) |
+| **Source** | audit Phase 3.3 |
+
+**Why:** AttorneyPortal already uses USWDS 3.7 (the US Web Design System). Its
+base components ship WCAG 2.1 AA compliance and the federal standard look and
+feel. Standardizing the other frontends on USWDS reduces the per-component 508
+work in P3-03/P3-04 and gives the suite one design system.
+
+**Steps**
+1. Adopt USWDS in each Angular frontend as the component and design-token base,
+   using AttorneyPortal (USWDS 3.7) as the reference.
+2. Replace bespoke components with USWDS equivalents where one exists; the
+   built-in accessibility carries the 508 baseline.
+3. Keep the EEOC contrast overrides where the design system defaults fall short
+   of the platform 4.5:1 / 3:1 requirements.
+
+**Done when**
+- [ ] Each frontend uses USWDS for its base components and tokens.
+
+### P3-07 - Cross-application navigation
+
+| | |
+|---|---|
+| **Severity** | LOW (UX consistency) |
+| **Source** | audit Phase 3.5 |
+
+**Why:** users should move between the ARC portals and the rest of the EEOC
+application suite without friction: one login, consistent navigation, consistent
+look and feel. This builds on the unified auth from Phase 2 and the USWDS
+baseline (P3-06).
+
+**Steps**
+1. Adopt a shared navigation pattern and header across the portals, aligned with
+   the platform's cross-application navigation.
+2. Reuse the single sign-on established by the auth work so a user does not
+   re-authenticate moving between portals.
+
+**Done when**
+- [ ] Portals share a consistent navigation and a single sign-on session.
+
+---
+
 ### Phase 3 exit gate
 
 - [ ] No deployable service serves JSP/XHTML; JBoss image removed (P3-01).
@@ -1058,13 +1324,14 @@ grep -rln 'axe-core\|@axe-core' */package.json 2>/dev/null
 - [ ] Images, language, and keyboard access remediated in retained UIs (P3-03).
 - [ ] Forms, tables, charts, and ARIA meet 508 (P3-04).
 - [ ] axe-core 508 gate in CI for every frontend (P3-05).
+- [ ] Frontends standardized on USWDS (P3-06).
+- [ ] Cross-application navigation and single sign-on across portals (P3-07).
 
 ---
 
-
 ---
 
-## Phase 4 - Consolidation, Continuous Security, Governed Integration Surface
+## Phase 4 - Consolidation, Continuous Security, Governed Integration, Coverage, Archival
 
 **Objective:** make the fixes from Phases 0-3 durable. Standardize the CI
 security gate across every repo, generate SBOMs, stand up continuous monitoring
@@ -1306,6 +1573,81 @@ grep -rln 'contract' <gateway-repo>/tests/ <ci-config>
 
 ---
 
+### P4-08 - Raise test coverage
+
+| | |
+|---|---|
+| **Severity** | MEDIUM |
+| **Source** | base report 6.4; audit 4.3 |
+
+**Why:** test coverage is near zero (the audit measured roughly 5% on core
+business services and 3% on support services). Every other phase changes code,
+and without tests the changes ship unverified and regress silently.
+
+**Steps**
+1. Set coverage targets per tier: 60% line coverage on core business services,
+   50% on support services.
+2. Backfill tests on the highest-risk paths first: the auth boundary (P2-01,
+   P2-10), the upload/parse paths (P0-14), and the crypto and SQL changes
+   (P1-12, P2-11).
+3. Add a coverage gate to CI (P4-01) that ratchets: coverage may not drop below
+   the current number on any change.
+
+**Done when**
+- [ ] Core services at 60%, support services at 50% line coverage.
+- [ ] CI enforces a non-decreasing coverage ratchet.
+
+**Verify**
+```bash
+# coverage report meets the tier target (tool varies: jacoco for Java, pytest-cov for Python)
+<run coverage> && echo "core >= 60% / support >= 50%"
+```
+
+### P4-09 - Resolve the Alfresco end-of-life decision
+
+| | |
+|---|---|
+| **Severity** | MEDIUM |
+| **Source** | audit 4.1 |
+
+**Why:** Alfresco 6.2.2 is end-of-life (it is the content repository behind the
+`alfresco-share` and `alfresco-content-repository` images in P1-13). An EOL
+content platform accrues unpatched CVEs and blocks the base-image cleanup.
+
+**Steps**
+1. Make the decision explicitly: upgrade to a supported Alfresco line, migrate
+   the content to the platform's content store, or retire if the capability is
+   no longer needed.
+2. Whichever path, record it and sequence the P1-13 Alfresco base-image work
+   behind it.
+
+**Done when**
+- [ ] A recorded Alfresco decision (upgrade / migrate / retire) with an owner.
+- [ ] The P1-13 Alfresco images are resolved per that decision.
+
+### P4-10 - Repository archival policy
+
+| | |
+|---|---|
+| **Severity** | LOW (governance) |
+| **Source** | audit 4.6 |
+
+**Why:** stale, superseded, and proof-of-concept repos are a reuse risk even when
+not deployed. A developer looking for code to copy will find the old patterns,
+hardcoded credentials, DES encryption, and `ObjectInputStream` usage, and carry
+them into new work. This complements the consolidation in P4-06.
+
+**Steps**
+1. Define an archival policy: repos past an inactivity threshold, or marked
+   superseded/PoC, are archived (read-only) or deleted.
+2. Add a visible banner or README note on archived repos warning against reuse.
+3. Apply the policy as part of the P4-06 consolidation sweep.
+
+**Done when**
+- [ ] Archival policy documented and applied; stale/PoC repos archived.
+
+---
+
 ### Phase 4 exit gate
 
 - [ ] Standard security gate runs in every repo, blocking on CRITICAL/HIGH (P4-01).
@@ -1316,6 +1658,9 @@ grep -rln 'contract' <gateway-repo>/tests/ <ci-config>
 - [ ] Dormant/duplicate repos retired; nested checkouts removed (P4-06).
 - [ ] ARC governed through the gateway-fronted MCP spoke; contract tests and
       end-to-end tracing in place; AI-mediated capabilities audited (P4-07).
+- [ ] Test coverage at tier targets; CI coverage ratchet in place (P4-08).
+- [ ] Alfresco EOL decision recorded and actioned (P4-09).
+- [ ] Repository archival policy documented and applied (P4-10).
 
 ---
 
@@ -1336,7 +1681,6 @@ against the gates this phase established.
 
 ---
 
-
 ---
 
 ## Document Control
@@ -1345,7 +1689,8 @@ against the gates this phase established.
 |---|---|---|---|
 | 1.0 | 2026-06-10 | Derek Gordon / OCIO | Consolidated Phases 1-4 task cards into one runbook |
 | 1.1 | 2026-06-12 | Derek Gordon / OCIO | Add integration-readiness cards (P1-11, P2-10, P4-07); reinforce MEDIUM/LOW coverage; review fixes |
+| 1.2 | 2026-06-12 | Derek Gordon / OCIO | Close coverage gaps: crypto, SQLi, exceptions, sessions, base images, USWDS, navigation, test coverage, Alfresco, archival, language standard, feature flags |
 
 Assembled from `ARC_Developer_Remediation_Runbook_v2_Phase{1,2,3,4}.md`. Phase 0
-is delivered separately. Refresh and source-data regeneration:
-`ARC_Phase1to4_Runbook_Notes.md`.
+is delivered separately. Coverage matrix: `ARC_Coverage_Traceability_Matrix.md`.
+Refresh and source-data regeneration: `ARC_Phase1to4_Runbook_Notes.md`.
