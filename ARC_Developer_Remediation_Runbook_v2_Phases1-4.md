@@ -252,13 +252,16 @@ the Tika and POI 5.3.0 seen elsewhere.
 
 **Verify**
 ```bash
-# Read installed versions from the scanner, not the manifests: POI is declared
-# group/name/version in Gradle and split across lines in Maven poms, so an
-# inline manifest version-extract misses it.
-grype dir:. --output json | python3 -c "import json,sys,collections; \
+# Read the installed-package inventory from the SBOM, not the manifests and not
+# Grype matches. POI is declared group/name/version in Gradle and split across
+# lines in Maven poms, so an inline manifest extract misses it; and Grype rows
+# are vulnerability matches, so a remediated (non-vulnerable) Tika/POI drops out
+# of Grype and the convergence check would miss it. Syft lists every installed
+# version, vulnerable or not, which is what the one-line-each check needs.
+syft dir:. -o json | python3 -c "import json,sys,collections; \
   d=json.load(sys.stdin); v=collections.defaultdict(set); \
-  [v[m['artifact']['name']].add(m['artifact']['version']) \
-   for m in d['matches'] if m['artifact']['name'] in ('tika-core','tika-parsers','poi','poi-ooxml')]; \
+  [v[a['name']].add(a['version']) for a in d.get('artifacts',[]) \
+   if a['name'] in ('tika-core','tika-parsers','poi','poi-ooxml')]; \
   print({k:sorted(x) for k,x in v.items()})"
 # expect: one Tika line and one POI line as modules converge
 ```
@@ -663,6 +666,13 @@ the best existing coverage and is the reference pattern.
 4. Default-deny: configure the `SecurityFilterChain` so an endpoint with no
    explicit rule is rejected, not permitted.
 5. Use FederalHearings as the worked reference for the annotation pattern.
+6. Remove or profile-gate non-production controllers. Phase 0 P0-16 gated the one
+   known unauthenticated dev controller (`IntakeCollectionsService /api/dev`);
+   generalize that here. Inventory every `@RestController`/`@Controller` that
+   exposes dev, test, or debug operations, and either exclude it from the
+   deployable artifact or guard it behind a non-prod `@Profile`, so default-deny
+   is not the only thing standing between a privileged caller and a process-control
+   endpoint that should not ship at all.
 
 **Do NOT**
 - Do not invent the role-to-endpoint mapping. The role matrix is a product and
@@ -675,6 +685,8 @@ the best existing coverage and is the reference pattern.
       chain.
 - [ ] Every endpoint resolves to an explicit authorization rule.
 - [ ] PrEPAWebService and the other zero-coverage services are remediated.
+- [ ] No dev/test/debug controller is reachable in a production build; each is
+      removed from the artifact or behind a non-prod profile (generalizes P0-16).
 
 **Verify**
 ```bash
@@ -1238,7 +1250,7 @@ move that requires component changes.
 ```bash
 # Recurse (ImsNXG-NG keeps its app under client/, so a one-level */package.json
 # glob misses it) and collapse nested self-copies.
-grep -rl --include=package.json '"@angular/core"' . | grep -v node_modules \
+grep -rl --exclude-dir=node_modules --include=package.json '"@angular/core"' . \
   | sed -E 's#([^/]+)/\1/#\1/#' | sort -u \
   | while read f; do echo "$f -> $(grep '@angular/core' "$f" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"; done
 # expect: one version line across all three apps
@@ -1333,7 +1345,7 @@ every change.
 ```bash
 # per frontend: axe test target exists and runs (recurse so nested frontends
 # such as ImsNXG-NG/client are included, not just root-level package.json)
-grep -rln --include=package.json 'axe-core\|@axe-core' . | grep -v node_modules
+grep -rln --exclude-dir=node_modules --include=package.json 'axe-core\|@axe-core' .
 ```
 
 ---

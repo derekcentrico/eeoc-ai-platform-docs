@@ -128,21 +128,27 @@ Two defects:
    mentions, because manifest-declared versions differ from the resolved
    artifacts the scanner sees.
 
-**Fix.** Read versions from the authoritative scanner output rather than
-grepping manifests with an inline version extract:
+**Fix.** Read the installed-package inventory from the SBOM (Syft), not a
+manifest grep and not Grype. Grype rows are vulnerability matches, so once
+Tika/POI are upgraded to non-vulnerable versions they drop out of Grype and the
+convergence check would print an empty or one-sided result even though the work
+is done. Syft lists every installed version, vulnerable or not, which is exactly
+what a one-line-each convergence check needs:
 
 ```bash
-grype dir:. --output json | python3 -c "import json,sys,collections; \
+syft dir:. -o json | python3 -c "import json,sys,collections; \
   d=json.load(sys.stdin); v=collections.defaultdict(set); \
-  [v[m['artifact']['name']].add(m['artifact']['version']) \
-   for m in d['matches'] if m['artifact']['name'] in ('tika-core','tika-parsers','poi','poi-ooxml')]; \
+  [v[a['name']].add(a['version']) for a in d.get('artifacts',[]) \
+   if a['name'] in ('tika-core','tika-parsers','poi','poi-ooxml')]; \
   print({k:sorted(x) for k,x in v.items()})"
 # expect: one Tika line and one POI line as modules converge
 ```
 
-The to-code claim (3.10.1, with 5.3.0 elsewhere) holds: Grype reports poi /
-poi-ooxml 3.10.1, and 5.3.0 is present in FedSep `build.gradle:147` as the card
-states.
+The to-code claim (3.10.1, with 5.3.0 elsewhere) holds, and Syft makes it richer:
+it reports poi 3.10.1 / 5.3.0 / 5.4.1 and tika-core 1.5 / 1.28.5 / 3.3.0 across
+modules, where Grype matches showed only the vulnerable 3.10.1 / 1.5 / 1.28.5.
+The newer non-vulnerable versions present in some modules are invisible to a
+vulnerability scanner but are the convergence signal the card depends on.
 
 ### 1.2 P1-13 - Replace deprecated base images: Verify misses the untagged nginx it targets
 
@@ -196,7 +202,7 @@ undercount. The verify cannot confirm the card's own three-app correction.
 **Fix.** Recurse and collapse the nested self-copies:
 
 ```bash
-grep -rl --include=package.json '"@angular/core"' . | grep -v node_modules \
+grep -rl --exclude-dir=node_modules --include=package.json '"@angular/core"' . \
   | sed -E 's#([^/]+)/\1/#\1/#' | sort -u \
   | while read f; do echo "$f -> $(grep -oE '[0-9]+\.[0-9]+\.[0-9]+' <(grep '@angular/core' "$f") | head -1)"; done
 ```
@@ -219,7 +225,7 @@ retained frontend) cannot be confirmed for that app.
 **Fix.** Apply the same recursion as P3-02:
 
 ```bash
-grep -rln --include=package.json 'axe-core\|@axe-core' . | grep -v node_modules
+grep -rln --exclude-dir=node_modules --include=package.json 'axe-core\|@axe-core' .
 ```
 
 ### 1.5 P1-12 - Replace broken crypto: "10 sites" does not match any reproduction
@@ -360,18 +366,56 @@ it does not change the card's direction.
 
 ---
 
-## 5. Corrections Applied in the Accompanying Change
+## 5. Phase 0 Completion Coverage in Phases 1-4
+
+The Phase 0 verification audit (`ARC_Phase0_Verification_Audit_2026-06-10.md`)
+added four emergency cards (P0-14..17) for exploitable-today classes that the
+original plan deferred. Three of those are deliberate emergency subsets that must
+be completed later. This pass confirms each completion lands in Phases 1-4, and
+flags the one that did not.
+
+| Phase 0 card | Class | Completion in Phases 1-4 | Status |
+|---|---|---|---|
+| P0-14 | XXE on `/uploadXml` (emergency subset) | P2-03 finishes the remaining 42 parser sites; P1-04 confirms hardening survives the Tika/POI bump | Covered |
+| P0-15 | Deserialization + known-exploited CVEs (emergency subset) | P1-01 / P1-04 (CVEs and Tika/POI), P1-02 (deserialization libraries), P2-04 (code sites) | Covered |
+| P0-17 | Login.gov signing key in source (single instance) | Class covered systemically by P4-05 (gitignore + gitleaks pre-commit + CI gate on every repo) so it cannot recur | Covered |
+| P0-16 | Unauthenticated dev controller (single instance) | **Not generalized** - no Phase 1-4 card kept dev/test/debug controllers out of production builds | **Gap, now closed** |
+
+**The P0-16 gap.** P0-16 gates or removes the one known dev controller
+(`IntakeCollectionsService /api/dev`, with `POST /reset-to-element` and
+subroutine-start operations). P2-01's default-deny chain would reject such an
+endpoint at runtime if it were unguarded, but default-deny is not the right
+control for a dev controller: a privileged caller could still reach a
+process-control endpoint that should not be in the production artifact at all,
+and nothing systemically stopped a new one from shipping. This is the one Phase 0
+item whose completion was missing from Phases 1-4.
+
+**Closed in this change.** P2-01 gains a step and a done-when: inventory every
+controller exposing dev/test/debug operations and either remove it from the
+deployable artifact or guard it behind a non-prod `@Profile`, generalizing the
+single P0-16 fix across all 19 services. With that, every Phase 0 emergency card
+has a complete Phase 1-4 home.
+
+Everything else maps cleanly: the traceability matrix already routes the original
+audit findings (Sections 3-7) to cards, and package-level severity was confirmed
+complete in matrix Section 8. After this change the answer to "is every Phase 0
+item carried to completion" is yes.
+
+---
+
+## 6. Corrections Applied in the Accompanying Change
 
 | Item | File | Change |
 |---|---|---|
-| P1-04 verify | `ARC_Developer_Remediation_Runbook_v2_Phase1.md` | Replace manifest grep with scanner-derived version listing |
+| P1-04 verify | `ARC_Developer_Remediation_Runbook_v2_Phase1.md` | Replace manifest grep with a Syft SBOM inventory (works post-remediation) |
 | P1-12 count | `ARC_Developer_Remediation_Runbook_v2_Phase1.md` | Reconcile "10 sites" to the reproducible count |
 | P1-13 verify | `ARC_Developer_Remediation_Runbook_v2_Phase1.md` | Drop `-n` so the nginx anchor matches |
-| P3-02 verify | `ARC_Developer_Remediation_Runbook_v2_Phase3.md` | Recurse and dedup so ImsNXG-NG is seen |
-| P3-05 verify | `ARC_Developer_Remediation_Runbook_v2_Phase3.md` | Recurse for nested frontends |
+| P2-01 dev controllers | `ARC_Developer_Remediation_Runbook_v2_Phase2.md` | Add step + done-when generalizing the P0-16 dev-controller fix |
+| P3-02 verify | `ARC_Developer_Remediation_Runbook_v2_Phase3.md` | Recurse, exclude node_modules, dedup so ImsNXG-NG is seen |
+| P3-05 verify | `ARC_Developer_Remediation_Runbook_v2_Phase3.md` | Recurse and exclude node_modules for nested frontends |
 | P1-12 count | `ARC_Coverage_Traceability_Matrix.md` | Section 7 figure reconciled |
 | Crypto baseline / CORS command | `ARC_Reaudit_Playbook.md` | Baseline row reconciled; CORS command replaced with single grep |
-| Consolidated rebuild | `ARC_Developer_Remediation_Runbook_v2_Phases1-4.md` | Regenerated from the per-phase sources |
+| Consolidated rebuild | `ARC_Developer_Remediation_Runbook_v2_Phases1-4.md` | Reconciled to the per-phase sources |
 
 ---
 

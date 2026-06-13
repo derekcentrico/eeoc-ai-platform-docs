@@ -106,7 +106,7 @@ move that requires component changes.
 ```bash
 # Recurse (ImsNXG-NG keeps its app under client/, so a one-level */package.json
 # glob misses it) and collapse nested self-copies.
-grep -rl --include=package.json '"@angular/core"' . | grep -v node_modules \
+grep -rl --exclude-dir=node_modules --include=package.json '"@angular/core"' . \
   | sed -E 's#([^/]+)/\1/#\1/#' | sort -u \
   | while read f; do echo "$f -> $(grep '@angular/core' "$f" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"; done
 # expect: one version line across all three apps
@@ -201,7 +201,7 @@ every change.
 ```bash
 # per frontend: axe test target exists and runs (recurse so nested frontends
 # such as ImsNXG-NG/client are included, not just root-level package.json)
-grep -rln --include=package.json 'axe-core\|@axe-core' . | grep -v node_modules
+grep -rln --exclude-dir=node_modules --include=package.json 'axe-core\|@axe-core' .
 ```
 
 ---

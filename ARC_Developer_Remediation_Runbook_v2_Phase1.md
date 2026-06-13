@@ -216,13 +216,16 @@ the Tika and POI 5.3.0 seen elsewhere.
 
 **Verify**
 ```bash
-# Read installed versions from the scanner, not the manifests: POI is declared
-# group/name/version in Gradle and split across lines in Maven poms, so an
-# inline manifest version-extract misses it.
-grype dir:. --output json | python3 -c "import json,sys,collections; \
+# Read the installed-package inventory from the SBOM, not the manifests and not
+# Grype matches. POI is declared group/name/version in Gradle and split across
+# lines in Maven poms, so an inline manifest extract misses it; and Grype rows
+# are vulnerability matches, so a remediated (non-vulnerable) Tika/POI drops out
+# of Grype and the convergence check would miss it. Syft lists every installed
+# version, vulnerable or not, which is what the one-line-each check needs.
+syft dir:. -o json | python3 -c "import json,sys,collections; \
   d=json.load(sys.stdin); v=collections.defaultdict(set); \
-  [v[m['artifact']['name']].add(m['artifact']['version']) \
-   for m in d['matches'] if m['artifact']['name'] in ('tika-core','tika-parsers','poi','poi-ooxml')]; \
+  [v[a['name']].add(a['version']) for a in d.get('artifacts',[]) \
+   if a['name'] in ('tika-core','tika-parsers','poi','poi-ooxml')]; \
   print({k:sorted(x) for k,x in v.items()})"
 # expect: one Tika line and one POI line as modules converge
 ```

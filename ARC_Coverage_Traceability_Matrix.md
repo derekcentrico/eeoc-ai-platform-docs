@@ -143,6 +143,7 @@ Card steps were spot-checked against the current source:
 - P2-13 sessions: 176 `HttpSession` usages confirmed.
 - P1-13 images: `debian:buster-slim`, untagged `nginx`, `openjdk:11-jre-slim`, Alfresco 6.2.2 confirmed in Dockerfiles.
 - P0-06 / P2-07 (existing cards re-checked): RespondentPortal still 300-minute timeout; zero rate-limiting libraries present.
+- P0-16 dev controller: the single P0-16 fix is generalized into P2-01 (inventory and remove or profile-gate dev/test/debug controllers across all services), so no Phase 0 emergency item is left without a Phase 1-4 completion. See `ARC_Phase1to4_VulnToCard_Audit_2026-06-13.md` Section 5.
 
 ## 8. Package-level severity completeness (re-confirmed 2026-06-12)
 
