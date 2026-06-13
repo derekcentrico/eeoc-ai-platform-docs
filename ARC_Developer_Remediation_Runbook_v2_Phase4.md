@@ -198,6 +198,51 @@ drift.
 ls -d */ | wc -l   # trends down from 48 as dormant/duplicate repos are retired
 ```
 
+### P4-07 - Govern the integration surface: MCP exposure, contract tests, end-to-end tracing
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (modernization enabler; prevents integration debt) |
+| **Source** | platform integration and MCP architecture |
+
+**Why:** by this point ARC has a published contract (P1-11) and an enforced,
+authenticated boundary (P2-10). This card makes the integration durable: expose
+ARC capabilities through the MCP aggregator as a governed spoke, keep the
+contract and the consumers from drifting, and trace a request end to end. Doing
+it on top of the clean contract and boundary, rather than letting each future
+consumer wire its own path into ARC, is the modernization payoff: one governed,
+audited surface that future AI-assisted or cross-system case workflows plug into,
+instead of bespoke direct access bolted on per feature with its own auth and no
+audit trail.
+
+**Steps**
+1. **Expose ARC through the MCP-governed surface as a spoke fronted by the
+   integration gateway.** Generate the MCP tool schemas from the OpenAPI specs
+   (P1-11) so the tool surface and the API contract stay one definition. The
+   aggregator authenticates spokes with a machine-to-machine identity and stores
+   spoke registration centrally; register the gateway-fronted ARC capabilities
+   the same way.
+2. **Honor the default-off integration posture.** `MCP_ENABLED` and
+   `MCP_PROTOCOL_ENABLED` default to false; every service must start and pass its
+   health check with all integrations disabled. Confirm ARC exposure inherits
+   this default and is opt-in per environment.
+3. **Audit any AI-mediated capability.** A capability exposed through MCP that
+   drives an AI generation requires the platform AI audit record (HMAC-signed,
+   7-year WORM retention). Wire the audit on the exposure, not as an afterthought.
+4. **Consumer-driven contract tests in CI.** Add contract tests between the
+   gateway and each ARC service so a contract change that would break the gateway
+   fails the build, not production.
+5. **End-to-end observability.** Confirm `X-Request-ID` (P2-10) traces a request
+   across ARC, the gateway, and the MCP surface, with structured logs at each hop.
+
+**Done when**
+- [ ] ARC capabilities are reachable only through the gateway-fronted MCP spoke,
+      not by direct consumer access.
+- [ ] MCP exposure defaults off and the service is healthy with it disabled.
+- [ ] AI-mediated capabilities emit the HMAC-signed, WORM-retained audit record.
+- [ ] Consumer-driven contract tests gate the gateway/ARC boundary in CI.
+- [ ] A single request is traceable end to end by `X-Request-ID`.
+
 ---
 
 ## Phase 4 exit gate
@@ -208,6 +253,8 @@ ls -d */ | wc -l   # trends down from 48 as dormant/duplicate repos are retired
 - [ ] Automated dependency updates wired to CI on every active repo (P4-04).
 - [ ] Secret `.gitignore` and gitleaks hook on every repo; gitleaks in CI (P4-05).
 - [ ] Dormant/duplicate repos retired; nested checkouts removed (P4-06).
+- [ ] ARC governed through the gateway-fronted MCP spoke; contract tests and
+      end-to-end tracing in place; AI-mediated capabilities audited (P4-07).
 
 ---
 
@@ -218,8 +265,13 @@ addressed: secrets are out of source and blocked from returning, the known-
 exploited and full-backlog dependencies are patched and kept current, the access-
 control and injection surfaces are systemically closed, the legacy frontend tier
 is retired and the remainder meets 508, and continuous monitoring surfaces the
-full severity spectrum rather than the top two tiers. The remaining work is
-steady-state operations against the gates this phase established.
+full severity spectrum rather than the top two tiers. A side effect of doing the
+modernization properly is that ARC ends up integration-ready: a published
+contract (P1-11), an authenticated single-gateway boundary (P2-10), and a
+governed MCP surface (P4-07), built in during the uplift rather than bolted on
+per consumer later. That is what lets future platform capabilities consume ARC
+safely without re-plumbing. The remaining work is steady-state operations
+against the gates this phase established.
 
 ---
 

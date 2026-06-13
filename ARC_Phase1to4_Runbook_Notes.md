@@ -16,10 +16,11 @@ code or package releases change.
 | Phase | File | State | Notes |
 |---|---|---|---|
 | Phase 0 | `..._v2_Phase0.md` | done, merged | 4 card corrections + P0-14..17 emergency cards |
-| Phase 1 | `..._v2_Phase1.md` | drafted, four-loop verified | dependency clusters, jakarta, JBoss, runtime |
-| Phase 2 | `..._v2_Phase2.md` | drafted, four-loop verified | authz, injection, validation, SSRF, rate limiting, headers |
+| Phase 1 | `..._v2_Phase1.md` | verified; +P1-11 (API contract) | dependency clusters, jakarta, JBoss, runtime, OpenAPI contract. P1-03 table fix folded in (supersedes open PR #34) |
+| Phase 2 | `..._v2_Phase2.md` | verified; +P2-10 (integration boundary) | authz, injection, validation, SSRF, rate limiting, headers, authenticated single-gateway boundary |
 | Phase 3 | `..._v2_Phase3.md` | drafted, four-loop verified | JSP retirement, Angular alignment, 508 |
-| Phase 4 | `..._v2_Phase4.md` | drafted, four-loop verified | CI gate, SBOM, monitoring, dep automation, consolidation |
+| Phase 4 | `..._v2_Phase4.md` | verified; +P4-07 (MCP/contract/tracing) | CI gate, SBOM, monitoring, dep automation, consolidation, governed MCP surface |
+| Consolidated | `..._v2_Phases1-4.md` | regenerated v1.1 | merged single-file view; rebuild from sources after any per-phase edit |
 
 ---
 
@@ -142,6 +143,32 @@ EEOCWebService, FedSep, ImsNXG, RespondentPortal, jboss-docker (base).
 - PrEPAWebService (212, the biggest contributor) is mostly false positives: the
   word "email" in message text, with charge numbers/IDs as the actual values.
 
+### Integration readiness (verified platform-consumer patterns, 2026-06-12)
+
+The integration cards (P1-11, P2-10, P4-07) describe what the ARC side must
+provide. They are grounded in the existing consumers, which already implement the
+other half of the pattern. Verified by reading the repos:
+
+- `eeoc-arc-integration-api` is the mature gateway: inbound bearer auth
+  (`app/auth/inbound.py`), outbound service auth (`app/auth/outbound.py`),
+  per-ARC-service clients (`services/federal_hearings_client.py`, `prepa_client`,
+  `employer_client`, `fepa_client`), correlation middleware
+  (`middleware/correlation.py`), rate limiting (`middleware/rate_limit.py`),
+  RFC 7807, SSRF-guarded outbound URLs (`validate_url`, blocks private/loopback),
+  and an MCP hub integration (`services/mcp_hub.py`).
+- `eeoc-mcp-hub-functions` aggregates "spokes": Entra ID M2M token spoke auth
+  (`hub_functions/auth.py`), spokes registered in Table Storage
+  (`SPOKE_TABLE_NAME = "mcpspokes"`), SSRF CIDR allowlist for spoke URLs
+  (`hub_functions/security.py`).
+- Platform rules applied in the cards: `MCP_ENABLED`/`MCP_PROTOCOL_ENABLED`
+  default false and every service must be healthy with integrations disabled;
+  AI generations require an HMAC-signed, 7-year WORM audit record; inter-service
+  is HTTPS only with X-Request-ID propagation and RFC 7807 errors.
+- The gap is the ARC side: legacy services do not authenticate the gateway, do
+  not emit RFC 7807, do not propagate X-Request-ID, and publish no contract. The
+  cards build that half. Framing is generic ("downstream platform services",
+  "future AI-assisted or cross-system workflows"); ADR is never named.
+
 ---
 
 ## Open decisions that cannot be pre-baked (flag at execution)
@@ -155,6 +182,11 @@ EEOCWebService, FedSep, ImsNXG, RespondentPortal, jboss-docker (base).
    method and hand over the inventory; they cannot fill the role-to-endpoint map.
 3. **JSP retirement scope (Phase 3).** The JSF-bound JBoss services need a
    frontend rewrite to leave the old namespace; that is a program, not a card.
+4. **Integration auth mechanism (P2-10).** The exact service-to-service auth on
+   the ARC side (Entra ID M2M token vs managed identity vs mTLS) is a platform
+   decision aligned with how the gateway already authenticates outbound. The card
+   prescribes "authenticate the caller, accept only the gateway"; the mechanism
+   is chosen at execution to match the gateway's outbound model.
 
 ---
 
@@ -163,3 +195,4 @@ EEOCWebService, FedSep, ImsNXG, RespondentPortal, jboss-docker (base).
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-06-10 | Derek Gordon / OCIO | Initial notes; Phase 1 drafted and verified |
+| 1.1 | 2026-06-12 | Derek Gordon / OCIO | All phases verified; integration-readiness cards added (P1-11, P2-10, P4-07); MEDIUM/LOW coverage clarified; P1-03 table fix folded in |
