@@ -159,6 +159,13 @@ High fan-out: bumping these clears findings across many modules at once.
 | jackson-core | 2.16.1 | 2.18.x | Transitive | |
 | hibernate-core | 5.4.30.Final | 5.6.15 or 6.x | Direct | 6.x is jakarta; ties to P1-08 |
 | postgresql (JDBC) | 42.7.3 | 42.7.4+ | Direct | |
+| easy-rules-mvel (org.jeasy) | 4.1.0 | 4.1.x patched or remove | Transitive | HIGH: MVEL expression evaluation is an injection/RCE surface; confirm rules are not built from untrusted input |
+| wss4j | 1.5.4 | 3.0.x | Transitive | HIGH: WS-Security; ties to the SOAP path (Axis retirement, P1-01) |
+| jakarta.mail / com.sun.mail | 2.0.1 | 2.1.3 (verify) | Transitive | MEDIUM |
+| opentelemetry-api | (in tree) | 1.45.x (verify) | Transitive | MEDIUM; observability lib, aligns with P2-15 |
+| resteasy-multipart-provider | 3.14.0.Final | patched/jakarta line | Transitive | MEDIUM: multipart parser on the upload path (ties to P0-14) |
+| openapi-generator | 4.2.3 | 7.x (verify) | Transitive (build) | MEDIUM; build-time tool |
+| primefaces | 7.0 | retire with JSF tier (P3-01) | Transitive | MEDIUM: JSF UI library; retire-not-patch, removed when the JSP/JSF tier is retired |
 
 **Steps**
 1. Bump direct dependencies in the manifest; override transitive ones.

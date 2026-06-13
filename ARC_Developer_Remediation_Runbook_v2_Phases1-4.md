@@ -18,10 +18,12 @@ v2 files; each phase was drafted with a four-loop verification pass against the
 task is tracked in `ARC_Coverage_Traceability_Matrix.md`.
 
 Beyond clearing the security backlog, the plan modernizes ARC into an
-integration-ready upstream: a published API contract (P1-11), an authenticated
-single-gateway boundary (P2-10), and a governed MCP surface (P4-07). These are
-built in during the uplift, not bolted on per consumer later, so future platform
-capabilities can consume ARC safely without re-plumbing each service.
+integration-ready upstream for the platform: a published API contract (P1-11),
+an authenticated single-gateway boundary (P2-10), standardized health and
+structured logging (P2-15), a governed MCP surface (P4-07), and extended
+event-driven publishing (P4-11). These are built in during the uplift, not
+bolted on per consumer later, so future platform capabilities can consume ARC
+safely without re-plumbing each service.
 
 > **Footnote on target versions and counts (applies to every phase below).**
 > Version targets are the latest stable releases as of 2026-06-10, and finding
@@ -37,14 +39,16 @@ capabilities can consume ARC safely without re-plumbing each service.
 | Phase | Theme | Timeline | Cards |
 |---|---|---|---|
 | 1 | Dependency modernization, crypto, JBoss/runtime, base images, API contract | months 2-6 | P1-01..P1-14 |
-| 2 | Security architecture (authz, injection, SQLi, validation, SSRF, rate limiting, headers, sessions, integration boundary) | months 4-9 | P2-01..P2-14 |
+| 2 | Security architecture (authz, injection, SQLi, validation, SSRF, rate limiting, headers, sessions, integration boundary, observability) | months 4-9 | P2-01..P2-15 |
 | 3 | Frontend modernization, 508, USWDS, cross-app navigation | months 6-12 | P3-01..P3-07 |
-| 4 | Consolidation, continuous security, governed integration, test coverage, Alfresco, archival | months 10-18 | P4-01..P4-10 |
+| 4 | Consolidation, continuous security, governed integration, coverage, Alfresco, archival, eventing | months 10-18 | P4-01..P4-11 |
 
 The ~200 MEDIUM/LOW dependency findings are not a separate backlog: they are
 cleared by the same Phase 1 cluster bumps that clear CRITICAL/HIGH (one bump per
 package clears all severities for that package), with any residual tracked in
-the Phase 4 monitoring backlog (P4-03).
+the Phase 4 monitoring backlog (P4-03). Package-level severity completeness
+(every CRITICAL/HIGH/MEDIUM package named in a card) is confirmed in the
+traceability matrix, Section 8.
 
 ---
 
@@ -191,6 +195,13 @@ High fan-out: bumping these clears findings across many modules at once.
 | jackson-core | 2.16.1 | 2.18.x | Transitive | |
 | hibernate-core | 5.4.30.Final | 5.6.15 or 6.x | Direct | 6.x is jakarta; ties to P1-08 |
 | postgresql (JDBC) | 42.7.3 | 42.7.4+ | Direct | |
+| easy-rules-mvel (org.jeasy) | 4.1.0 | 4.1.x patched or remove | Transitive | HIGH: MVEL expression evaluation is an injection/RCE surface; confirm rules are not built from untrusted input |
+| wss4j | 1.5.4 | 3.0.x | Transitive | HIGH: WS-Security; ties to the SOAP path (Axis retirement, P1-01) |
+| jakarta.mail / com.sun.mail | 2.0.1 | 2.1.3 (verify) | Transitive | MEDIUM |
+| opentelemetry-api | (in tree) | 1.45.x (verify) | Transitive | MEDIUM; observability lib, aligns with P2-15 |
+| resteasy-multipart-provider | 3.14.0.Final | patched/jakarta line | Transitive | MEDIUM: multipart parser on the upload path (ties to P0-14) |
+| openapi-generator | 4.2.3 | 7.x (verify) | Transitive (build) | MEDIUM; build-time tool |
+| primefaces | 7.0 | retire with JSF tier (P3-01) | Transitive | MEDIUM: JSF UI library; retire-not-patch, removed when the JSP/JSF tier is retired |
 
 **Steps**
 1. Bump direct dependencies in the manifest; override transitive ones.
@@ -590,7 +601,7 @@ one. The rest of the EEOC platform runs Python 3.13 with Flask or FastAPI.
 
 ---
 
-## Phase 2 - Security Architecture and Integration Boundary
+## Phase 2 - Security Architecture, Integration Boundary, Observability
 
 **Objective:** close the access-control, injection, and request-handling gaps
 that Phase 0 only emergency-patched. Phase 0 stopped the bleeding on the
@@ -1059,6 +1070,42 @@ action carries the platform audit record.
 <run health check with integration flags unset/false>   # expect: healthy
 ```
 
+### P2-15 - Standardize health endpoints and structured logging
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (integration readiness / observability) |
+| **Source** | audit 6.3 (DAES integration requirements) |
+
+**Why:** the platform's DAES applications share an integration baseline that ARC
+does not yet meet. Two pieces are observability: a standardized health endpoint
+per service (Spring Actuator exists on some services, is absent on the JBoss
+ones) and structured JSON logging (not implemented). Without them, ARC cannot be
+monitored or traced as a first-class platform participant, and the gateway cannot
+aggregate health. This pairs with the RFC 7807 and X-Request-ID work in P2-10.
+
+**Steps**
+1. Expose a standardized health endpoint on every service: Spring Boot Actuator
+   `/actuator/health` (liveness + readiness), and an equivalent `/health` servlet
+   on the JBoss/JSP services. The gateway aggregates these (P4-07 / P4-11).
+2. Emit structured JSON logs (one event per line, with `X-Request-ID`, level,
+   service, and message fields) so logs are queryable and correlate across hops.
+   Route through the platform logging pattern so PII masking (P0-13) applies.
+3. Confirm the health endpoint is reachable without authentication only for the
+   liveness probe; readiness and detail require the service identity.
+
+**Done when**
+- [ ] Every service exposes a standardized health endpoint.
+- [ ] Logs are structured JSON carrying X-Request-ID.
+
+**Verify**
+```bash
+# liveness is the public probe (the main /actuator/health may require auth); JBoss services expose /health
+curl -fsS https://<service-url>/actuator/health/liveness | python3 -c "import json,sys;json.load(sys.stdin)" && echo OK
+# structured logging: a log line parses as JSON and carries the correlation id
+<tail a log line> | python3 -c "import json,sys;d=json.load(sys.stdin);assert 'X-Request-ID' in str(d) or 'request_id' in d"
+```
+
 ---
 
 ### Phase 2 exit gate
@@ -1079,6 +1126,7 @@ action carries the platform audit record.
 - [ ] No printStackTrace; broad catches narrowed; exceptions logged safely (P2-12).
 - [ ] Session cookies set Secure, HttpOnly, SameSite (P2-13).
 - [ ] Integrations behind default-off flags; AI actions audited (P2-14).
+- [ ] Standardized health endpoints and structured JSON logging (P2-15).
 
 ---
 
@@ -1332,7 +1380,7 @@ baseline (P3-06).
 
 ---
 
-## Phase 4 - Consolidation, Continuous Security, Governed Integration, Coverage, Archival
+## Phase 4 - Consolidation, Continuous Security, Governed Integration, Coverage, Archival, Eventing
 
 **Objective:** make the fixes from Phases 0-3 durable. Standardize the CI
 security gate across every repo, generate SBOMs, stand up continuous monitoring
@@ -1647,6 +1695,45 @@ them into new work. This complements the consolidation in P4-06.
 **Done when**
 - [ ] Archival policy documented and applied; stale/PoC repos archived.
 
+### P4-11 - Extend event-driven integration (Azure Service Bus)
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (completes the platform integration) |
+| **Source** | audit 4.4; `DAES_Component_Integration_Map.md` (existing eventing) |
+
+**Why:** async eventing already partly exists, do not rebuild it. The Integration
+API already consumes two ARC Service Bus topics, `db-change-topic` and
+`document-activity-topic`, and forwards selected events to the Hub over
+HMAC-signed webhooks (`/api/v1/events`), which routes case-lifecycle events to
+downstream spokes. What is missing is explicit, schema'd domain events
+(case status change, charge update) rather than raw database-change
+notifications, so consumers bind to meaningful events instead of inferring them
+from CDC rows. Extend the existing topics; keep the established forward-to-Hub
+path.
+
+**Steps**
+1. Inventory the existing eventing (`db-change-topic`, `document-activity-topic`
+   in `eeoc-arc-integration-api/app/config`) and the Hub forward path before
+   adding anything; do not duplicate it.
+2. Define explicit domain events (case status change, charge update) with a
+   versioned schema aligned to the OpenAPI contract (P1-11), published onto the
+   existing topics or a new domain-event topic as the design dictates.
+3. Gate any new publisher behind the default-off integration flag (P2-14) so the
+   service is healthy with eventing disabled.
+4. Propagate `X-Request-ID` onto the event for end-to-end tracing (P2-10 / P2-15).
+
+**Done when**
+- [ ] Explicit domain events published on the existing Service Bus path, schema'd
+      and correlation-tagged.
+- [ ] No duplication of the existing CDC/forward mechanism.
+
+**Verify**
+```bash
+# existing topics and any new publisher are present and flag-gated
+grep -rnE 'db-change-topic|document-activity-topic|ServiceBus|service[._]bus|EVENT.*ENABLED' <service>/
+```
+
 ---
 
 ### Phase 4 exit gate
@@ -1662,6 +1749,7 @@ them into new work. This complements the consolidation in P4-06.
 - [ ] Test coverage at tier targets; CI coverage ratchet in place (P4-08).
 - [ ] Alfresco EOL decision recorded and actioned (P4-09).
 - [ ] Repository archival policy documented and applied (P4-10).
+- [ ] ARC publishes domain events to Service Bus (flag-gated, schema'd) (P4-11).
 
 ---
 
@@ -1690,7 +1778,8 @@ against the gates this phase established.
 |---|---|---|---|
 | 1.0 | 2026-06-10 | Derek Gordon / OCIO | Consolidated Phases 1-4 task cards into one runbook |
 | 1.1 | 2026-06-12 | Derek Gordon / OCIO | Add integration-readiness cards (P1-11, P2-10, P4-07); reinforce MEDIUM/LOW coverage; review fixes |
-| 1.2 | 2026-06-12 | Derek Gordon / OCIO | Close coverage gaps: 12 cards (crypto, SQLi, exceptions, sessions, base images, USWDS, nav, coverage, Alfresco, archival, language, feature flags); verify-command robustness |
+| 1.2 | 2026-06-12 | Derek Gordon / OCIO | Close coverage gaps: 12 cards; verify-command robustness |
+| 1.3 | 2026-06-12 | Derek Gordon / OCIO | Package-level completeness (+7 deps); +P2-15 health/logging, +P4-11 eventing; review fixes (pinned versions, liveness probe, existing-eventing correction) |
 
 Assembled from `ARC_Developer_Remediation_Runbook_v2_Phase{1,2,3,4}.md`. Phase 0
 is delivered separately. Coverage matrix: `ARC_Coverage_Traceability_Matrix.md`.
