@@ -481,6 +481,39 @@ action carries the platform audit record.
 <run health check with integration flags unset/false>   # expect: healthy
 ```
 
+### P2-15 - Standardize health endpoints and structured logging
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (integration readiness / observability) |
+| **Source** | audit 6.3 (DAES integration requirements) |
+
+**Why:** the platform's DAES applications share an integration baseline that ARC
+does not yet meet. Two pieces are observability: a standardized health endpoint
+per service (Spring Actuator exists on some services, is absent on the JBoss
+ones) and structured JSON logging (not implemented). Without them, ARC cannot be
+monitored or traced as a first-class platform participant, and the gateway cannot
+aggregate health. This pairs with the RFC 7807 and X-Request-ID work in P2-10.
+
+**Steps**
+1. Expose a standardized health endpoint on every service: Spring Boot Actuator
+   `/actuator/health` (liveness + readiness), and an equivalent `/health` servlet
+   on the JBoss/JSP services. The gateway aggregates these (P4-07 / P4-11).
+2. Emit structured JSON logs (one event per line, with `X-Request-ID`, level,
+   service, and message fields) so logs are queryable and correlate across hops.
+   Route through the platform logging pattern so PII masking (P0-13) applies.
+3. Confirm the health endpoint is reachable without authentication only for the
+   liveness probe; readiness and detail require the service identity.
+
+**Done when**
+- [ ] Every service exposes a standardized health endpoint.
+- [ ] Logs are structured JSON carrying X-Request-ID.
+
+**Verify**
+```bash
+curl -fsS https://<service-url>/actuator/health | python3 -c "import json,sys;json.load(sys.stdin)" && echo OK
+```
+
 ---
 
 ## Phase 2 exit gate
@@ -501,6 +534,7 @@ action carries the platform audit record.
 - [ ] No printStackTrace; broad catches narrowed; exceptions logged safely (P2-12).
 - [ ] Session cookies set Secure, HttpOnly, SameSite (P2-13).
 - [ ] Integrations behind default-off flags; AI actions audited (P2-14).
+- [ ] Standardized health endpoints and structured JSON logging (P2-15).
 
 ---
 

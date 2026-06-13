@@ -50,7 +50,7 @@ dating, diagrams) with no remediation task.
 | 5.3 | Angular frontend alignment | P3-02 |
 | 6.1 | Current-state diagram | context |
 | 6.2 | Key structural problems | P1-09, P1-11, P4-06 |
-| 6.3 | Enterprise platform integration readiness | **P1-11, P2-10, P4-07** |
+| 6.3 | Enterprise platform integration readiness (OpenAPI, RFC 7807, X-Request-ID, health, structured logging) | **P1-11, P2-10, P2-15, P4-07** |
 | 6.4 | Test coverage (~5% core, ~3% support) | **P4-08** |
 
 ## 3. Federal compliance gaps (audit Section 7)
@@ -100,7 +100,7 @@ dating, diagrams) with no remediation task.
 | 4.1 | Alfresco decision | **P4-09** |
 | 4.2 | Infrastructure modernization | P4-06 (+P1-13) |
 | 4.3 | Test coverage | **P4-08** |
-| 4.4 | Enterprise platform integration | P4-07 |
+| 4.4 | Enterprise platform integration (structured endpoints, health aggregation, event-driven) | P4-07, P2-15, **P4-11** |
 | 4.5 | Repository consolidation | P4-06 |
 | 4.6 | Repository archival policy | **P4-10** |
 | 4.7 | Mandatory security tooling standard | P4-01 |
@@ -144,6 +144,25 @@ Card steps were spot-checked against the current source:
 - P1-13 images: `debian:buster-slim`, untagged `nginx`, `openjdk:11-jre-slim`, Alfresco 6.2.2 confirmed in Dockerfiles.
 - P0-06 / P2-07 (existing cards re-checked): RespondentPortal still 300-minute timeout; zero rate-limiting libraries present.
 
+## 8. Package-level severity completeness (re-confirmed 2026-06-12)
+
+Beyond finding-level mapping, every distinct vulnerable package from the Grype
+and Trivy scans was cross-checked by severity against the Phase 1 cards:
+
+- **CRITICAL: 0 unnamed.** Every critical-severity package is named in a card.
+- **HIGH: all named after this pass.** `@angular/*` is covered by the wildcard
+  row (P1-06) and P3-02; `easy-rules-mvel` and `wss4j` were unnamed and are now
+  added to P1-03.
+- **MEDIUM: all named after this pass.** `jakarta.mail`/`com.sun.mail`,
+  `opentelemetry-api`, `resteasy-multipart-provider`, `openapi-generator`, and
+  `primefaces` (retire-with-JSF) were unnamed and are now added to P1-03;
+  `@protobufjs/utf8` is cleared transitively by the `protobufjs` bump (P1-05).
+
+Integration completeness for DAES (audit 6.3 / 4.4) was likewise re-confirmed:
+synchronous API (P1-11) + auth/RFC 7807/correlation (P2-10) + MCP (P4-07), plus
+the two pieces that were missing and are now added: health + structured logging
+(P2-15) and event-driven Service Bus (P4-11).
+
 ---
 
 ## Document Control
@@ -151,6 +170,7 @@ Card steps were spot-checked against the current source:
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-06-12 | Derek Gordon / OCIO | Initial traceability matrix; multi-loop coverage audit; twelve gap cards added |
+| 1.1 | 2026-06-12 | Derek Gordon / OCIO | Package-level severity re-confirmation; +7 dependency rows (P1-03), +P2-15 health/logging, +P4-11 event-driven |
 
 Inputs: `ARC_Modernization_Audit_and_Phased_Plan.md`,
 `ARC_Secondary_Scan_Findings_2026-06-10.md`, the v2 runbook set.

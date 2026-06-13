@@ -327,6 +327,42 @@ them into new work. This complements the consolidation in P4-06.
 **Done when**
 - [ ] Archival policy documented and applied; stale/PoC repos archived.
 
+### P4-11 - Event-driven integration (Azure Service Bus)
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (completes the platform integration) |
+| **Source** | audit 4.4 (Enterprise Platform Integration) |
+
+**Why:** the synchronous path (API contract P1-11, auth boundary P2-10, MCP
+surface P4-07) is one half of platform integration. The other half is async:
+consuming applications need ARC domain events (case status changes, document
+uploads, charge updates) rather than polling. The gateway already has the
+consumer side (`eeoc-arc-integration-api` has Service Bus handlers); ARC needs to
+emit the events. Building this now, on the clean contract, keeps async
+integration governed instead of each consumer scraping ARC for changes later.
+
+**Steps**
+1. Identify the ARC domain events worth publishing (case status change, document
+   upload, charge update) and define their event schema, versioned alongside the
+   OpenAPI contract (P1-11).
+2. Publish events to Azure Service Bus from the ARC side at the points those
+   state changes occur; the gateway's existing handlers consume and fan out.
+3. Gate the publisher behind the default-off integration flag (P2-14) so a
+   service is healthy with eventing disabled.
+4. Propagate `X-Request-ID` onto the event so an async flow is traceable end to
+   end (P2-10 / P2-15).
+
+**Done when**
+- [ ] ARC publishes its domain events to Service Bus behind a default-off flag.
+- [ ] Events carry a versioned schema and the correlation id.
+
+**Verify**
+```bash
+# publisher gated off by default; service healthy with eventing disabled
+grep -rn 'ServiceBus\|service.bus\|EVENT.*ENABLED' <service>/   # publisher present, flag-gated
+```
+
 ---
 
 ## Phase 4 exit gate
@@ -342,6 +378,7 @@ them into new work. This complements the consolidation in P4-06.
 - [ ] Test coverage at tier targets; CI coverage ratchet in place (P4-08).
 - [ ] Alfresco EOL decision recorded and actioned (P4-09).
 - [ ] Repository archival policy documented and applied (P4-10).
+- [ ] ARC publishes domain events to Service Bus (flag-gated, schema'd) (P4-11).
 
 ---
 

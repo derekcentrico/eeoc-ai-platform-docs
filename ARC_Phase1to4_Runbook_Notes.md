@@ -17,10 +17,10 @@ code or package releases change.
 |---|---|---|---|
 | Phase 0 | `..._v2_Phase0.md` | done, merged | 4 card corrections + P0-14..17 emergency cards |
 | Phase 1 | `..._v2_Phase1.md` | P1-01..14 | + crypto (P1-12), base images (P1-13), language standard (P1-14) |
-| Phase 2 | `..._v2_Phase2.md` | P2-01..14 | + SQLi (P2-11), exceptions (P2-12), session cookies (P2-13), feature flags/audit (P2-14) |
+| Phase 2 | `..._v2_Phase2.md` | P2-01..15 | + SQLi, exceptions, session cookies, feature flags/audit, health+structured logging (P2-15) |
 | Phase 3 | `..._v2_Phase3.md` | P3-01..07 | + USWDS (P3-06), cross-app nav (P3-07) |
-| Phase 4 | `..._v2_Phase4.md` | P4-01..10 | + test coverage (P4-08), Alfresco (P4-09), archival (P4-10) |
-| Consolidated | `..._v2_Phases1-4.md` | regenerated v1.2 | 45 cards; rebuild from sources after any per-phase edit |
+| Phase 4 | `..._v2_Phase4.md` | P4-01..11 | + test coverage, Alfresco, archival, event-driven Service Bus (P4-11) |
+| Consolidated | `..._v2_Phases1-4.md` | regenerated v1.3 | 47 cards; rebuild from sources after any per-phase edit |
 | Coverage matrix | `ARC_Coverage_Traceability_Matrix.md` | created | every audit finding/task -> card; full coverage confirmed 2026-06-12 |
 
 ---
