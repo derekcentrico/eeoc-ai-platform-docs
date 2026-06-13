@@ -16,6 +16,12 @@ This document supersedes the Phases 1-4 outline in
 v2 files; each phase was drafted with a four-loop verification pass against the
 `eeoc-arc-payloads/` source.
 
+Beyond clearing the security backlog, the plan modernizes ARC into an
+integration-ready upstream: a published API contract (P1-11), an authenticated
+single-gateway boundary (P2-10), and a governed MCP surface (P4-07). These are
+built in during the uplift, not bolted on per consumer later, so future platform
+capabilities can consume ARC safely without re-plumbing each service.
+
 > **Footnote on target versions and counts (applies to every phase below).**
 > Version targets are the latest stable releases as of 2026-06-10, and finding
 > counts are from scans on that date. Dependency releases move and the codebase
@@ -29,14 +35,19 @@ v2 files; each phase was drafted with a four-loop verification pass against the
 
 | Phase | Theme | Timeline | Cards |
 |---|---|---|---|
-| 1 | Dependency modernization, JBoss retirement, runtime consolidation | months 2-6 | P1-01..P1-10 |
-| 2 | Security architecture (authz, injection, validation, SSRF, rate limiting, headers) | months 4-9 | P2-01..P2-09 |
+| 1 | Dependency modernization, JBoss retirement, runtime consolidation, API contract | months 2-6 | P1-01..P1-11 |
+| 2 | Security architecture (authz, injection, validation, SSRF, rate limiting, headers, integration boundary) | months 4-9 | P2-01..P2-10 |
 | 3 | Frontend modernization and Section 508 | months 6-12 | P3-01..P3-05 |
-| 4 | Consolidation and continuous security | months 10-18 | P4-01..P4-06 |
+| 4 | Consolidation, continuous security, governed integration surface | months 10-18 | P4-01..P4-07 |
+
+The ~200 MEDIUM/LOW dependency findings are not a separate backlog: they are
+cleared by the same Phase 1 cluster bumps that clear CRITICAL/HIGH (one bump per
+package clears all severities for that package), with any residual tracked in
+the Phase 4 monitoring backlog (P4-03).
 
 ---
 
-## Phase 1 - Dependency Modernization, JBoss Retirement, Runtime Consolidation
+## Phase 1 - Dependency Modernization, JBoss Retirement, Runtime Consolidation, API Contract
 
 **Objective:** clear the dependency-CVE backlog across all severities and remove
 the framework conditions that produced it. The base report scanned CRITICAL and
@@ -44,7 +55,12 @@ HIGH only; the full-severity backlog (CRITICAL through LOW; Grype counts 752,
 Trivy 398 across the two scanners) is in
 `ARC_Secondary_Scan_Findings_2026-06-10.md`. Those findings collapse into the
 package clusters below, because one bump clears every finding tied to that
-package at once.
+package at once. This is the key point for the ~200 MEDIUM/LOW: they are not a
+separate backlog. A single bump of a high-fan-out package (logback, xstream,
+tika, commons-*) clears its CRITICAL, HIGH, MEDIUM, and LOW findings together, so
+the cluster cards P1-01 through P1-07 remediate the full severity spectrum.
+Whatever MEDIUM/LOW remains after the clusters land is tracked, not ignored, in
+the Phase 4 continuous-monitoring backlog (P4-03).
 
 **Timeline:** months 2-6, following Phase 0. Phase 0 emergency patches (P0-15:
 Spring4Shell, Tika, XStream) are the leading edge of this phase; this phase
@@ -163,14 +179,14 @@ High fan-out: bumping these clears findings across many modules at once.
 | commons-email | 1.3.3 | 2.0.0 | Direct | |
 | commons-lang3 | 3.2.1-3.17.0 | 3.17.0 | Mixed | |
 | commons-lang (1.x/2.x) | 2.6 | Migrate to commons-lang3 | Transitive | |
-| commons-beanutils | 1.9.4 | (see P1-02) | Transitive | |
+| commons-beanutils | 1.9.4 | 1.11.0 (see P1-02) | Transitive | |
 | gson | 2.8.2, 2.8.5 | 2.11.0 | Transitive | |
 | guava | 22.0, 31.0.1-jre | 33.4.x | Mixed | |
 | httpclient | 4.3.3, 4.5.2 | 4.5.14 or httpclient5 5.x | Transitive | 4.5.14 is the last 4.x; 5.x is the real target |
 | jsoup | 1.10.1, 1.14.3 | 1.18.x | Direct | |
 | json (org.json) | 20180130-20230618 | 20240303 | Transitive | |
 | xalan | 2.7.0 | 2.7.3 or remove (JDK built-in) | Transitive | |
-| bcprov-jdk15on / bcpkix-jdk15on | 1.68 | bcprov-jdk18on 1.79 | Transitive | artifact id changes from jdk15on to jdk18on |
+| bcprov-jdk15on / bcpkix-jdk15on | 1.68 | bcprov-jdk18on 1.79 / bcpkix-jdk18on 1.79 | Transitive | artifact id changes from jdk15on to jdk18on |
 | jackson-core | 2.16.1 | 2.18.x | Transitive | |
 | hibernate-core | 5.4.30.Final | 5.6.15 or 6.x | Direct | 6.x is jakarta; ties to P1-08 |
 | postgresql (JDBC) | 42.7.3 | 42.7.4+ | Direct | |
@@ -414,6 +430,53 @@ shared base image and a single patch pipeline.
 - [ ] Every service builds and runs on the chosen LTS.
 - [ ] No service ships on Java 8, 11, or a non-LTS feature release.
 
+### P1-11 - Stabilize the service API surface for downstream consumption
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (modernization enabler; prevents integration debt) |
+| **Source** | base report 2.2; platform integration architecture |
+
+**Why:** the estate exposes 1,177 endpoints with no published contract and no
+versioning. Today a downstream caller binds to undocumented behavior and breaks
+on the next change. The platform model is that a single integration gateway is
+the only service permitted to call ARC, with every application reaching ARC
+through that gateway and, where appropriate, through the MCP-governed surface.
+That model only works if the ARC services present a stable, described contract.
+Building the contract now, while the framework uplift is already touching these
+services, is the modernization-vs-hack-it-later decision: define the surface once
+and correctly, instead of each future consumer reverse-engineering it and pinning
+to quirks. A clean contract is also what lets capabilities be exposed safely
+later (for example future AI-assisted or cross-system case workflows) without
+re-plumbing each service.
+
+**Steps**
+1. Publish an OpenAPI specification per service. For Spring Boot services,
+   springdoc-openapi (adopted in P1-01, replacing the abandoned springfox)
+   generates it from the controllers. For RESTEasy/Jersey (JAX-RS) services, use
+   the corresponding OpenAPI integration (for example `swagger-jaxrs2` or the
+   RESTEasy OpenAPI extension). JSF/JSP-bound services that do not expose a REST
+   API and are deferred to Phase 3 are out of scope here; they get a contract
+   only if and when they expose REST endpoints. Commit the spec as the
+   integration contract.
+2. Introduce explicit API versioning (path or header), so a contract change is a
+   new version, not a silent break for the gateway.
+3. Normalize the response envelope and content types across services so the
+   gateway's per-service clients bind to one shape, not many.
+4. Treat the OpenAPI spec as the source for generated client code and, later, for
+   MCP tool schemas (P4-07); do not hand-maintain parallel definitions.
+
+**Done when**
+- [ ] Every service publishes a versioned OpenAPI spec, committed to the repo.
+- [ ] The integration gateway's clients are generated from or validated against
+      those specs.
+
+**Verify**
+```bash
+# each deployable service exposes an OpenAPI document (path varies: /v3/api-docs for springdoc, /openapi.json for JAX-RS)
+curl -fsSL https://<service-url>/v3/api-docs | python3 -c "import json,sys; json.load(sys.stdin)" && echo OK
+```
+
 ---
 
 ### Phase 1 exit gate
@@ -426,15 +489,17 @@ shared base image and a single patch pipeline.
 - [ ] javax to jakarta migration complete per service, framework bumped (P1-08).
 - [ ] JBoss base image retired or remaining services deferred to Phase 3 (P1-09).
 - [ ] Runtimes consolidated onto the chosen LTS (P1-10).
-- [ ] Full-severity re-scan: no CRITICAL/HIGH dependency findings remain, MEDIUM/
-      LOW tracked into the Phase 4 monitoring backlog.
+- [ ] Each service publishes a versioned OpenAPI contract (P1-11).
+- [ ] Full-severity re-scan: no CRITICAL/HIGH dependency findings remain; the
+      MEDIUM/LOW cleared by the cluster bumps is confirmed gone, and any residual
+      MEDIUM/LOW is tracked into the Phase 4 monitoring backlog (P4-03).
 
 ---
 
 
 ---
 
-## Phase 2 - Security Architecture
+## Phase 2 - Security Architecture and Integration Boundary
 
 **Objective:** close the access-control, injection, and request-handling gaps
 that Phase 0 only emergency-patched. Phase 0 stopped the bleeding on the
@@ -723,6 +788,59 @@ all eight services that currently disable CSRF, so the posture is auditable.
 grep -rn --include='*.java' 'csrf.*disable' .   # each hit justified
 ```
 
+### P2-10 - Establish the governed integration boundary
+
+| | |
+|---|---|
+| **Severity** | HIGH (security control and integration foundation) |
+| **Source** | platform integration architecture; base report 6.3 |
+
+**Why:** the platform rule is that one integration gateway is the only service
+permitted to call ARC, and every application reaches ARC through it. Right now
+that is a convention, not an enforced control: the ARC services do not
+authenticate their callers, so any service, or an attacker who reaches the
+network, can call ARC's endpoints directly. Enforcing the boundary is both a
+security control (defense in depth behind the per-endpoint authz in P2-01) and
+the foundation that makes downstream integration safe to build. Doing it during
+modernization, rather than bolting per-consumer access on later, is what keeps
+the surface governed: one authenticated entry, one place to audit, one contract.
+The downstream gateway already implements the consumer half of this pattern
+(inbound bearer auth, outbound service auth, correlation propagation, SSRF-guarded
+outbound URLs, rate limiting); this card builds the ARC half so the two meet.
+
+**Steps**
+1. **Authenticate the caller on the ARC side.** Require a service identity on
+   inbound calls (Entra ID machine-to-machine token, managed identity, or mTLS,
+   matching the platform auth model) and accept only the integration gateway's
+   identity. Reject unauthenticated or unknown callers.
+2. **Consistent error contract.** Every ARC endpoint returns RFC 7807 Problem
+   Details on error, so the gateway and any downstream surface get uniform error
+   semantics instead of leaking exception detail to the caller. This is the
+   response-path control; it does not by itself address the 590 `printStackTrace`
+   calls in base report 6.10, which write to stdout/stderr and are remediated
+   separately as part of logging cleanup.
+3. **Correlation propagation.** Accept and propagate `X-Request-ID` on every hop,
+   so a request can be traced end to end across ARC, the gateway, and the
+   MCP-governed surface. The gateway already emits and forwards it; ARC must
+   honor and echo it.
+4. **HTTPS only** for every inter-service hop, per the platform standard.
+
+**Do NOT**
+- Do not rely on network placement alone (private VNet) as the boundary. Network
+  controls are a layer, not the control; the caller identity is the control.
+
+**Done when**
+- [ ] ARC services authenticate inbound callers and accept only the gateway
+      identity.
+- [ ] Every ARC endpoint returns RFC 7807 on error and propagates `X-Request-ID`.
+- [ ] Direct calls to ARC from a non-gateway identity are rejected.
+
+**Verify**
+```bash
+# an unauthenticated or non-gateway call is rejected
+curl -s -o /dev/null -w '%{http_code}\n' https://<arc-service>/<protected-endpoint>   # expect 401/403
+```
+
 ---
 
 ### Phase 2 exit gate
@@ -737,6 +855,8 @@ grep -rn --include='*.java' 'csrf.*disable' .   # each hit justified
 - [ ] Rate limiting on auth, search, and upload endpoints (P2-07).
 - [ ] Security headers on all 19 services (P2-08).
 - [ ] CSRF posture explicit and justified per service (P2-09).
+- [ ] Authenticated integration boundary enforced; ARC accepts only the gateway
+      identity, returns RFC 7807, and propagates X-Request-ID (P2-10).
 
 ---
 
@@ -944,7 +1064,7 @@ grep -rln 'axe-core\|@axe-core' */package.json 2>/dev/null
 
 ---
 
-## Phase 4 - Consolidation and Continuous Security
+## Phase 4 - Consolidation, Continuous Security, Governed Integration Surface
 
 **Objective:** make the fixes from Phases 0-3 durable. Standardize the CI
 security gate across every repo, generate SBOMs, stand up continuous monitoring
@@ -1130,6 +1250,60 @@ drift.
 ls -d */ | wc -l   # trends down from 48 as dormant/duplicate repos are retired
 ```
 
+### P4-07 - Govern the integration surface: MCP exposure, contract tests, end-to-end tracing
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (modernization enabler; prevents integration debt) |
+| **Source** | platform integration and MCP architecture |
+
+**Why:** by this point ARC has a published contract (P1-11) and an enforced,
+authenticated boundary (P2-10). This card makes the integration durable: expose
+ARC capabilities through the MCP aggregator as a governed spoke, keep the
+contract and the consumers from drifting, and trace a request end to end. Doing
+it on top of the clean contract and boundary, rather than letting each future
+consumer wire its own path into ARC, is the modernization payoff: one governed,
+audited surface that future AI-assisted or cross-system case workflows plug into,
+instead of bespoke direct access bolted on per feature with its own auth and no
+audit trail.
+
+**Steps**
+1. **Expose ARC through the MCP-governed surface as a spoke fronted by the
+   integration gateway.** Generate the MCP tool schemas from the OpenAPI specs
+   (P1-11) so the tool surface and the API contract stay one definition. The
+   aggregator authenticates spokes with a machine-to-machine identity and stores
+   spoke registration centrally; register the gateway-fronted ARC capabilities
+   the same way.
+2. **Honor the default-off integration posture.** `MCP_ENABLED` and
+   `MCP_PROTOCOL_ENABLED` default to false; every service must start and pass its
+   health check with all integrations disabled. Confirm ARC exposure inherits
+   this default and is opt-in per environment.
+3. **Audit any AI-mediated capability.** A capability exposed through MCP that
+   drives an AI generation requires the platform AI audit record (HMAC-signed,
+   7-year WORM retention). Wire the audit on the exposure, not as an afterthought.
+4. **Consumer-driven contract tests in CI.** Add contract tests between the
+   gateway and each ARC service so a contract change that would break the gateway
+   fails the build, not production.
+5. **End-to-end observability.** Confirm `X-Request-ID` (P2-10) traces a request
+   across ARC, the gateway, and the MCP surface, with structured logs at each hop.
+
+**Done when**
+- [ ] ARC capabilities are reachable only through the gateway-fronted MCP spoke,
+      not by direct consumer access.
+- [ ] MCP exposure defaults off and the service is healthy with it disabled.
+- [ ] AI-mediated capabilities emit the HMAC-signed, WORM-retained audit record.
+- [ ] Consumer-driven contract tests gate the gateway/ARC boundary in CI.
+- [ ] A single request is traceable end to end by `X-Request-ID`.
+
+**Verify**
+```bash
+# default-off posture: MCP flags default false and the service is healthy with them off
+grep -rn 'MCP_ENABLED\|MCP_PROTOCOL_ENABLED' <service>/  # defaults resolve to false
+MCP_ENABLED=false MCP_PROTOCOL_ENABLED=false <run health check>   # expect: healthy
+# contract tests present in CI for the gateway/ARC boundary
+grep -rln 'contract' <gateway-repo>/tests/ <ci-config>
+```
+
 ---
 
 ### Phase 4 exit gate
@@ -1140,6 +1314,8 @@ ls -d */ | wc -l   # trends down from 48 as dormant/duplicate repos are retired
 - [ ] Automated dependency updates wired to CI on every active repo (P4-04).
 - [ ] Secret `.gitignore` and gitleaks hook on every repo; gitleaks in CI (P4-05).
 - [ ] Dormant/duplicate repos retired; nested checkouts removed (P4-06).
+- [ ] ARC governed through the gateway-fronted MCP spoke; contract tests and
+      end-to-end tracing in place; AI-mediated capabilities audited (P4-07).
 
 ---
 
@@ -1150,8 +1326,13 @@ addressed: secrets are out of source and blocked from returning, the known-
 exploited and full-backlog dependencies are patched and kept current, the access-
 control and injection surfaces are systemically closed, the legacy frontend tier
 is retired and the remainder meets 508, and continuous monitoring surfaces the
-full severity spectrum rather than the top two tiers. The remaining work is
-steady-state operations against the gates this phase established.
+full severity spectrum rather than the top two tiers. A side effect of doing the
+modernization properly is that ARC ends up integration-ready: a published
+contract (P1-11), an authenticated single-gateway boundary (P2-10), and a
+governed MCP surface (P4-07), built in during the uplift rather than bolted on
+per consumer later. That is what lets future platform capabilities consume ARC
+safely without re-plumbing. The remaining work is steady-state operations
+against the gates this phase established.
 
 ---
 
@@ -1163,6 +1344,7 @@ steady-state operations against the gates this phase established.
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-06-10 | Derek Gordon / OCIO | Consolidated Phases 1-4 task cards into one runbook |
+| 1.1 | 2026-06-12 | Derek Gordon / OCIO | Add integration-readiness cards (P1-11, P2-10, P4-07); reinforce MEDIUM/LOW coverage; review fixes |
 
 Assembled from `ARC_Developer_Remediation_Runbook_v2_Phase{1,2,3,4}.md`. Phase 0
 is delivered separately. Refresh and source-data regeneration:

@@ -301,6 +301,59 @@ all eight services that currently disable CSRF, so the posture is auditable.
 grep -rn --include='*.java' 'csrf.*disable' .   # each hit justified
 ```
 
+### P2-10 - Establish the governed integration boundary
+
+| | |
+|---|---|
+| **Severity** | HIGH (security control and integration foundation) |
+| **Source** | platform integration architecture; base report 6.3 |
+
+**Why:** the platform rule is that one integration gateway is the only service
+permitted to call ARC, and every application reaches ARC through it. Right now
+that is a convention, not an enforced control: the ARC services do not
+authenticate their callers, so any service, or an attacker who reaches the
+network, can call ARC's endpoints directly. Enforcing the boundary is both a
+security control (defense in depth behind the per-endpoint authz in P2-01) and
+the foundation that makes downstream integration safe to build. Doing it during
+modernization, rather than bolting per-consumer access on later, is what keeps
+the surface governed: one authenticated entry, one place to audit, one contract.
+The downstream gateway already implements the consumer half of this pattern
+(inbound bearer auth, outbound service auth, correlation propagation, SSRF-guarded
+outbound URLs, rate limiting); this card builds the ARC half so the two meet.
+
+**Steps**
+1. **Authenticate the caller on the ARC side.** Require a service identity on
+   inbound calls (Entra ID machine-to-machine token, managed identity, or mTLS,
+   matching the platform auth model) and accept only the integration gateway's
+   identity. Reject unauthenticated or unknown callers.
+2. **Consistent error contract.** Every ARC endpoint returns RFC 7807 Problem
+   Details on error, so the gateway and any downstream surface get uniform error
+   semantics instead of leaking exception detail to the caller. This is the
+   response-path control; it does not by itself address the 590 `printStackTrace`
+   calls in base report 6.10, which write to stdout/stderr and are remediated
+   separately as part of logging cleanup.
+3. **Correlation propagation.** Accept and propagate `X-Request-ID` on every hop,
+   so a request can be traced end to end across ARC, the gateway, and the
+   MCP-governed surface. The gateway already emits and forwards it; ARC must
+   honor and echo it.
+4. **HTTPS only** for every inter-service hop, per the platform standard.
+
+**Do NOT**
+- Do not rely on network placement alone (private VNet) as the boundary. Network
+  controls are a layer, not the control; the caller identity is the control.
+
+**Done when**
+- [ ] ARC services authenticate inbound callers and accept only the gateway
+      identity.
+- [ ] Every ARC endpoint returns RFC 7807 on error and propagates `X-Request-ID`.
+- [ ] Direct calls to ARC from a non-gateway identity are rejected.
+
+**Verify**
+```bash
+# an unauthenticated or non-gateway call is rejected
+curl -s -o /dev/null -w '%{http_code}\n' https://<arc-service>/<protected-endpoint>   # expect 401/403
+```
+
 ---
 
 ## Phase 2 exit gate
@@ -315,6 +368,8 @@ grep -rn --include='*.java' 'csrf.*disable' .   # each hit justified
 - [ ] Rate limiting on auth, search, and upload endpoints (P2-07).
 - [ ] Security headers on all 19 services (P2-08).
 - [ ] CSRF posture explicit and justified per service (P2-09).
+- [ ] Authenticated integration boundary enforced; ARC accepts only the gateway
+      identity, returns RFC 7807, and propagates X-Request-ID (P2-10).
 
 ---
 

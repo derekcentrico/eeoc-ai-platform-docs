@@ -17,7 +17,12 @@ HIGH only; the full-severity backlog (CRITICAL through LOW; Grype counts 752,
 Trivy 398 across the two scanners) is in
 `ARC_Secondary_Scan_Findings_2026-06-10.md`. Those findings collapse into the
 package clusters below, because one bump clears every finding tied to that
-package at once.
+package at once. This is the key point for the ~200 MEDIUM/LOW: they are not a
+separate backlog. A single bump of a high-fan-out package (logback, xstream,
+tika, commons-*) clears its CRITICAL, HIGH, MEDIUM, and LOW findings together, so
+the cluster cards P1-01 through P1-07 remediate the full severity spectrum.
+Whatever MEDIUM/LOW remains after the clusters land is tracked, not ignored, in
+the Phase 4 continuous-monitoring backlog (P4-03).
 
 **Timeline:** months 2-6, following Phase 0. Phase 0 emergency patches (P0-15:
 Spring4Shell, Tika, XStream) are the leading edge of this phase; this phase
@@ -136,24 +141,24 @@ grep -rn 'setupDefaultSecurity\|addPermission' . --include='*.java'   # present 
 **Why:** a cluster of widely-shared utility libraries with HIGH/MEDIUM CVEs.
 High fan-out: bumping these clears findings across many modules at once.
 
-| Package | Current | Target (verify) | Direct/Transitive |
-|---|---|---|---|
-| commons-io | 2.4, 2.11.0, 2.13.0 | 2.18.0 | Mixed |
-| commons-fileupload | 1.4, 1.5 | commons-fileupload2 2.0.0 | Direct | (API change; ties to the upload paths in P0-14) |
-| commons-email | 1.3.3 | 2.0.0 | Direct |
-| commons-lang3 | 3.2.1-3.17.0 | 3.17.0 | Mixed |
-| commons-lang (1.x/2.x) | 2.6 | Migrate to commons-lang3 | Transitive |
-| commons-beanutils | 1.9.4 | (see P1-02) | Transitive |
-| gson | 2.8.2, 2.8.5 | 2.11.0 | Transitive |
-| guava | 22.0, 31.0.1-jre | 33.4.x | Mixed |
-| httpclient | 4.3.3, 4.5.2 | 4.5.14 or httpclient5 5.x | Transitive | (4.5.14 is the last 4.x; 5.x is the real target) |
-| jsoup | 1.10.1, 1.14.3 | 1.18.x | Direct |
-| json (org.json) | 20180130-20230618 | 20240303 | Transitive |
-| xalan | 2.7.0 | 2.7.3 or remove (JDK built-in) | Transitive |
-| bcprov-jdk15on / bcpkix-jdk15on | 1.68 | bcprov-jdk18on 1.79 | Transitive | (artifact id changes from jdk15on to jdk18on) |
-| jackson-core | 2.16.1 | 2.18.x | Transitive |
-| hibernate-core | 5.4.30.Final | 5.6.15 or 6.x | Direct | (6.x is jakarta; ties to P1-08) |
-| postgresql (JDBC) | 42.7.3 | 42.7.4+ | Direct |
+| Package | Current | Target (verify) | Direct/Transitive | Notes |
+|---|---|---|---|---|
+| commons-io | 2.4, 2.11.0, 2.13.0 | 2.18.0 | Mixed | |
+| commons-fileupload | 1.4, 1.5 | commons-fileupload2 2.0.0 | Direct | API change; ties to the upload paths in P0-14 |
+| commons-email | 1.3.3 | 2.0.0 | Direct | |
+| commons-lang3 | 3.2.1-3.17.0 | 3.17.0 | Mixed | |
+| commons-lang (1.x/2.x) | 2.6 | Migrate to commons-lang3 | Transitive | |
+| commons-beanutils | 1.9.4 | 1.11.0 (see P1-02) | Transitive | |
+| gson | 2.8.2, 2.8.5 | 2.11.0 | Transitive | |
+| guava | 22.0, 31.0.1-jre | 33.4.x | Mixed | |
+| httpclient | 4.3.3, 4.5.2 | 4.5.14 or httpclient5 5.x | Transitive | 4.5.14 is the last 4.x; 5.x is the real target |
+| jsoup | 1.10.1, 1.14.3 | 1.18.x | Direct | |
+| json (org.json) | 20180130-20230618 | 20240303 | Transitive | |
+| xalan | 2.7.0 | 2.7.3 or remove (JDK built-in) | Transitive | |
+| bcprov-jdk15on / bcpkix-jdk15on | 1.68 | bcprov-jdk18on 1.79 / bcpkix-jdk18on 1.79 | Transitive | artifact id changes from jdk15on to jdk18on |
+| jackson-core | 2.16.1 | 2.18.x | Transitive | |
+| hibernate-core | 5.4.30.Final | 5.6.15 or 6.x | Direct | 6.x is jakarta; ties to P1-08 |
+| postgresql (JDBC) | 42.7.3 | 42.7.4+ | Direct | |
 
 **Steps**
 1. Bump direct dependencies in the manifest; override transitive ones.
@@ -394,6 +399,53 @@ shared base image and a single patch pipeline.
 - [ ] Every service builds and runs on the chosen LTS.
 - [ ] No service ships on Java 8, 11, or a non-LTS feature release.
 
+### P1-11 - Stabilize the service API surface for downstream consumption
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (modernization enabler; prevents integration debt) |
+| **Source** | base report 2.2; platform integration architecture |
+
+**Why:** the estate exposes 1,177 endpoints with no published contract and no
+versioning. Today a downstream caller binds to undocumented behavior and breaks
+on the next change. The platform model is that a single integration gateway is
+the only service permitted to call ARC, with every application reaching ARC
+through that gateway and, where appropriate, through the MCP-governed surface.
+That model only works if the ARC services present a stable, described contract.
+Building the contract now, while the framework uplift is already touching these
+services, is the modernization-vs-hack-it-later decision: define the surface once
+and correctly, instead of each future consumer reverse-engineering it and pinning
+to quirks. A clean contract is also what lets capabilities be exposed safely
+later (for example future AI-assisted or cross-system case workflows) without
+re-plumbing each service.
+
+**Steps**
+1. Publish an OpenAPI specification per service. For Spring Boot services,
+   springdoc-openapi (adopted in P1-01, replacing the abandoned springfox)
+   generates it from the controllers. For RESTEasy/Jersey (JAX-RS) services, use
+   the corresponding OpenAPI integration (for example `swagger-jaxrs2` or the
+   RESTEasy OpenAPI extension). JSF/JSP-bound services that do not expose a REST
+   API and are deferred to Phase 3 are out of scope here; they get a contract
+   only if and when they expose REST endpoints. Commit the spec as the
+   integration contract.
+2. Introduce explicit API versioning (path or header), so a contract change is a
+   new version, not a silent break for the gateway.
+3. Normalize the response envelope and content types across services so the
+   gateway's per-service clients bind to one shape, not many.
+4. Treat the OpenAPI spec as the source for generated client code and, later, for
+   MCP tool schemas (P4-07); do not hand-maintain parallel definitions.
+
+**Done when**
+- [ ] Every service publishes a versioned OpenAPI spec, committed to the repo.
+- [ ] The integration gateway's clients are generated from or validated against
+      those specs.
+
+**Verify**
+```bash
+# each deployable service exposes an OpenAPI document (path varies: /v3/api-docs for springdoc, /openapi.json for JAX-RS)
+curl -fsSL https://<service-url>/v3/api-docs | python3 -c "import json,sys; json.load(sys.stdin)" && echo OK
+```
+
 ---
 
 ## Phase 1 exit gate
@@ -406,8 +458,10 @@ shared base image and a single patch pipeline.
 - [ ] javax to jakarta migration complete per service, framework bumped (P1-08).
 - [ ] JBoss base image retired or remaining services deferred to Phase 3 (P1-09).
 - [ ] Runtimes consolidated onto the chosen LTS (P1-10).
-- [ ] Full-severity re-scan: no CRITICAL/HIGH dependency findings remain, MEDIUM/
-      LOW tracked into the Phase 4 monitoring backlog.
+- [ ] Each service publishes a versioned OpenAPI contract (P1-11).
+- [ ] Full-severity re-scan: no CRITICAL/HIGH dependency findings remain; the
+      MEDIUM/LOW cleared by the cluster bumps is confirmed gone, and any residual
+      MEDIUM/LOW is tracked into the Phase 4 monitoring backlog (P4-03).
 
 ---
 
