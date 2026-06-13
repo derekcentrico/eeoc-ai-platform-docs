@@ -179,14 +179,14 @@ High fan-out: bumping these clears findings across many modules at once.
 | commons-email | 1.3.3 | 2.0.0 | Direct | |
 | commons-lang3 | 3.2.1-3.17.0 | 3.17.0 | Mixed | |
 | commons-lang (1.x/2.x) | 2.6 | Migrate to commons-lang3 | Transitive | |
-| commons-beanutils | 1.9.4 | (see P1-02) | Transitive | |
+| commons-beanutils | 1.9.4 | 1.11.0 (see P1-02) | Transitive | |
 | gson | 2.8.2, 2.8.5 | 2.11.0 | Transitive | |
 | guava | 22.0, 31.0.1-jre | 33.4.x | Mixed | |
 | httpclient | 4.3.3, 4.5.2 | 4.5.14 or httpclient5 5.x | Transitive | 4.5.14 is the last 4.x; 5.x is the real target |
 | jsoup | 1.10.1, 1.14.3 | 1.18.x | Direct | |
 | json (org.json) | 20180130-20230618 | 20240303 | Transitive | |
 | xalan | 2.7.0 | 2.7.3 or remove (JDK built-in) | Transitive | |
-| bcprov-jdk15on / bcpkix-jdk15on | 1.68 | bcprov-jdk18on 1.79 | Transitive | artifact id changes from jdk15on to jdk18on |
+| bcprov-jdk15on / bcpkix-jdk15on | 1.68 | bcprov-jdk18on 1.79 / bcpkix-jdk18on 1.79 | Transitive | artifact id changes from jdk15on to jdk18on |
 | jackson-core | 2.16.1 | 2.18.x | Transitive | |
 | hibernate-core | 5.4.30.Final | 5.6.15 or 6.x | Direct | 6.x is jakarta; ties to P1-08 |
 | postgresql (JDBC) | 42.7.3 | 42.7.4+ | Direct | |
