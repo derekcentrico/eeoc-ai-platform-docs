@@ -511,7 +511,10 @@ aggregate health. This pairs with the RFC 7807 and X-Request-ID work in P2-10.
 
 **Verify**
 ```bash
-curl -fsS https://<service-url>/actuator/health | python3 -c "import json,sys;json.load(sys.stdin)" && echo OK
+# liveness is the public probe (the main /actuator/health may require auth); JBoss services expose /health
+curl -fsS https://<service-url>/actuator/health/liveness | python3 -c "import json,sys;json.load(sys.stdin)" && echo OK
+# structured logging: a log line parses as JSON and carries the correlation id
+<tail a log line> | python3 -c "import json,sys;d=json.load(sys.stdin);assert 'X-Request-ID' in str(d) or 'request_id' in d"
 ```
 
 ---
