@@ -39,7 +39,7 @@ safely without re-plumbing each service.
 | Phase | Theme | Timeline | Cards |
 |---|---|---|---|
 | 1 | Dependency modernization, crypto, JBoss/runtime, base images, API contract, efficacy validation | months 2-6 | P1-01..P1-15 |
-| 2 | Security architecture (authz, injection, SQLi, validation, SSRF, rate limiting, headers, sessions, integration boundary, observability, command injection, SAST triage) | months 4-9 | P2-01..P2-17 |
+| 2 | Security architecture (authz, injection, SQLi, validation, SSRF, rate limiting, headers, sessions, integration boundary, observability, command injection, SAST triage, PII-log redaction) | months 4-9 | P2-01..P2-18 |
 | 3 | Frontend modernization, 508, USWDS, cross-app navigation | months 6-12 | P3-01..P3-07 |
 | 4 | Consolidation, continuous security, governed integration, coverage, Alfresco, archival, eventing, DAST/pen-test, IaC | months 10-18 | P4-01..P4-13 |
 
@@ -1199,7 +1199,7 @@ traversal, each high-impact on its own.
 
 **Verify**
 ```bash
-grep -rnE --include='*.java' 'Runtime\.getRuntime\(\)\.exec|ProcessBuilder|getRealPath|new File\([^)]*request' . | grep -iv test   # each remaining site reviewed and constrained
+grep -rnE --include='*.java' 'Runtime\.getRuntime\(\)\.exec|ProcessBuilder|getRealPath|new File\([^)]*request' . | grep -ivE '/test/|/tests/'   # exclude test sources, not the -ims-aks-test service repos; each remaining site reviewed and constrained
 ```
 
 ### P2-17 - SAST taint-flow analysis and review-queue triage
@@ -1225,7 +1225,7 @@ cannot see it but the taint analysis can.
 2. Triage each review-queue class to confirmed defects and route them to the
    owning card: SQL injection to P2-11, SSRF (the roughly 33 of 500 clients whose
    URL derives from request input) to P2-06, PII-in-log (the roughly 113 email
-   sites) to P2-12, XXE to P2-03, path traversal and command injection to P2-16.
+   sites) to P2-18, XXE to P2-03, path traversal and command injection to P2-16.
 3. Track residual lower-confidence findings into the P4-03 monitoring backlog;
    add the gating SAST rules to CI (P4-01).
 
@@ -1238,6 +1238,40 @@ cannot see it but the taint analysis can.
 ```bash
 semgrep scan --config p/java --config p/owasp-top-ten --include='*.java' --no-git-ignore --json <service> \
   | python3 -c "import json,sys,collections; d=json.load(sys.stdin); print(collections.Counter(r['extra']['severity'] for r in d['results']))"
+```
+
+### P2-18 - Systemic PII-in-log redaction
+
+| | |
+|---|---|
+| **Severity** | HIGH (platform no-PII-in-logs rule) |
+| **Source** | base report 6.9; Findings Addendum; Phase 0 P0-13 |
+
+**Why:** P0-13 masks the reachable FederalHearings email-in-log sites as an
+emergency; the estate-wide cleanup was never carded. The triage in P2-17 confirms
+roughly 113 sites that log an email value in cleartext, the real leak class from
+base report 6.9 (the 565 count is mostly false positives on a `name` variable).
+P2-12 narrows broad exceptions and removes `printStackTrace`, but its done-when
+and verify cover only the exception path, so a PII-in-log site can survive both
+P2-12 and P2-17. This card is the dedicated home that closes the class, the
+estate-wide completion of the P0-13 emergency subset.
+
+**Steps**
+1. Add the platform PII-masking pattern (`_mask_pii()` or a SHA-256 + Key Vault
+   salt hash) to every service that lacks one; the ARC Java services have none.
+2. Route every log statement that references an identity field (email, SSN,
+   phone, name) through the masking pattern; never log a raw email or other PII.
+3. Remediate the triaged P2-17 sites and add a Semgrep/CI rule that fails the
+   build on a new unmasked PII-in-log statement.
+
+**Done when**
+- [ ] A PII-masking utility exists in every service that logs identity fields.
+- [ ] No log statement writes a raw email/SSN/phone/name; the P2-17 sites are
+      masked.
+
+**Verify**
+```bash
+grep -rnE --include='*.java' 'log\.(info|debug|warn|error)\([^)]*(email|ssn|phone)' . | grep -ivE '/test/|/tests/' | grep -iv mask   # trends to 0
 ```
 
 ---
@@ -1265,6 +1299,8 @@ semgrep scan --config p/java --config p/owasp-top-ten --include='*.java' --no-gi
       from unvalidated request input (P2-16).
 - [ ] SAST run across all services; review-queue classes triaged to confirmed
       defects and routed to their cards (P2-17).
+- [ ] PII-masking utility present; no raw email/SSN/phone/name logged; the
+      triaged PII-in-log sites are masked (P2-18).
 
 ---
 

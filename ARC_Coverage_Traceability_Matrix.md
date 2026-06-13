@@ -146,6 +146,7 @@ cards. Detail in `ARC_Phase1to4_VulnToCard_Audit_2026-06-13.md` Sections 5-7.
 | Remediation efficacy (pilot then scale) | P1-15 | MEDIUM |
 | Command injection / path traversal (uncarded; SAST-confirmed) | P2-16 | HIGH |
 | SAST taint-flow analysis + review-queue triage | P2-17 | HIGH |
+| Systemic PII-in-log redaction (estate-wide completion of P0-13) | P2-18 | HIGH |
 | DAST + pre-ATO penetration test validation | P4-12 | HIGH |
 | IaC misconfiguration remediation | P4-13 | HIGH |
 

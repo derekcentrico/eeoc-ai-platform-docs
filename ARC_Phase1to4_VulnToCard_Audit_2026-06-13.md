@@ -448,10 +448,13 @@ checkouts):
 - SSRF: 500 client sites, of which roughly 33 take a URL influenced by request
   input. That is the real P2-06 surface, not 806.
 - PII-in-log: 113 sites reference an email value (the addendum's confirmed leak
-  class), down from the 565 mixed candidate count.
+  class), down from the 565 mixed candidate count. These route to a dedicated
+  card, **P2-18**, the estate-wide completion of the P0-13 emergency subset;
+  P2-12 covers only the exception/`printStackTrace` path, so it is not the right
+  home for PII-log redaction.
 
 These estimates are wired into P2-17's triage step and the consuming cards
-(P2-11, P2-06, P2-12).
+(P2-11, P2-06, P2-16, P2-18).
 
 ### 6.4 IaC misconfiguration (recommendation 6, new P4-13)
 
@@ -499,6 +502,7 @@ done-when: a checked-in per-service `authz-matrix.csv` with named owners, so the
 | P1-15 (new) | `ARC_Developer_Remediation_Runbook_v2_Phase1.md` | Remediation efficacy: pilot then scale |
 | P2-16 (new) | `ARC_Developer_Remediation_Runbook_v2_Phase2.md` | Command injection / path traversal (uncarded class) |
 | P2-17 (new) | `ARC_Developer_Remediation_Runbook_v2_Phase2.md` | SAST taint-flow + review-queue triage |
+| P2-18 (new) | `ARC_Developer_Remediation_Runbook_v2_Phase2.md` | Systemic PII-in-log redaction (estate-wide completion of P0-13) |
 | P2-01 (strengthened) | `ARC_Developer_Remediation_Runbook_v2_Phase2.md` | Authorization-matrix deliverable + done-when |
 | P4-01 (strengthened) | `ARC_Developer_Remediation_Runbook_v2_Phase4.md` | IaC misconfiguration scan added to the gate |
 | P4-12 (new) | `ARC_Developer_Remediation_Runbook_v2_Phase4.md` | DAST + pre-ATO penetration test validation |
