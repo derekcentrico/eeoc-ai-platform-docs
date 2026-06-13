@@ -62,6 +62,13 @@ the best existing coverage and is the reference pattern.
 4. Default-deny: configure the `SecurityFilterChain` so an endpoint with no
    explicit rule is rejected, not permitted.
 5. Use FederalHearings as the worked reference for the annotation pattern.
+6. Remove or profile-gate non-production controllers. Phase 0 P0-16 gated the one
+   known unauthenticated dev controller (`IntakeCollectionsService /api/dev`);
+   generalize that here. Inventory every `@RestController`/`@Controller` that
+   exposes dev, test, or debug operations, and either exclude it from the
+   deployable artifact or guard it behind a non-prod `@Profile`, so default-deny
+   is not the only thing standing between a privileged caller and a process-control
+   endpoint that should not ship at all.
 
 **Do NOT**
 - Do not invent the role-to-endpoint mapping. The role matrix is a product and
@@ -74,6 +81,8 @@ the best existing coverage and is the reference pattern.
       chain.
 - [ ] Every endpoint resolves to an explicit authorization rule.
 - [ ] PrEPAWebService and the other zero-coverage services are remediated.
+- [ ] No dev/test/debug controller is reachable in a production build; each is
+      removed from the artifact or behind a non-prod profile (generalizes P0-16).
 
 **Verify**
 ```bash

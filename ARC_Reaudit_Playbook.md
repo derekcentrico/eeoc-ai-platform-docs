@@ -88,10 +88,12 @@ grep -rn --include='*.java' '@PreAuthorize\|@Secured\|@RolesAllowed' . | wc -l
 grep -rn --include='*.java' -E '@(Get|Post|Put|Delete|Patch|Request)Mapping' . | wc -l
 grep -rn --include='*.java' 'permitAll' . | wc -l
 
-# CORS wildcard (P0-05) - both styles, deduped to unique services (compare to baseline 5)
-{ grep -rln --include='*.java' 'setAllowedOrigins(List.of("\*"))' . ; \
-  grep -rln --include='*.java' 'CrossOrigin(origins = "\*")' . ; \
-  grep -rln --include='*.java' 'CrossOrigin("\*")' . ; } \
+# CORS wildcard (P0-05) - both styles in one extended-regex pass, deduped to
+# unique services (compare to baseline 5). A braced group of separate greps piped
+# downstream truncates to the first grep's output in some shells; one grep -E
+# alternation avoids that and still covers the annotation and config styles.
+grep -rlnE --include='*.java' \
+  'CrossOrigin\(([^)]*= *)?"\*"\)|setAllowedOrigins\(List\.of\("\*"\)\)' . \
   | sed 's|^\./||' | awk -F/ '{print $1}' | sort -u | tee /dev/stderr | wc -l
 
 # CSRF disabled (P0-11, P2-09)
@@ -156,7 +158,7 @@ candidate count, not a defect count.
 | Secrets (gitleaks) | 332 | P0-01..10 | 0 |
 | Grype total (C/H/M/L) | 752 (43/335/336/38) | P1-01..07 | 0 C/H |
 | Trivy total | 398 (17/181/179/21) | P1-01..07 | 0 C/H |
-| Broken crypto sites | 10 | P1-12 | 0 |
+| Broken crypto sites | 30 (15 deduped) | P1-12 | 0 |
 | ObjectInputStream / XStream | 13 / 14 | P0-15,P1-02,P2-04 | 0 untrusted |
 | XML parsers / hardened | 42 / 0 | P0-14,P2-03 | hardened == parsers |
 | Method-auth annotations / endpoints | 259 / 1,177 | P2-01 | every endpoint ruled |
@@ -191,7 +193,7 @@ Copy this block, date it, fill the deltas. Trend toward the targets above.
 ```
 ### Re-audit YYYY-MM-DD
 - Secrets: ___ (was 332)        Grype C/H: ___/___ (was 43/335)
-- Broken crypto: ___ (was 10)   SQL concat: ___ (was 286)
+- Broken crypto: ___ (was 30)   SQL concat: ___ (was 286)
 - XXE hardened/parsers: ___/___ (was 0/42)
 - AuthZ annotations: ___/endpoints ___ (was 259/1177)
 - CORS wildcards: ___ (was 5)   CSRF-disabled: ___ (was 8)

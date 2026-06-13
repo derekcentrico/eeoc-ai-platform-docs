@@ -137,12 +137,13 @@ All twelve were added:
 
 Card steps were spot-checked against the current source:
 
-- P1-12 crypto: `PBEWithMD5AndDES` confirmed at `RespondentPortal/.../DesEncrypter.java:41`, 10 sites across RespondentPortal and FedSep.
+- P1-12 crypto: `PBEWithMD5AndDES` confirmed at `RespondentPortal/.../DesEncrypter.java:41`; the Verify pattern returns 30 occurrences (15 after removing nested-checkout duplicates) across five files in RespondentPortal and FedSep.
 - P2-11 SQL: ~286 value-concatenating query sites confirmed, heaviest in ImsNXG (e.g. `DocumentManager.java:146`).
 - P2-12 exceptions: 1,546 broad catches and 590 `printStackTrace()` confirmed.
 - P2-13 sessions: 176 `HttpSession` usages confirmed.
 - P1-13 images: `debian:buster-slim`, untagged `nginx`, `openjdk:11-jre-slim`, Alfresco 6.2.2 confirmed in Dockerfiles.
 - P0-06 / P2-07 (existing cards re-checked): RespondentPortal still 300-minute timeout; zero rate-limiting libraries present.
+- P0-16 dev controller: the single P0-16 fix is generalized into P2-01 (inventory and remove or profile-gate dev/test/debug controllers across all services), so no Phase 0 emergency item is left without a Phase 1-4 completion. See `ARC_Phase1to4_VulnToCard_Audit_2026-06-13.md` Section 5.
 
 ## 8. Package-level severity completeness (re-confirmed 2026-06-12)
 

@@ -216,8 +216,18 @@ the Tika and POI 5.3.0 seen elsewhere.
 
 **Verify**
 ```bash
-grep -rhn 'tika-core\|name: .tika-core\|<artifactId>poi' --include='pom.xml' --include='build.gradle' . \
-  | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | sort -u   # expect: one Tika line, one POI line
+# Read the installed-package inventory from the SBOM, not the manifests and not
+# Grype matches. POI is declared group/name/version in Gradle and split across
+# lines in Maven poms, so an inline manifest extract misses it; and Grype rows
+# are vulnerability matches, so a remediated (non-vulnerable) Tika/POI drops out
+# of Grype and the convergence check would miss it. Syft lists every installed
+# version, vulnerable or not, which is what the one-line-each check needs.
+syft dir:. -o json | python3 -c "import json,sys,collections; \
+  d=json.load(sys.stdin); v=collections.defaultdict(set); \
+  [v[a['name']].add(a['version']) for a in d.get('artifacts',[]) \
+   if a['name'] in ('tika-core','tika-parsers','poi','poi-ooxml')]; \
+  print({k:sorted(x) for k,x in v.items()})"
+# expect: one Tika line and one POI line as modules converge
 ```
 
 ### P1-05 - npm CRITICAL packages
@@ -462,9 +472,12 @@ curl -fsSL https://<service-url>/v3/api-docs | python3 -c "import json,sys; json
 
 **Why:** `PBEWithMD5AndDES` pairs a broken hash (MD5) with a broken cipher
 (56-bit DES, brute-forceable in hours). Anything protected with it should be
-treated as recoverable by an attacker. It appears at 10 sites across two
-services, including a dedicated utility:
-`RespondentPortal-ims-aks/.../utility/DesEncrypter.java:41` and FedSep.
+treated as recoverable by an attacker. The Verify pattern returns 30 occurrences
+(15 after removing nested-checkout duplicates) across five files in two services,
+including a dedicated utility:
+`RespondentPortal-ims-aks/.../utility/DesEncrypter.java:41` and FedSep
+(`FedSepAppCache.java`, `hearingappeal/.../ValidateUtils.java`,
+`util/DesEncrypter.java`).
 
 **Steps**
 1. Replace the DES/MD5 scheme with AES-256-GCM (authenticated encryption). Derive
@@ -517,7 +530,9 @@ non-reproducible). Each carries its own OS-package CVE backlog.
 
 **Verify**
 ```bash
-grep -rhnE --include='Dockerfile*' '^FROM\s' . | grep -iE 'buster|:latest|^FROM\s+nginx\s*$|openjdk:11'   # expect: no output
+# No -n: the line-number prefix would push the FROM token off the start of line
+# and break the anchored nginx sub-pattern, hiding the untagged-nginx images.
+grep -rhE --include='Dockerfile*' '^FROM\s' . | grep -iE 'buster|:latest|^FROM\s+nginx\s*$|openjdk:11'   # expect: no output
 ```
 
 ### P1-14 - New-service language standard
