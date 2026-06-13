@@ -40,6 +40,7 @@ dating, diagrams) with no remediation task.
 | 4.12 | HTTP client / SSRF surface (806) | P2-06 |
 | 4.13 | HttpSession without secure config (176) | **P2-13** |
 | 4.14 | Broad exception catches (1,546) / printStackTrace (590) | **P2-12** |
+| 4.15 | Command injection / path traversal (base report 6.11; SAST-confirmed) | **P2-16** |
 
 ## 2. Section 508 and architecture (audit Sections 5-6)
 
@@ -132,6 +133,24 @@ All twelve were added:
 | Repo archival policy (4.6) | P4-10 | LOW |
 | New-service language standard (1.6) | P1-14 | LOW |
 | Feature flags and audit logging (2.8) | P2-14 | MEDIUM |
+
+## 6b. Additional-audit cards (2026-06-13)
+
+A follow-on pass ran the validation layers the original grep + SCA + secrets
+method could not: SAST, IaC misconfiguration, and review-queue triage. It
+surfaced one uncarded class (command injection / path traversal) and added five
+cards. Detail in `ARC_Phase1to4_VulnToCard_Audit_2026-06-13.md` Sections 5-7.
+
+| Driver | New card | Severity |
+|---|---|---|
+| Remediation efficacy (pilot then scale) | P1-15 | MEDIUM |
+| Command injection / path traversal (uncarded; SAST-confirmed) | P2-16 | HIGH |
+| SAST taint-flow analysis + review-queue triage | P2-17 | HIGH |
+| DAST + pre-ATO penetration test validation | P4-12 | HIGH |
+| IaC misconfiguration remediation | P4-13 | HIGH |
+
+P2-01 was also strengthened with an explicit authorization-matrix deliverable,
+and P4-01 now lists IaC misconfiguration scanning in the standard CI gate.
 
 ## 7. Accuracy verification (against `eeoc-arc-payloads/`)
 

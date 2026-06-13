@@ -42,8 +42,9 @@ change.
 1. Adopt one standard gate definition for all repos, matching the platform's
    established suite: secret scan (gitleaks), SAST (Bandit/Semgrep for Python,
    the Java equivalent for JVM repos), SCA (pip-audit / OSV-Scanner / Grype),
-   license scan, SBOM generation, container scan (Trivy), and DAST baseline (ZAP)
-   for deployable services.
+   license scan, SBOM generation, container scan (Trivy), IaC misconfiguration
+   scan (checkov or `trivy config`) for deployment manifests, and DAST baseline
+   (ZAP) for deployable services.
 2. Roll it to the 15 repos with no CI first, then normalize the 33 that have
    inconsistent pipelines.
 3. Gate the build on CRITICAL/HIGH for SCA, SAST, and container scans; record
@@ -366,6 +367,75 @@ path.
 grep -rnE 'db-change-topic|document-activity-topic|ServiceBus|service[._]bus|EVENT.*ENABLED' <service>/
 ```
 
+### P4-12 - DAST and pre-ATO penetration test validation
+
+| | |
+|---|---|
+| **Severity** | HIGH (ATO gate; confirms exploitability) |
+| **Source** | Phase 1-4 verification audit (2026-06-13); platform pre-pen-test requirements |
+
+**Why:** every finding to date is static. The XXE path is traced but "not proven
+exploited," the authorization gaps are counted but not exercised, and roughly
+half the card Verify commands are runtime checks (curl, health, coverage) that
+were never executed because there was no running target. A DAST baseline and a
+scoped penetration test against a staging instance move the high-impact findings
+from reachable to confirmed or refuted, prove the remediations hold at runtime,
+and run the verify commands static review cannot.
+
+**Steps**
+1. Stand up a staging instance with the Phase 0-2 remediations applied. Run an
+   OWASP ZAP baseline scan against each deployable service; gate on new high-risk
+   alerts.
+2. Commission a scoped penetration test on the high-impact classes: XXE on the
+   MD-715 upload path, authorization bypass on the previously unguarded endpoints
+   (P2-01), SSRF to the metadata endpoint (P2-06), and session and CSRF handling.
+3. Execute the runtime card Verify commands against staging (P1-11, P2-10, P2-13,
+   P2-15, P4-07, P4-08) and record pass/fail.
+4. Clear the pre-pen-test configuration-hygiene items first so the paid test
+   spends its budget on real issues; feed confirmed exploitable findings back as
+   targeted fixes.
+
+**Done when**
+- [ ] ZAP baseline runs against every deployable service and gates on high-risk.
+- [ ] A scoped penetration test has confirmed or refuted the high-impact static
+      findings.
+- [ ] The runtime Verify commands have been executed against staging.
+
+### P4-13 - Remediate infrastructure-as-code misconfiguration
+
+| | |
+|---|---|
+| **Severity** | HIGH |
+| **Source** | IaC misconfiguration scan (2026-06-13) |
+
+**Why:** the dependency and code scans never covered the deployment
+configuration. A checkov scan of the Helm, Ansible, and production manifests
+returned 764 failed checks (azure-extmgmt Helm 168, Ansible 10, prod 562,
+Alfresco Helm 24). The recurring failures are missing CPU/memory requests and
+limits, no container security context, root containers admitted, no seccomp
+profile, images referenced by tag rather than digest, and use of the default
+namespace. Each is a hardening gap in how the services run, independent of the
+code inside them.
+
+**Steps**
+1. Add an IaC misconfiguration scanner (checkov or `trivy config`) to the
+   standard CI gate (P4-01), covering Kubernetes/Helm, Ansible, and any Terraform.
+2. Remediate the recurring classes: set resource requests and limits, apply a
+   restrictive `securityContext` (run as non-root, drop capabilities, seccomp),
+   pin images by digest, and move workloads off the default namespace.
+3. Gate the pipeline on CRITICAL/HIGH IaC findings; track the rest into the P4-03
+   backlog.
+
+**Done when**
+- [ ] IaC scanning runs in CI and gates on CRITICAL/HIGH.
+- [ ] Resource limits, security contexts, non-root, and digest-pinned images set
+      across the deployment manifests.
+
+**Verify**
+```bash
+checkov -d <iac-dir> --compact --quiet   # failed-check count trends down from the 764 baseline
+```
+
 ---
 
 ## Phase 4 exit gate
@@ -382,6 +452,10 @@ grep -rnE 'db-change-topic|document-activity-topic|ServiceBus|service[._]bus|EVE
 - [ ] Alfresco EOL decision recorded and actioned (P4-09).
 - [ ] Repository archival policy documented and applied (P4-10).
 - [ ] ARC publishes domain events to Service Bus (flag-gated, schema'd) (P4-11).
+- [ ] DAST baseline and a scoped penetration test validate the high-impact
+      findings; runtime Verify commands executed against staging (P4-12).
+- [ ] IaC misconfiguration scanned in CI and the recurring classes remediated
+      across the deployment manifests (P4-13).
 
 ---
 

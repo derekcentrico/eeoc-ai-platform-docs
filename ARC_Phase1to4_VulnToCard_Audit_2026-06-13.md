@@ -403,7 +403,88 @@ item carried to completion" is yes.
 
 ---
 
-## 6. Corrections Applied in the Accompanying Change
+## 6. Additional Audit Layers (2026-06-13)
+
+The verification above confirms the cards are accurate and complete against the
+grep + SCA + secrets method that produced them. That method has structural blind
+spots the audit docs themselves name (surface counts, review queues, static
+only). This pass ran the layers that close those spots and folds the results into
+Phases 1-4. Phase 0 is in progress and was not touched.
+
+### 6.1 SAST taint-flow analysis (recommendation 1)
+
+Semgrep (`p/java` + `p/owasp-top-ten`, 544 rules) on the nine heaviest services
+(4,162 files, nested self-copies excluded) returned 68 data-flow findings:
+
+| Class | CWE | Count | Maps to |
+|---|---|---|---|
+| SQL injection | CWE-89 | 48 (ImsNXG 32, FedSep, others) | P2-11 (confirms the surface count is real) |
+| XXE | CWE-611 | 16 | P2-03 (specific sites beyond the one traced path) |
+| Weak hash (MD5) | CWE-328 | 2 | P1-12 / crypto |
+| Path traversal | CWE-23 | 2 | **P2-16 (new)** |
+
+The SQL result is the clearest proof the grep method was insufficient: the value
+concatenated into the query sits on the line after `createNativeQuery(`, so the
+single-line P2-11 pattern cannot see it (a request-derived-value grep returned
+zero), while the taint analysis flags 48. This is added as a standing card,
+**P2-17**, and the SAST gate is added to P4-01.
+
+### 6.2 Uncarded class found: command injection / path traversal (new P2-16)
+
+The path-traversal findings traced back to base report 6.11 (process execution
+and request-driven file access), which was flagged in the base report but never
+carried into a remediation card and is absent from the traceability matrix. The
+source carries six `Runtime.exec`/`ProcessBuilder` and three request-driven file
+sites (deduplicated). This is a genuine coverage gap the SAST pass surfaced, now
+closed by **P2-16** and matrix row 4.15.
+
+### 6.3 Review-queue triage (recommendation 2)
+
+The surface counts were triaged toward real defects (deduplicated for nested
+checkouts):
+
+- SQL value-concat: 142 sites; request-derived confirmation requires the SAST
+  pass (cross-line taint), which found 48 - the actionable subset.
+- SSRF: 500 client sites, of which roughly 33 take a URL influenced by request
+  input. That is the real P2-06 surface, not 806.
+- PII-in-log: 113 sites reference an email value (the addendum's confirmed leak
+  class), down from the 565 mixed candidate count.
+
+These estimates are wired into P2-17's triage step and the consuming cards
+(P2-11, P2-06, P2-12).
+
+### 6.4 IaC misconfiguration (recommendation 6, new P4-13)
+
+The dependency and code scans never covered deployment configuration. checkov on
+the Helm, Ansible, and production manifests returned 764 failed checks
+(azure-extmgmt Helm 168, Ansible 10, prod 562, Alfresco Helm 24): missing
+resource requests/limits, no security context, root containers, no seccomp,
+tag-not-digest images, default namespace. Added as **P4-13**, with IaC scanning
+added to the P4-01 standard gate.
+
+### 6.5 DAST / penetration test and pilot validation (recommendations 3 and 4)
+
+These need a running target and an execution window, so they are authored as
+gates rather than run now:
+
+- **P4-12** - a ZAP baseline plus a scoped penetration test against staging to
+  confirm or refute the high-impact static findings (XXE reachability, authz
+  bypass, SSRF) and to execute the runtime Verify commands (P1-11, P2-10, P2-13,
+  P2-15, P4-07, P4-08) that static review could not.
+- **P1-15** - pilot each high-fan-out remediation on one service and re-scan
+  before scaling, so a fix is proven to close its finding once rather than
+  assumed across nineteen services.
+
+### 6.6 Authorization matrix (recommendation 5)
+
+P2-01 already prescribed the method and flagged the role-to-endpoint map as an
+open decision. It is strengthened with an explicit deliverable step and
+done-when: a checked-in per-service `authz-matrix.csv` with named owners, so the
+1,177-endpoint mapping is a tracked artifact rather than a standing blocker.
+
+---
+
+## 7. Corrections Applied in the Accompanying Change
 
 | Item | File | Change |
 |---|---|---|
@@ -415,6 +496,14 @@ item carried to completion" is yes.
 | P3-05 verify | `ARC_Developer_Remediation_Runbook_v2_Phase3.md` | Recurse and exclude node_modules for nested frontends |
 | P1-12 count | `ARC_Coverage_Traceability_Matrix.md` | Section 7 figure reconciled |
 | Crypto baseline / CORS command | `ARC_Reaudit_Playbook.md` | Baseline row reconciled; CORS command replaced with single grep |
+| P1-15 (new) | `ARC_Developer_Remediation_Runbook_v2_Phase1.md` | Remediation efficacy: pilot then scale |
+| P2-16 (new) | `ARC_Developer_Remediation_Runbook_v2_Phase2.md` | Command injection / path traversal (uncarded class) |
+| P2-17 (new) | `ARC_Developer_Remediation_Runbook_v2_Phase2.md` | SAST taint-flow + review-queue triage |
+| P2-01 (strengthened) | `ARC_Developer_Remediation_Runbook_v2_Phase2.md` | Authorization-matrix deliverable + done-when |
+| P4-01 (strengthened) | `ARC_Developer_Remediation_Runbook_v2_Phase4.md` | IaC misconfiguration scan added to the gate |
+| P4-12 (new) | `ARC_Developer_Remediation_Runbook_v2_Phase4.md` | DAST + pre-ATO penetration test validation |
+| P4-13 (new) | `ARC_Developer_Remediation_Runbook_v2_Phase4.md` | IaC misconfiguration remediation |
+| Matrix row 4.15 + Section 6b | `ARC_Coverage_Traceability_Matrix.md` | Command-injection class + additional-audit cards |
 | Consolidated rebuild | `ARC_Developer_Remediation_Runbook_v2_Phases1-4.md` | Reconciled to the per-phase sources |
 
 ---
@@ -424,6 +513,7 @@ item carried to completion" is yes.
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-06-13 | Derek Gordon / OCIO | Line-by-line Phase 1-4 vuln-to-card verification; five verify-command and count corrections; nested-checkout and scan-delta notes |
+| 1.1 | 2026-06-13 | Derek Gordon / OCIO | Additional audit layers: SAST (68 taint-flow findings), IaC misconfiguration (764), review-queue triage; five new cards (P1-15, P2-16, P2-17, P4-12, P4-13), P2-01 and P4-01 strengthened |
 
 Inputs: `ARC_Developer_Remediation_Runbook_v2_Phase{1,2,3,4}.md`,
 `ARC_Coverage_Traceability_Matrix.md`, `ARC_Reaudit_Playbook.md`, regenerated
