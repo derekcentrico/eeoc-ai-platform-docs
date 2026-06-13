@@ -50,7 +50,7 @@ items (secrets, CORS, CSRF, sessions, headers) trending toward their targets.
 Run from the ARC source root. These take a few minutes; run in the background.
 
 ```bash
-cd /home/derek/ai-platform/workspace/eeoc-workspace/eeoc-arc-payloads
+cd "$ARC_SRC"   # set ARC_SRC to the eeoc-arc-payloads checkout
 gitleaks detect --source . --no-git --redact --report-path /tmp/arc-gl.json
 grype dir:. --output json --file /tmp/arc-grype.json
 trivy fs --severity CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN --format json --quiet -o /tmp/arc-trivy.json .
@@ -63,13 +63,14 @@ in the progression log (Section 3). Most are one-liners; the full command set is
 in `ARC_Audit_Commands_Reference.md`.
 
 ```bash
-cd /home/derek/ai-platform/workspace/eeoc-workspace/eeoc-arc-payloads
+cd "$ARC_SRC"   # set ARC_SRC to the eeoc-arc-payloads checkout
 
 # Secrets (P0-01..10, P4-05)
 python3 -c "import json;print('secrets:',len(json.load(open('/tmp/arc-gl.json'))))"
 
-# Dependency CVEs (P1-01..07, P4-03)
+# Dependency CVEs (P1-01..07, P4-03) - track Grype and Trivy separately (they count differently)
 python3 -c "import json,collections;d=json.load(open('/tmp/arc-grype.json'));c=collections.Counter(m['vulnerability']['severity'] for m in d['matches']);print('grype:',dict(c),'total',len(d['matches']))"
+python3 -c "import json,collections;d=json.load(open('/tmp/arc-trivy.json'));c=collections.Counter(v['Severity'] for r in d.get('Results',[]) for v in r.get('Vulnerabilities',[]));print('trivy:',dict(c))"
 
 # Broken crypto (P1-12)
 grep -rnE --include='*.java' 'PBEWithMD5AndDES|DesEncrypter|getInstance\(\s*"DES' . | wc -l
@@ -87,10 +88,11 @@ grep -rn --include='*.java' '@PreAuthorize\|@Secured\|@RolesAllowed' . | wc -l
 grep -rn --include='*.java' -E '@(Get|Post|Put|Delete|Patch|Request)Mapping' . | wc -l
 grep -rn --include='*.java' 'permitAll' . | wc -l
 
-# CORS wildcard (P0-05) - run both styles, count unique repos
-grep -rln --include='*.java' 'setAllowedOrigins(List.of("\*"))' . ; \
+# CORS wildcard (P0-05) - both styles, deduped to unique services (compare to baseline 5)
+{ grep -rln --include='*.java' 'setAllowedOrigins(List.of("\*"))' . ; \
   grep -rln --include='*.java' 'CrossOrigin(origins = "\*")' . ; \
-  grep -rln --include='*.java' 'CrossOrigin("\*")' .
+  grep -rln --include='*.java' 'CrossOrigin("\*")' . ; } \
+  | sed 's|^\./||' | awk -F/ '{print $1}' | sort -u | tee /dev/stderr | wc -l
 
 # CSRF disabled (P0-11, P2-09)
 grep -rln --include='*.java' 'csrf.*disable\|csrf()\.disable' . | sed 's|^\./||' | awk -F/ '{print $1}' | sort -u | wc -l
