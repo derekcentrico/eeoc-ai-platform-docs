@@ -243,6 +243,15 @@ audit trail.
 - [ ] Consumer-driven contract tests gate the gateway/ARC boundary in CI.
 - [ ] A single request is traceable end to end by `X-Request-ID`.
 
+**Verify**
+```bash
+# default-off posture: MCP flags default false and the service is healthy with them off
+grep -rn 'MCP_ENABLED\|MCP_PROTOCOL_ENABLED' <service>/  # defaults resolve to false
+MCP_ENABLED=false MCP_PROTOCOL_ENABLED=false <run health check>   # expect: healthy
+# contract tests present in CI for the gateway/ARC boundary
+grep -rln 'contract' <gateway-repo>/tests/ <ci-config>
+```
+
 ---
 
 ## Phase 4 exit gate

@@ -420,9 +420,14 @@ later (for example future AI-assisted or cross-system case workflows) without
 re-plumbing each service.
 
 **Steps**
-1. Publish an OpenAPI specification per service. springdoc-openapi (adopted in
-   P1-01, replacing the abandoned springfox) generates it from the controllers;
-   commit the spec as the integration contract.
+1. Publish an OpenAPI specification per service. For Spring Boot services,
+   springdoc-openapi (adopted in P1-01, replacing the abandoned springfox)
+   generates it from the controllers. For RESTEasy/Jersey (JAX-RS) services, use
+   the corresponding OpenAPI integration (for example `swagger-jaxrs2` or the
+   RESTEasy OpenAPI extension). JSF/JSP-bound services that do not expose a REST
+   API and are deferred to Phase 3 are out of scope here; they get a contract
+   only if and when they expose REST endpoints. Commit the spec as the
+   integration contract.
 2. Introduce explicit API versioning (path or header), so a contract change is a
    new version, not a silent break for the gateway.
 3. Normalize the response envelope and content types across services so the
@@ -437,8 +442,8 @@ re-plumbing each service.
 
 **Verify**
 ```bash
-# each deployable service exposes an OpenAPI document
-curl -s https://<service-url>/v3/api-docs | python3 -c "import json,sys; json.load(sys.stdin)" && echo OK
+# each deployable service exposes an OpenAPI document (path varies: /v3/api-docs for springdoc, /openapi.json for JAX-RS)
+curl -fsSL https://<service-url>/v3/api-docs | python3 -c "import json,sys; json.load(sys.stdin)" && echo OK
 ```
 
 ---

@@ -451,9 +451,14 @@ later (for example future AI-assisted or cross-system case workflows) without
 re-plumbing each service.
 
 **Steps**
-1. Publish an OpenAPI specification per service. springdoc-openapi (adopted in
-   P1-01, replacing the abandoned springfox) generates it from the controllers;
-   commit the spec as the integration contract.
+1. Publish an OpenAPI specification per service. For Spring Boot services,
+   springdoc-openapi (adopted in P1-01, replacing the abandoned springfox)
+   generates it from the controllers. For RESTEasy/Jersey (JAX-RS) services, use
+   the corresponding OpenAPI integration (for example `swagger-jaxrs2` or the
+   RESTEasy OpenAPI extension). JSF/JSP-bound services that do not expose a REST
+   API and are deferred to Phase 3 are out of scope here; they get a contract
+   only if and when they expose REST endpoints. Commit the spec as the
+   integration contract.
 2. Introduce explicit API versioning (path or header), so a contract change is a
    new version, not a silent break for the gateway.
 3. Normalize the response envelope and content types across services so the
@@ -468,8 +473,8 @@ re-plumbing each service.
 
 **Verify**
 ```bash
-# each deployable service exposes an OpenAPI document
-curl -s https://<service-url>/v3/api-docs | python3 -c "import json,sys; json.load(sys.stdin)" && echo OK
+# each deployable service exposes an OpenAPI document (path varies: /v3/api-docs for springdoc, /openapi.json for JAX-RS)
+curl -fsSL https://<service-url>/v3/api-docs | python3 -c "import json,sys; json.load(sys.stdin)" && echo OK
 ```
 
 ---
@@ -810,8 +815,10 @@ outbound URLs, rate limiting); this card builds the ARC half so the two meet.
    identity. Reject unauthenticated or unknown callers.
 2. **Consistent error contract.** Every ARC endpoint returns RFC 7807 Problem
    Details on error, so the gateway and any downstream surface get uniform error
-   semantics instead of stack traces (this also closes the `printStackTrace`
-   leakage from base report 6.10 on the response path).
+   semantics instead of leaking exception detail to the caller. This is the
+   response-path control; it does not by itself address the 590 `printStackTrace`
+   calls in base report 6.10, which write to stdout/stderr and are remediated
+   separately as part of logging cleanup.
 3. **Correlation propagation.** Accept and propagate `X-Request-ID` on every hop,
    so a request can be traced end to end across ARC, the gateway, and the
    MCP-governed surface. The gateway already emits and forwards it; ARC must
@@ -831,7 +838,7 @@ outbound URLs, rate limiting); this card builds the ARC half so the two meet.
 **Verify**
 ```bash
 # an unauthenticated or non-gateway call is rejected
-curl -s -o /dev/null -w '%{http_code}' https://<arc-service>/<endpoint>   # expect 401/403
+curl -s -o /dev/null -w '%{http_code}\n' https://<arc-service>/<protected-endpoint>   # expect 401/403
 ```
 
 ---
@@ -1288,6 +1295,15 @@ audit trail.
 - [ ] Consumer-driven contract tests gate the gateway/ARC boundary in CI.
 - [ ] A single request is traceable end to end by `X-Request-ID`.
 
+**Verify**
+```bash
+# default-off posture: MCP flags default false and the service is healthy with them off
+grep -rn 'MCP_ENABLED\|MCP_PROTOCOL_ENABLED' <service>/  # defaults resolve to false
+MCP_ENABLED=false MCP_PROTOCOL_ENABLED=false <run health check>   # expect: healthy
+# contract tests present in CI for the gateway/ARC boundary
+grep -rln 'contract' <gateway-repo>/tests/ <ci-config>
+```
+
 ---
 
 ### Phase 4 exit gate
@@ -1328,7 +1344,7 @@ against the gates this phase established.
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-06-10 | Derek Gordon / OCIO | Consolidated Phases 1-4 task cards into one runbook |
-| 1.1 | 2026-06-12 | Derek Gordon / OCIO | Add integration-readiness cards (P1-11, P2-10, P4-07); reinforce MEDIUM/LOW coverage |
+| 1.1 | 2026-06-12 | Derek Gordon / OCIO | Add integration-readiness cards (P1-11, P2-10, P4-07); reinforce MEDIUM/LOW coverage; review fixes |
 
 Assembled from `ARC_Developer_Remediation_Runbook_v2_Phase{1,2,3,4}.md`. Phase 0
 is delivered separately. Refresh and source-data regeneration:

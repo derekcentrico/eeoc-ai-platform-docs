@@ -328,8 +328,10 @@ outbound URLs, rate limiting); this card builds the ARC half so the two meet.
    identity. Reject unauthenticated or unknown callers.
 2. **Consistent error contract.** Every ARC endpoint returns RFC 7807 Problem
    Details on error, so the gateway and any downstream surface get uniform error
-   semantics instead of stack traces (this also closes the `printStackTrace`
-   leakage from base report 6.10 on the response path).
+   semantics instead of leaking exception detail to the caller. This is the
+   response-path control; it does not by itself address the 590 `printStackTrace`
+   calls in base report 6.10, which write to stdout/stderr and are remediated
+   separately as part of logging cleanup.
 3. **Correlation propagation.** Accept and propagate `X-Request-ID` on every hop,
    so a request can be traced end to end across ARC, the gateway, and the
    MCP-governed surface. The gateway already emits and forwards it; ARC must
@@ -349,7 +351,7 @@ outbound URLs, rate limiting); this card builds the ARC half so the two meet.
 **Verify**
 ```bash
 # an unauthenticated or non-gateway call is rejected
-curl -s -o /dev/null -w '%{http_code}' https://<arc-service>/<endpoint>   # expect 401/403
+curl -s -o /dev/null -w '%{http_code}\n' https://<arc-service>/<protected-endpoint>   # expect 401/403
 ```
 
 ---
