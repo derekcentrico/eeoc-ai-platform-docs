@@ -556,6 +556,33 @@ one. The rest of the EEOC platform runs Python 3.13 with Flask or FastAPI.
 - [ ] Rewrite candidates have a recorded target-stack decision aligned to the
       platform standard.
 
+### P1-15 - Validate remediation efficacy before scaling
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (program assurance) |
+| **Source** | Phase 1-4 verification audit (2026-06-13) |
+
+**Why:** the cards are remediation plans; their efficacy is unproven until a
+service is actually changed and re-scanned. The plan should not scale a fix
+across all nineteen services before one service confirms the fix closes its
+finding. This card sets the pilot-then-scale discipline the later phases inherit.
+
+**Steps**
+1. For each high-fan-out card (dependency clusters P1-01..07, jakarta P1-08,
+   crypto P1-12, authz P2-01, SQLi P2-11), apply the remediation to one pilot
+   service first.
+2. Re-run the card's Verify command and the relevant scan on the pilot before and
+   after; confirm the finding count drops as predicted and nothing regresses.
+3. Only after the pilot passes, schedule the same change across the remaining
+   services. Record the before/after numbers in the progression log of
+   `ARC_Reaudit_Playbook.md`.
+
+**Done when**
+- [ ] Each high-fan-out remediation has a pilot service that passed re-scan before
+      the change was scaled.
+- [ ] Before/after deltas are recorded in the re-audit progression log.
+
 ---
 
 ## Phase 1 exit gate
@@ -572,6 +599,8 @@ one. The rest of the EEOC platform runs Python 3.13 with Flask or FastAPI.
 - [ ] Broken crypto replaced with AES-256-GCM; no PBEWithMD5AndDES/DES (P1-12).
 - [ ] No EOL or untagged base images; all pinned (P1-13).
 - [ ] Rewrite candidates have a recorded target-stack decision (P1-14).
+- [ ] High-fan-out remediations piloted on one service and re-scanned before
+      scaling; before/after deltas logged (P1-15).
 - [ ] Full-severity re-scan: no CRITICAL/HIGH dependency findings remain; the
       MEDIUM/LOW cleared by the cluster bumps is confirmed gone, and any residual
       MEDIUM/LOW is tracked into the Phase 4 monitoring backlog (P4-03).

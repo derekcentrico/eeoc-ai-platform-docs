@@ -69,6 +69,12 @@ the best existing coverage and is the reference pattern.
    deployable artifact or guard it behind a non-prod `@Profile`, so default-deny
    is not the only thing standing between a privileged caller and a process-control
    endpoint that should not ship at all.
+7. Produce the authorization matrix as a tracked deliverable, not a standing open
+   decision. Enumerate all 1,177 endpoints and, with the product and data owners,
+   assign each to a role class (public, authenticated-user, case-worker, admin,
+   service-to-service). Commit it as a per-service artifact (for example
+   `authz-matrix.csv`) with named owners and a due date. This is the input step 1
+   names; without it the rest of the card cannot be executed beyond default-deny.
 
 **Do NOT**
 - Do not invent the role-to-endpoint mapping. The role matrix is a product and
@@ -83,6 +89,8 @@ the best existing coverage and is the reference pattern.
 - [ ] PrEPAWebService and the other zero-coverage services are remediated.
 - [ ] No dev/test/debug controller is reachable in a production build; each is
       removed from the artifact or behind a non-prod profile (generalizes P0-16).
+- [ ] The role-to-endpoint authorization matrix exists as a checked-in artifact
+      with named owners, covering every endpoint.
 
 **Verify**
 ```bash
@@ -526,6 +534,113 @@ curl -fsS https://<service-url>/actuator/health/liveness | python3 -c "import js
 <tail a log line> | python3 -c "import json,sys;d=json.load(sys.stdin);assert 'X-Request-ID' in str(d) or 'request_id' in d"
 ```
 
+### P2-16 - Remediate command injection and path traversal
+
+| | |
+|---|---|
+| **Severity** | HIGH (low count, high per-instance severity) |
+| **Source** | base report 6.11; SAST sweep (2026-06-13) |
+
+**Why:** base report 6.11 flagged process-execution and request-driven
+file-access sites but no card was written for the class, so it stayed uncovered
+until the SAST sweep surfaced it. Semgrep confirms two tainted-file-path flows
+(CWE-23), and the source carries six `Runtime.exec`/`ProcessBuilder` sites and
+three request-driven `new File(...)`/`getRealPath` sites (deduplicated). Any one
+that builds a command or a path from request input is command injection or path
+traversal, each high-impact on its own.
+
+**Steps**
+1. Triage every process-execution site for whether an argument derives from
+   request input. Replace shell-string construction with a fixed-command
+   `ProcessBuilder` and validated argument array; never pass user input through a
+   shell.
+2. For file-access sites, canonicalize the resolved path and confirm it stays
+   within an allowed base directory (reject `..` traversal); validate the
+   filename against an allowlist pattern.
+3. Add the Semgrep command-injection and `tainted-file-path` rules to the CI gate
+   (P4-01) so a new instance fails the build.
+
+**Done when**
+- [ ] No process execution builds a command from unvalidated request input.
+- [ ] File access is canonicalized and confined to an allowed base directory.
+
+**Verify**
+```bash
+grep -rnE --include='*.java' 'Runtime\.getRuntime\(\)\.exec|ProcessBuilder|getRealPath|new File\([^)]*request' . | grep -ivE '/test/|/tests/'   # exclude test sources, not the -ims-aks-test service repos; each remaining site reviewed and constrained
+```
+
+### P2-17 - SAST taint-flow analysis and review-queue triage
+
+| | |
+|---|---|
+| **Severity** | HIGH (discovery; converts surface counts to confirmed defects) |
+| **Source** | Phase 1-4 verification audit (2026-06-13) |
+
+**Why:** the code-level findings to date are pattern-match counts the audit
+itself labels review queues with false positives (SQL ~282, SSRF 806, PII-log
+565), and a line-oriented grep cannot follow a value across method calls or
+lines. A SAST sweep (Semgrep `p/java` + `p/owasp-top-ten`) on the nine heaviest
+services returned 68 data-flow findings: 48 SQL injection (CWE-89, concentrated
+in ImsNXG and FedSep), 16 XXE (CWE-611), 2 weak-hash (MD5), and 2 path traversal
+(CWE-23). The SQL result proves the gap: the value concatenated into the query
+sits on the line after `createNativeQuery(`, so the single-line grep in P2-11
+cannot see it but the taint analysis can.
+
+**Steps**
+1. Run SAST (Semgrep registry rules or CodeQL) across every deployable service,
+   not just the nine sampled; export findings by CWE.
+2. Triage each review-queue class to confirmed defects and route them to the
+   owning card: SQL injection to P2-11, SSRF (the roughly 33 of 500 clients whose
+   URL derives from request input) to P2-06, PII-in-log (the roughly 113 email
+   sites) to P2-18, XXE to P2-03, path traversal and command injection to P2-16.
+3. Track residual lower-confidence findings into the P4-03 monitoring backlog;
+   add the gating SAST rules to CI (P4-01).
+
+**Done when**
+- [ ] SAST run across every deployable service; findings exported by CWE.
+- [ ] Each review-queue class triaged to a confirmed-defect list routed to its
+      remediation card.
+
+**Verify**
+```bash
+semgrep scan --config p/java --config p/owasp-top-ten --include='*.java' --no-git-ignore --json <service> \
+  | python3 -c "import json,sys,collections; d=json.load(sys.stdin); print(collections.Counter(r['extra']['severity'] for r in d['results']))"
+```
+
+### P2-18 - Systemic PII-in-log redaction
+
+| | |
+|---|---|
+| **Severity** | HIGH (platform no-PII-in-logs rule) |
+| **Source** | base report 6.9; Findings Addendum; Phase 0 P0-13 |
+
+**Why:** P0-13 masks the reachable FederalHearings email-in-log sites as an
+emergency; the estate-wide cleanup was never carded. The triage in P2-17 confirms
+roughly 113 sites that log an email value in cleartext, the real leak class from
+base report 6.9 (the 565 count is mostly false positives on a `name` variable).
+P2-12 narrows broad exceptions and removes `printStackTrace`, but its done-when
+and verify cover only the exception path, so a PII-in-log site can survive both
+P2-12 and P2-17. This card is the dedicated home that closes the class, the
+estate-wide completion of the P0-13 emergency subset.
+
+**Steps**
+1. Add the platform PII-masking pattern (`_mask_pii()` or a SHA-256 + Key Vault
+   salt hash) to every service that lacks one; the ARC Java services have none.
+2. Route every log statement that references an identity field (email, SSN,
+   phone, name) through the masking pattern; never log a raw email or other PII.
+3. Remediate the triaged P2-17 sites and add a Semgrep/CI rule that fails the
+   build on a new unmasked PII-in-log statement.
+
+**Done when**
+- [ ] A PII-masking utility exists in every service that logs identity fields.
+- [ ] No log statement writes a raw email/SSN/phone/name; the P2-17 sites are
+      masked.
+
+**Verify**
+```bash
+grep -rnE --include='*.java' 'log\.(info|debug|warn|error)\([^)]*(email|ssn|phone)' . | grep -ivE '/test/|/tests/' | grep -iv mask   # trends to 0
+```
+
 ---
 
 ## Phase 2 exit gate
@@ -547,6 +662,12 @@ curl -fsS https://<service-url>/actuator/health/liveness | python3 -c "import js
 - [ ] Session cookies set Secure, HttpOnly, SameSite (P2-13).
 - [ ] Integrations behind default-off flags; AI actions audited (P2-14).
 - [ ] Standardized health endpoints and structured JSON logging (P2-15).
+- [ ] Command injection and path traversal remediated; no command or path built
+      from unvalidated request input (P2-16).
+- [ ] SAST run across all services; review-queue classes triaged to confirmed
+      defects and routed to their cards (P2-17).
+- [ ] PII-masking utility present; no raw email/SSN/phone/name logged; the
+      triaged PII-in-log sites are masked (P2-18).
 
 ---
 

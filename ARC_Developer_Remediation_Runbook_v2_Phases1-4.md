@@ -38,10 +38,10 @@ safely without re-plumbing each service.
 
 | Phase | Theme | Timeline | Cards |
 |---|---|---|---|
-| 1 | Dependency modernization, crypto, JBoss/runtime, base images, API contract | months 2-6 | P1-01..P1-14 |
-| 2 | Security architecture (authz, injection, SQLi, validation, SSRF, rate limiting, headers, sessions, integration boundary, observability) | months 4-9 | P2-01..P2-15 |
+| 1 | Dependency modernization, crypto, JBoss/runtime, base images, API contract, efficacy validation | months 2-6 | P1-01..P1-15 |
+| 2 | Security architecture (authz, injection, SQLi, validation, SSRF, rate limiting, headers, sessions, integration boundary, observability, command injection, SAST triage, PII-log redaction) | months 4-9 | P2-01..P2-18 |
 | 3 | Frontend modernization, 508, USWDS, cross-app navigation | months 6-12 | P3-01..P3-07 |
-| 4 | Consolidation, continuous security, governed integration, coverage, Alfresco, archival, eventing | months 10-18 | P4-01..P4-11 |
+| 4 | Consolidation, continuous security, governed integration, coverage, Alfresco, archival, eventing, DAST/pen-test, IaC | months 10-18 | P4-01..P4-13 |
 
 The ~200 MEDIUM/LOW dependency findings are not a separate backlog: they are
 cleared by the same Phase 1 cluster bumps that clear CRITICAL/HIGH (one bump per
@@ -592,6 +592,33 @@ one. The rest of the EEOC platform runs Python 3.13 with Flask or FastAPI.
 - [ ] Rewrite candidates have a recorded target-stack decision aligned to the
       platform standard.
 
+### P1-15 - Validate remediation efficacy before scaling
+
+| | |
+|---|---|
+| **Severity** | MEDIUM (program assurance) |
+| **Source** | Phase 1-4 verification audit (2026-06-13) |
+
+**Why:** the cards are remediation plans; their efficacy is unproven until a
+service is actually changed and re-scanned. The plan should not scale a fix
+across all nineteen services before one service confirms the fix closes its
+finding. This card sets the pilot-then-scale discipline the later phases inherit.
+
+**Steps**
+1. For each high-fan-out card (dependency clusters P1-01..07, jakarta P1-08,
+   crypto P1-12, authz P2-01, SQLi P2-11), apply the remediation to one pilot
+   service first.
+2. Re-run the card's Verify command and the relevant scan on the pilot before and
+   after; confirm the finding count drops as predicted and nothing regresses.
+3. Only after the pilot passes, schedule the same change across the remaining
+   services. Record the before/after numbers in the progression log of
+   `ARC_Reaudit_Playbook.md`.
+
+**Done when**
+- [ ] Each high-fan-out remediation has a pilot service that passed re-scan before
+      the change was scaled.
+- [ ] Before/after deltas are recorded in the re-audit progression log.
+
 ---
 
 ### Phase 1 exit gate
@@ -608,6 +635,8 @@ one. The rest of the EEOC platform runs Python 3.13 with Flask or FastAPI.
 - [ ] Broken crypto replaced with AES-256-GCM; no PBEWithMD5AndDES/DES (P1-12).
 - [ ] No EOL or untagged base images; all pinned (P1-13).
 - [ ] Rewrite candidates have a recorded target-stack decision (P1-14).
+- [ ] High-fan-out remediations piloted on one service and re-scanned before
+      scaling; before/after deltas logged (P1-15).
 - [ ] Full-severity re-scan: no CRITICAL/HIGH dependency findings remain; the
       MEDIUM/LOW cleared by the cluster bumps is confirmed gone, and any residual
       MEDIUM/LOW is tracked into the Phase 4 monitoring backlog (P4-03).
@@ -673,6 +702,12 @@ the best existing coverage and is the reference pattern.
    deployable artifact or guard it behind a non-prod `@Profile`, so default-deny
    is not the only thing standing between a privileged caller and a process-control
    endpoint that should not ship at all.
+7. Produce the authorization matrix as a tracked deliverable, not a standing open
+   decision. Enumerate all 1,177 endpoints and, with the product and data owners,
+   assign each to a role class (public, authenticated-user, case-worker, admin,
+   service-to-service). Commit it as a per-service artifact (for example
+   `authz-matrix.csv`) with named owners and a due date. This is the input step 1
+   names; without it the rest of the card cannot be executed beyond default-deny.
 
 **Do NOT**
 - Do not invent the role-to-endpoint mapping. The role matrix is a product and
@@ -687,6 +722,8 @@ the best existing coverage and is the reference pattern.
 - [ ] PrEPAWebService and the other zero-coverage services are remediated.
 - [ ] No dev/test/debug controller is reachable in a production build; each is
       removed from the artifact or behind a non-prod profile (generalizes P0-16).
+- [ ] The role-to-endpoint authorization matrix exists as a checked-in artifact
+      with named owners, covering every endpoint.
 
 **Verify**
 ```bash
@@ -1130,6 +1167,113 @@ curl -fsS https://<service-url>/actuator/health/liveness | python3 -c "import js
 <tail a log line> | python3 -c "import json,sys;d=json.load(sys.stdin);assert 'X-Request-ID' in str(d) or 'request_id' in d"
 ```
 
+### P2-16 - Remediate command injection and path traversal
+
+| | |
+|---|---|
+| **Severity** | HIGH (low count, high per-instance severity) |
+| **Source** | base report 6.11; SAST sweep (2026-06-13) |
+
+**Why:** base report 6.11 flagged process-execution and request-driven
+file-access sites but no card was written for the class, so it stayed uncovered
+until the SAST sweep surfaced it. Semgrep confirms two tainted-file-path flows
+(CWE-23), and the source carries six `Runtime.exec`/`ProcessBuilder` sites and
+three request-driven `new File(...)`/`getRealPath` sites (deduplicated). Any one
+that builds a command or a path from request input is command injection or path
+traversal, each high-impact on its own.
+
+**Steps**
+1. Triage every process-execution site for whether an argument derives from
+   request input. Replace shell-string construction with a fixed-command
+   `ProcessBuilder` and validated argument array; never pass user input through a
+   shell.
+2. For file-access sites, canonicalize the resolved path and confirm it stays
+   within an allowed base directory (reject `..` traversal); validate the
+   filename against an allowlist pattern.
+3. Add the Semgrep command-injection and `tainted-file-path` rules to the CI gate
+   (P4-01) so a new instance fails the build.
+
+**Done when**
+- [ ] No process execution builds a command from unvalidated request input.
+- [ ] File access is canonicalized and confined to an allowed base directory.
+
+**Verify**
+```bash
+grep -rnE --include='*.java' 'Runtime\.getRuntime\(\)\.exec|ProcessBuilder|getRealPath|new File\([^)]*request' . | grep -ivE '/test/|/tests/'   # exclude test sources, not the -ims-aks-test service repos; each remaining site reviewed and constrained
+```
+
+### P2-17 - SAST taint-flow analysis and review-queue triage
+
+| | |
+|---|---|
+| **Severity** | HIGH (discovery; converts surface counts to confirmed defects) |
+| **Source** | Phase 1-4 verification audit (2026-06-13) |
+
+**Why:** the code-level findings to date are pattern-match counts the audit
+itself labels review queues with false positives (SQL ~282, SSRF 806, PII-log
+565), and a line-oriented grep cannot follow a value across method calls or
+lines. A SAST sweep (Semgrep `p/java` + `p/owasp-top-ten`) on the nine heaviest
+services returned 68 data-flow findings: 48 SQL injection (CWE-89, concentrated
+in ImsNXG and FedSep), 16 XXE (CWE-611), 2 weak-hash (MD5), and 2 path traversal
+(CWE-23). The SQL result proves the gap: the value concatenated into the query
+sits on the line after `createNativeQuery(`, so the single-line grep in P2-11
+cannot see it but the taint analysis can.
+
+**Steps**
+1. Run SAST (Semgrep registry rules or CodeQL) across every deployable service,
+   not just the nine sampled; export findings by CWE.
+2. Triage each review-queue class to confirmed defects and route them to the
+   owning card: SQL injection to P2-11, SSRF (the roughly 33 of 500 clients whose
+   URL derives from request input) to P2-06, PII-in-log (the roughly 113 email
+   sites) to P2-18, XXE to P2-03, path traversal and command injection to P2-16.
+3. Track residual lower-confidence findings into the P4-03 monitoring backlog;
+   add the gating SAST rules to CI (P4-01).
+
+**Done when**
+- [ ] SAST run across every deployable service; findings exported by CWE.
+- [ ] Each review-queue class triaged to a confirmed-defect list routed to its
+      remediation card.
+
+**Verify**
+```bash
+semgrep scan --config p/java --config p/owasp-top-ten --include='*.java' --no-git-ignore --json <service> \
+  | python3 -c "import json,sys,collections; d=json.load(sys.stdin); print(collections.Counter(r['extra']['severity'] for r in d['results']))"
+```
+
+### P2-18 - Systemic PII-in-log redaction
+
+| | |
+|---|---|
+| **Severity** | HIGH (platform no-PII-in-logs rule) |
+| **Source** | base report 6.9; Findings Addendum; Phase 0 P0-13 |
+
+**Why:** P0-13 masks the reachable FederalHearings email-in-log sites as an
+emergency; the estate-wide cleanup was never carded. The triage in P2-17 confirms
+roughly 113 sites that log an email value in cleartext, the real leak class from
+base report 6.9 (the 565 count is mostly false positives on a `name` variable).
+P2-12 narrows broad exceptions and removes `printStackTrace`, but its done-when
+and verify cover only the exception path, so a PII-in-log site can survive both
+P2-12 and P2-17. This card is the dedicated home that closes the class, the
+estate-wide completion of the P0-13 emergency subset.
+
+**Steps**
+1. Add the platform PII-masking pattern (`_mask_pii()` or a SHA-256 + Key Vault
+   salt hash) to every service that lacks one; the ARC Java services have none.
+2. Route every log statement that references an identity field (email, SSN,
+   phone, name) through the masking pattern; never log a raw email or other PII.
+3. Remediate the triaged P2-17 sites and add a Semgrep/CI rule that fails the
+   build on a new unmasked PII-in-log statement.
+
+**Done when**
+- [ ] A PII-masking utility exists in every service that logs identity fields.
+- [ ] No log statement writes a raw email/SSN/phone/name; the P2-17 sites are
+      masked.
+
+**Verify**
+```bash
+grep -rnE --include='*.java' 'log\.(info|debug|warn|error)\([^)]*(email|ssn|phone)' . | grep -ivE '/test/|/tests/' | grep -iv mask   # trends to 0
+```
+
 ---
 
 ### Phase 2 exit gate
@@ -1151,6 +1295,12 @@ curl -fsS https://<service-url>/actuator/health/liveness | python3 -c "import js
 - [ ] Session cookies set Secure, HttpOnly, SameSite (P2-13).
 - [ ] Integrations behind default-off flags; AI actions audited (P2-14).
 - [ ] Standardized health endpoints and structured JSON logging (P2-15).
+- [ ] Command injection and path traversal remediated; no command or path built
+      from unvalidated request input (P2-16).
+- [ ] SAST run across all services; review-queue classes triaged to confirmed
+      defects and routed to their cards (P2-17).
+- [ ] PII-masking utility present; no raw email/SSN/phone/name logged; the
+      triaged PII-in-log sites are masked (P2-18).
 
 ---
 
@@ -1440,8 +1590,9 @@ change.
 1. Adopt one standard gate definition for all repos, matching the platform's
    established suite: secret scan (gitleaks), SAST (Bandit/Semgrep for Python,
    the Java equivalent for JVM repos), SCA (pip-audit / OSV-Scanner / Grype),
-   license scan, SBOM generation, container scan (Trivy), and DAST baseline (ZAP)
-   for deployable services.
+   license scan, SBOM generation, container scan (Trivy), IaC misconfiguration
+   scan (checkov or `trivy config`) for deployment manifests, and DAST baseline
+   (ZAP) for deployable services.
 2. Roll it to the 15 repos with no CI first, then normalize the 33 that have
    inconsistent pipelines.
 3. Gate the build on CRITICAL/HIGH for SCA, SAST, and container scans; record
@@ -1764,6 +1915,75 @@ path.
 grep -rnE 'db-change-topic|document-activity-topic|ServiceBus|service[._]bus|EVENT.*ENABLED' <service>/
 ```
 
+### P4-12 - DAST and pre-ATO penetration test validation
+
+| | |
+|---|---|
+| **Severity** | HIGH (ATO gate; confirms exploitability) |
+| **Source** | Phase 1-4 verification audit (2026-06-13); platform pre-pen-test requirements |
+
+**Why:** every finding to date is static. The XXE path is traced but "not proven
+exploited," the authorization gaps are counted but not exercised, and roughly
+half the card Verify commands are runtime checks (curl, health, coverage) that
+were never executed because there was no running target. A DAST baseline and a
+scoped penetration test against a staging instance move the high-impact findings
+from reachable to confirmed or refuted, prove the remediations hold at runtime,
+and run the verify commands static review cannot.
+
+**Steps**
+1. Stand up a staging instance with the Phase 0-2 remediations applied. Run an
+   OWASP ZAP baseline scan against each deployable service; gate on new high-risk
+   alerts.
+2. Commission a scoped penetration test on the high-impact classes: XXE on the
+   MD-715 upload path, authorization bypass on the previously unguarded endpoints
+   (P2-01), SSRF to the metadata endpoint (P2-06), and session and CSRF handling.
+3. Execute the runtime card Verify commands against staging (P1-11, P2-10, P2-13,
+   P2-15, P4-07, P4-08) and record pass/fail.
+4. Clear the pre-pen-test configuration-hygiene items first so the paid test
+   spends its budget on real issues; feed confirmed exploitable findings back as
+   targeted fixes.
+
+**Done when**
+- [ ] ZAP baseline runs against every deployable service and gates on high-risk.
+- [ ] A scoped penetration test has confirmed or refuted the high-impact static
+      findings.
+- [ ] The runtime Verify commands have been executed against staging.
+
+### P4-13 - Remediate infrastructure-as-code misconfiguration
+
+| | |
+|---|---|
+| **Severity** | HIGH |
+| **Source** | IaC misconfiguration scan (2026-06-13) |
+
+**Why:** the dependency and code scans never covered the deployment
+configuration. A checkov scan of the Helm, Ansible, and production manifests
+returned 764 failed checks (azure-extmgmt Helm 168, Ansible 10, prod 562,
+Alfresco Helm 24). The recurring failures are missing CPU/memory requests and
+limits, no container security context, root containers admitted, no seccomp
+profile, images referenced by tag rather than digest, and use of the default
+namespace. Each is a hardening gap in how the services run, independent of the
+code inside them.
+
+**Steps**
+1. Add an IaC misconfiguration scanner (checkov or `trivy config`) to the
+   standard CI gate (P4-01), covering Kubernetes/Helm, Ansible, and any Terraform.
+2. Remediate the recurring classes: set resource requests and limits, apply a
+   restrictive `securityContext` (run as non-root, drop capabilities, seccomp),
+   pin images by digest, and move workloads off the default namespace.
+3. Gate the pipeline on CRITICAL/HIGH IaC findings; track the rest into the P4-03
+   backlog.
+
+**Done when**
+- [ ] IaC scanning runs in CI and gates on CRITICAL/HIGH.
+- [ ] Resource limits, security contexts, non-root, and digest-pinned images set
+      across the deployment manifests.
+
+**Verify**
+```bash
+checkov -d <iac-dir> --compact --quiet   # failed-check count trends down from the 764 baseline
+```
+
 ---
 
 ### Phase 4 exit gate
@@ -1780,6 +2000,10 @@ grep -rnE 'db-change-topic|document-activity-topic|ServiceBus|service[._]bus|EVE
 - [ ] Alfresco EOL decision recorded and actioned (P4-09).
 - [ ] Repository archival policy documented and applied (P4-10).
 - [ ] ARC publishes domain events to Service Bus (flag-gated, schema'd) (P4-11).
+- [ ] DAST baseline and a scoped penetration test validate the high-impact
+      findings; runtime Verify commands executed against staging (P4-12).
+- [ ] IaC misconfiguration scanned in CI and the recurring classes remediated
+      across the deployment manifests (P4-13).
 
 ---
 
