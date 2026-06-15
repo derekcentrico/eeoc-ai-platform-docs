@@ -102,6 +102,31 @@ origin, the managed-identity role assignment, customer-managed keys and private
 endpoints) needs an infrastructure review, and the new public surface needs an
 ISSM threat-model review and a pre-deployment security pass before it is exposed.
 
+---
+
+**Review considerations**
+
+A few points raised in review that the design accounts for:
+
+- Front Door origin authorization. Disabling public blob access is necessary but
+  not sufficient; the storage origin must also be locked to Front Door (Private
+  Link origin plus an origin-authorization header or managed-identity origin
+  access), so the blob is reachable only through Front Door and its WAF, never
+  directly. This is an explicit item in the infrastructure review.
+- Differencing attacks. Per-cell k-anonymity does not by itself stop an attacker
+  who subtracts overlapping aggregates. We mitigate by publishing a small curated
+  set of mostly single-dimension aggregates and avoiding overlapping cross-tabs of
+  the same population that would enable differencing. Any new public chart is
+  reviewed for this before it is added.
+- Manual CSV ingestion. The interim CSV path is constrained: the loader validates
+  every row against a fixed column allow-list, re-enforces k-anonymity at load
+  (with database CHECK constraints as a backstop), and runs as a write-only role.
+  The data is scrubbed upstream by IRD; CSV is a stopgap until the IRD transform
+  is wired through the same loader interface.
+- Accessibility. The interactive chart is hidden from assistive technology
+  (aria-hidden) because the data table is the authoritative alternative; this
+  avoids a screen reader announcing an unreadable visualization.
+
 Happy to walk through the boundary diagram whenever works for you.
 
 Derek
