@@ -83,7 +83,7 @@ Every Azure service used is FedRAMP High authorized in Azure Government. The pla
 |---------------|----------------|
 | **AC (Access Control)** | Entra ID with app roles per service. Role-based access: Admin, Director, Analyst, Viewer. Row-level security at the database layer scopes every query to the user's region and PII tier. |
 | **AU (Audit)** | Every AI query, tool invocation, and data access logged to immutable Azure Table Storage + WORM-locked Blob Storage (7-year retention, NARA compliant). HMAC-SHA256 integrity signatures on audit records. |
-| **SC (System Communications)** | TLS 1.2+ on all connections. VNet isolation with private endpoints. No public internet exposure except ADR (behind Azure Front Door WAF). |
+| **SC (System Communications)** | TLS 1.2+ on all connections. VNet isolation with private endpoints. No public internet exposure except ADR and the public analytics page, both behind Azure Front Door WAF; the public analytics page serves only de-identified, k-anonymity-suppressed aggregates from a database separate from the case data. |
 | **SI (System Integrity)** | SQL injection prevention via AST-level validation (sqlglot). PII redaction (SSN, DOB, email, phone, EIN) via regex before data enters analytics schema. Prompt injection detection on AI inputs. |
 | **IA (Identification/Auth)** | Entra ID Government OIDC for staff. Login.gov OIDC+PKCE for external parties. OAuth 2.0 On-Behalf-Of for preserving caller identity through the hub to UDAP. |
 | **SA (System Acquisition)** | CycloneDX SBOM generation, Bandit SAST, Semgrep, pip-audit SCA, OWASP Dependency-Check, license compliance scanning - all in CI/CD on every push. |
