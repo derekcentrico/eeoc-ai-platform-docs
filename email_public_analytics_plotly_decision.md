@@ -109,20 +109,25 @@ ISSM threat-model review and a pre-deployment security pass before it is exposed
 A few points raised in review that the design accounts for:
 
 - Front Door origin authorization. Disabling public blob access is necessary but
-  not sufficient; the storage origin must also be locked to Front Door (Private
-  Link origin plus an origin-authorization header or managed-identity origin
-  access), so the blob is reachable only through Front Door and its WAF, never
-  directly. This is an explicit item in the infrastructure review.
+  not sufficient; the storage origin must also be locked to Front Door so the blob
+  is reachable only through Front Door and its WAF, never directly. Managed-identity
+  origin authentication is not supported with a Private Link origin, so the
+  infrastructure review will pick a supported pattern: either a Private Link origin
+  served through short-lived SAS-authorized requests, or a non-Private-Link origin
+  using Front Door managed-identity origin authentication with the storage firewall
+  restricted to the Front Door service. This is an explicit infrastructure-review item.
 - Differencing attacks. Per-cell k-anonymity does not by itself stop an attacker
   who subtracts overlapping aggregates. We mitigate by publishing a small curated
   set of mostly single-dimension aggregates and avoiding overlapping cross-tabs of
   the same population that would enable differencing. Any new public chart is
   reviewed for this before it is added.
 - Manual CSV ingestion. The interim CSV path is constrained: the loader validates
-  every row against a fixed column allow-list, re-enforces k-anonymity at load
-  (with database CHECK constraints as a backstop), and runs as a write-only role.
-  The data is scrubbed upstream by IRD; CSV is a stopgap until the IRD transform
-  is wired through the same loader interface.
+  every row against a fixed column allow-list, rejects unexpected columns, casts
+  counts and rates to strict numeric types, and inserts only through parameterized
+  queries (no string-built SQL), which closes both SQL and CSV injection. It
+  re-enforces k-anonymity at load with database CHECK constraints as a backstop and
+  runs as a write-only role. The data is scrubbed upstream by IRD; CSV is a stopgap
+  until the IRD transform is wired through the same loader interface.
 - Accessibility. The interactive chart is hidden from assistive technology
   (aria-hidden) because the data table is the authoritative alternative; this
   avoids a screen reader announcing an unreadable visualization.
