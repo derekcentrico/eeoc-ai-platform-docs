@@ -287,8 +287,12 @@ Source: `eeoc-mcp-hub-functions/hub_functions/audit_logger.py:43-58`.
 
 ## 5. Feature-Flag Defaults
 
-Every integration point is gated behind a feature flag that defaults to `false`.
-Components start and pass health checks with all integrations disabled.
+Every cross-component integration point is gated behind a feature flag that
+defaults to `false`. Components start and pass health checks with all
+integrations disabled. The `MEDIATOR_AI_*` flags below are the exception: they
+govern behavior internal to one app (the ADR mediator advisor), not a
+cross-component integration, so two of them default to `true`. They are listed
+here for completeness.
 
 | Flag | Default | Controls |
 |---|---|---|
