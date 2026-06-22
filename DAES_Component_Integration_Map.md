@@ -299,6 +299,31 @@ Components start and pass health checks with all integrations disabled.
 | `ARC_SYNC_ENABLED` | `true` | ADR sync importer (set `false` to disable) |
 | `LOGINGOV_ENABLED` | not set | Login.gov login button on ADR/Triage |
 | `UNIFIED_ACCESS_ENABLED` | not set | Unified access control across user-facing apps |
+| `MEDIATOR_AI_MULTITURN` | `true` | ADR mediator advisor sends its private channel as role-tagged turns (vs. legacy single prompt) |
+| `MEDIATOR_AI_VERIFY` | `true` | ADR mediator advisor verifies cited quotes against case sources |
+| `MEDIATOR_AI_VECTOR_RETRIEVAL` | `false` | ADR mediator advisor semantic retrieval; requires `PG_MIGRATION_MODE` past `off` |
+
+### 5.1 ADR mediator advisor — conversation data and DB-swap fit
+
+The ADR mediator AI advisor is multi-turn: the mediator's private `mediator_ai`
+channel is sent to the model as alternating user/assistant turns, while the rest
+of the case (other channels, documents, notes) is passed as a separate system
+context message marked as untrusted data.
+
+Two properties matter at the platform level:
+
+- **Case isolation.** Conversation content is read only through
+  `get_all_conversations(case_id)`, which filters on `PartitionKey == case_id`.
+  The thread and context can therefore contain a single case's records only;
+  no cross-case or cross-mediator content can enter the prompt, and the reply
+  posts back only to that case's private channel. The post-migration pgvector
+  retrieval path must apply the same mandatory `case_id` filter.
+- **DB-swap migration fit.** The advisor does not keep a separate conversation
+  store. It reads the existing `chatlogs` records through that one read path,
+  which migrates to PostgreSQL (`operations.adr_chat_messages`) under the
+  platform `PG_MIGRATION_MODE` swap (`off` → `dual_write` → `pg_primary` →
+  `pg_only`). Because the read goes through a single chokepoint, the advisor
+  follows the swap with no feature-specific change.
 
 ---
 
@@ -307,3 +332,4 @@ Components start and pass health checks with all integrations disabled.
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | June 2026 | Derek Gordon / OIT | Initial release - expands §4 of DAES_Test_Environment_Static_Import_Playbook.md |
+| 1.1 | June 2026 | Derek Gordon / OIT | Add §5.1 mediator advisor conversation data, case isolation, and DB-swap migration fit; add mediator AI feature flags |
