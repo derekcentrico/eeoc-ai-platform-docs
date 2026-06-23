@@ -41,13 +41,13 @@ thread-local before enabling gthread.
 
 ```bash
 # Find direct socket.getaddrinfo replacements (the ADR arc_client.py pattern)
-grep -rn "socket\.getaddrinfo\s*=" <app-package>/ --include="*.py"
+grep -rEn "socket\.getaddrinfo[[:space:]]*=" <app-package>/ --include="*.py"
 
 # Find any other global monkey-patches on stdlib network modules
-grep -rn "socket\.\(setdefaulttimeout\|create_connection\)\s*=" <app-package>/ --include="*.py"
+grep -rEn "socket\.(setdefaulttimeout|create_connection)[[:space:]]*=" <app-package>/ --include="*.py"
 
 # Find gevent explicit monkey-patching in app code
-grep -rn "gevent\.monkey\|from gevent import monkey" <app-package>/ --include="*.py"
+grep -rEn "gevent\.monkey|from gevent import monkey" <app-package>/ --include="*.py"
 ```
 
 Replace `<app-package>/` with the repo's actual application package root:
@@ -297,6 +297,8 @@ must remain cacheable; do not apply `no-store` to the static file handler.
 ### Flask (primary pattern for DAES Flask services)
 
 ```python
+from flask import request
+
 @app.after_request
 def set_cache_control(response):
     endpoint = request.endpoint or ""
@@ -317,7 +319,7 @@ for requests handled by that Blueprint.
 ### FastAPI (UDAP AI Assistant and any FastAPI services)
 
 ```python
-from fastapi import Request, Response
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
 STATIC_PATH_PREFIX = "/static"  # adjust to match your StaticFiles mount path
@@ -346,7 +348,9 @@ Set the header on the `func.HttpResponse` object in each function that returns
 dynamic content:
 
 ```python
-headers = {**response_headers, "Cache-Control": "no-store"}
+# Merge with any headers the function already sets (e.g. the correlation ID).
+existing_headers = {"X-Request-ID": request_id}
+headers = {**existing_headers, "Cache-Control": "no-store"}
 return func.HttpResponse(body, status_code=200, headers=headers)
 ```
 
