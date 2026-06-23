@@ -21,7 +21,7 @@ environment as of PR #409.
 ## Table of Contents
 
 1. [Pre-scan: thread-unsafe monkey-patch audit](#1-pre-scan-thread-unsafe-monkey-patch-audit)
-2. [Worker class: convert gevent to sync](#2-worker-class-convert-gevent-to-sync)
+2. [Worker class: convert gevent to gthread](#2-worker-class-convert-gevent-to-gthread)
 3. [Gunicorn sizing after the conversion](#3-gunicorn-sizing-after-the-conversion)
 4. [Kill switch and instrumentation flags](#4-kill-switch-and-instrumentation-flags)
 5. [Collector firewall reachability](#5-collector-firewall-reachability)
@@ -35,33 +35,43 @@ environment as of PR #409.
 ## 1. Pre-scan: thread-unsafe monkey-patch audit
 
 Before touching any gunicorn config, scan the repo for global, thread-unsafe
-monkey-patch patterns.
+monkey-patch patterns. gthread workers run multiple OS threads per worker
+process, so all global state mutations at request time must be converted to
+thread-local before enabling gthread.
 
 ```bash
 # Find direct socket.getaddrinfo replacements (the ADR arc_client.py pattern)
-grep -rn "socket\.getaddrinfo\s*=" src/ app/ --include="*.py"
+grep -rn "socket\.getaddrinfo\s*=" <app-package>/ --include="*.py"
 
 # Find any other global monkey-patches on stdlib network modules
-grep -rn "socket\.\(setdefaulttimeout\|create_connection\)\s*=" src/ app/ --include="*.py"
+grep -rn "socket\.\(setdefaulttimeout\|create_connection\)\s*=" <app-package>/ --include="*.py"
 
 # Find gevent explicit monkey-patching in app code
-grep -rn "gevent\.monkey\|from gevent import monkey" src/ app/ --include="*.py"
+grep -rn "gevent\.monkey\|from gevent import monkey" <app-package>/ --include="*.py"
 ```
 
-Where global monkey-patches are found, sync workers are not merely safer; they
-are the correct execution model. A gevent worker's cooperative scheduler and
-the patched global interact unpredictably under concurrent requests.
+Replace `<app-package>/` with the repo's actual application package root:
+`adr_webapp/`, `triage_webapp/`, `trial_tool_webapp/`, etc. Do not limit the
+scan to `src/` or `app/`; those paths do not match the DAES package layout.
 
-**ADR example:** `eeoc-ofs-adr/adr_webapp/arc_client.py:52-77` replaces
-`socket.getaddrinfo` for the duration of each ARC connection, then restores it.
-This pattern is safe under sync workers and unreliable under gevent.
+Where global monkey-patches are found, convert them to thread-local designs
+before enabling gthread. A gevent worker's cooperative scheduler and a patched
+global interact unpredictably under concurrent requests; a gthread worker's OS
+threads share process globals and have the same problem with unsynchronized
+mutation.
+
+**ADR example:** `eeoc-ofs-adr/adr_webapp/arc_client.py:52-77` originally
+replaced `socket.getaddrinfo` for the duration of each ARC connection, then
+restored it. This per-request global swap is unsafe under gthread. The correct
+pattern is to store the per-request resolution override in a `threading.local`
+and install any wrapper function once at module import time, not per request.
 
 Document each finding in the repo's SAST scan dispositions file (see
 `eeoc-ofs-adr/docs/SAST_Scan_Dispositions.md` for the format).
 
 ---
 
-## 2. Worker class: convert gevent to sync
+## 2. Worker class: convert gevent to gthread
 
 ### Root cause
 
@@ -72,12 +82,41 @@ worker forks. When a gevent worker starts, it calls
 `gevent.monkey.patch_all()`, which tries to replace the already-initialized
 `ssl.SSLContext`. On Python 3.13, the `SSLContext.minimum_version` property
 setter recurses into itself and raises `RecursionError` on the first HTTPS
-call -- Key Vault on every startup. This is gevent issue #1016. Sync workers
-never call `monkey.patch_all()`, so the agent and the app coexist without
-conflict.
+call -- Key Vault on every startup. This is gevent issue #1016.
 
-**Assume this upstream gevent bug is never fixed.** Sync is the permanent
-standard for every Seeker-instrumented gunicorn service on this platform.
+**Assume this upstream gevent bug is never fixed.**
+
+### Standard: gthread
+
+gthread workers use OS threads and do NOT call `monkey.patch_all()`, so the
+ssl module remains unpatched and the RecursionError does not occur. gthread
+also preserves concurrency for I/O-bound and streaming (SSE) workloads: each
+thread handles one request, and multiple threads run simultaneously within a
+single worker process.
+
+**gthread is the platform standard for all Seeker-instrumented gunicorn
+services.** Plain sync was the interim fix used before the thread-safety audit
+was completed and is no longer required.
+
+### Thread-safety preconditions
+
+gthread runs multiple threads per worker process. Verify the following before
+enabling gthread in any repo:
+
+- **No global reassignment of `socket.*`, `ssl.*`, or `sys.*` at request
+  time.** Any module that installs a wrapper on these must do so once at
+  import, not per request. Per-request resolution overrides must use
+  `threading.local`. The ARC client DNS-pinning adapter is the worked example:
+  convert the per-request `socket.getaddrinfo` swap to a thread-local design.
+
+- **Lazy-init module singletons with observable side effects must use
+  double-checked locking or eager init at startup.** Assignment-only lazy init
+  (e.g., `if _cache is None: _cache = {}`) is GIL-atomic and acceptable;
+  lazy init that makes network calls, writes files, or modifies globals is not.
+
+- **Per-request state must be thread-local or function-local, never
+  module-global.** Audit all module-level variables that change during request
+  handling.
 
 ### Exception
 
@@ -90,24 +129,23 @@ instrumented process and is excluded from this requirement.
 Remove `--worker-class gevent` (or `geventwebsocket.gunicorn.workers.GeventWebSocketWorker`)
 from the gunicorn command and from any `GUNICORN_WORKER_CLASS` env var.
 
-Replace with `--worker-class sync` or omit the flag (sync is the gunicorn
-default).
+Replace with `--worker-class gthread`.
 
 **ADR reference files:**
 - `eeoc-ofs-adr/adr_webapp/startup.sh` -- App Service startup wrapper
 - `eeoc-ofs-adr/deploy/k8s/adr-webapp/deployment.yaml:53` -- AKS deployment command
-- `eeoc-ofs-adr/deploy/k8s/adr-webapp/configmap.yaml` -- `GUNICORN_WORKER_CLASS: "sync"`
+- `eeoc-ofs-adr/deploy/k8s/adr-webapp/configmap.yaml` -- `GUNICORN_WORKER_CLASS: "gthread"`
 
 ```yaml
 # deploy/k8s/<repo>-webapp/configmap.yaml
-GUNICORN_WORKER_CLASS: "sync"
+GUNICORN_WORKER_CLASS: "gthread"
 GUNICORN_TIMEOUT: "120"
 ```
 
 ```bash
 # deploy/k8s/<repo>-webapp/deployment.yaml: inline command block
 GUNICORN_CMD="gunicorn --bind=0.0.0.0:8000 \
-    --workers=4 --worker-class=sync \
+    --workers=4 --worker-class=gthread --threads=4 \
     --timeout=120 --graceful-timeout=30 \
     --keep-alive=5 --max-requests=1000 \
     --max-requests-jitter=50 \
@@ -124,16 +162,18 @@ fi
 
 ## 3. Gunicorn sizing after the conversion
 
-Sync workers each handle one request at a time. A gevent worker handled
-thousands of concurrent lightweight coroutines. After converting, raise the
-worker count and lower timeout to avoid request queuing.
+gthread workers each handle `--threads` concurrent requests (one per OS
+thread). Total concurrency is `workers * threads`. This replaces the previous
+sync guidance where each worker handled one request at a time.
 
-### Recommended baseline (matching ADR)
+### Recommended baseline
 
 | Flag | Value | Notes |
 |---|---|---|
+| `--worker-class` | `gthread` | Platform standard for Seeker-instrumented services |
 | `--workers` | `4` (App Service) / `4` (AKS, adjust per replica CPU) | Scale horizontally via HPA rather than per-pod |
-| `--timeout` | `120` | Down from the 600s gevent setting in earlier ADR versions |
+| `--threads` | `4` | Threads per worker; effective concurrency = workers * threads |
+| `--timeout` | `120` | Per-request timeout |
 | `--graceful-timeout` | `30` | Allows in-flight requests to drain before SIGKILL |
 | `--keep-alive` | `5` | HTTP keep-alive seconds |
 | `--max-requests` | `1000` | Recycle worker after N requests (guards memory growth) |
@@ -141,14 +181,19 @@ worker count and lower timeout to avoid request queuing.
 
 ### SSE and streaming endpoints
 
-Each open Server-Sent Events (SSE) or streaming response pins one sync worker
-for its entire duration. For any service with SSE or streaming:
+Each open Server-Sent Events (SSE) or streaming response pins one THREAD (not
+a whole worker process) for its entire duration. For services with SSE or
+streaming:
 
 1. Count the maximum expected concurrent streams.
-2. Set `--workers` to `(concurrent_streams + overhead_headroom)` at minimum.
+2. Raise `--threads` so that `workers * threads` exceeds
+   `concurrent_streams + overhead_headroom`.
 3. Run a load test against the streaming endpoint before enabling Seeker in a
    production-equivalent environment. Verify that non-streaming requests are
    not blocked while streams are open.
+
+Confirm final `--workers` and `--threads` values with a load test before
+promoting to PROD.
 
 ---
 
@@ -254,10 +299,16 @@ must remain cacheable; do not apply `no-store` to the static file handler.
 ```python
 @app.after_request
 def set_cache_control(response):
-    if request.endpoint != "static" and "Cache-Control" not in response.headers:
+    endpoint = request.endpoint or ""
+    if endpoint != "static" and not endpoint.endswith(".static") and "Cache-Control" not in response.headers:
         response.headers["Cache-Control"] = "no-store"
     return response
 ```
+
+The `request.endpoint` check covers both the app-level static endpoint and
+Blueprint static endpoints (which have the form `<blueprint_name>.static`).
+The `or ""` guard handles the case where `endpoint` is `None` (e.g., 404
+before routing completes).
 
 Register this hook once in the application factory or the main app module,
 not in individual Blueprints. Blueprint-level `after_request` hooks run only
@@ -269,9 +320,14 @@ for requests handled by that Blueprint.
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
+STATIC_PATH_PREFIX = "/static"  # adjust to match your StaticFiles mount path
+
 class CacheControlMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
+        if request.url.path.startswith(STATIC_PATH_PREFIX):
+            # Static assets are content-hashed; leave them cacheable.
+            return response
         if not response.headers.get("Cache-Control"):
             response.headers["Cache-Control"] = "no-store"
         return response
@@ -279,7 +335,10 @@ class CacheControlMiddleware(BaseHTTPMiddleware):
 app.add_middleware(CacheControlMiddleware)
 ```
 
-Exclude the static files mount if one is configured.
+Starlette's `StaticFiles` sets no `Cache-Control` header by default, so
+without the path exclusion the middleware would apply `no-store` to hashed
+assets and break browser caching. Adjust `STATIC_PATH_PREFIX` to match the
+mount path used in `app.mount(...)`.
 
 ### Azure Functions (DAES Function Apps)
 
@@ -301,6 +360,8 @@ content, apply `no-store` unconditionally.
 The `seeker-agent` wheel declares a dependency constraint of
 `beautifulsoup4<4.14`. Pin to `4.13.5` in any repo that installs the Seeker
 wheel. There is no CVE driving this pin; it is a wheel dependency constraint.
+4.13.x is the current pinned release; the pin tracks the seeker-agent wheel
+constraint and should be updated only when the agent relaxes it.
 
 ```
 # requirements.txt
@@ -337,29 +398,33 @@ prerequisites are verified.
 
 | Step | Action | Done |
 |---|---|---|
-| 1 | Run the pre-scan grep commands from §1. Document findings. | [ ] |
-| 2 | Convert gunicorn worker class to sync (§2). Update startup.sh and ConfigMap. | [ ] |
-| 3 | Apply sizing parameters from §3. Identify SSE/streaming endpoints and plan worker count. | [ ] |
-| 4 | Add `Cache-Control: no-store` hook to the app (§6). | [ ] |
-| 5 | Pin `beautifulsoup4==4.13.5` in requirements.txt (§7). | [ ] |
-| 6 | Set `SEEKER_SOURCE_CODE_INST_ENABLED=false` default in startup.sh (§4). | [ ] |
-| 7 | Verify collector reachability from the target environment (§5). Record result in §5 table. | [ ] |
-| 8 | Set `SEEKER_ENABLED=false` in base ConfigMap and `SEEKER_ENABLED=true` in the target overlay only (§4). | [ ] |
-| 9 | Deploy to TEST. Watch pod startup logs for registration success. Check for looping `bad_record_mac` (§8). | [ ] |
-| 10 | Confirm that `/health` or `/healthz` becomes ready and the app serves authenticated requests. | [ ] |
-| 11 | Review the Seeker console for this project key. Triage any new findings against SAST_Scan_Dispositions.md. | [ ] |
+| 1 | Run the pre-scan grep commands from §1 against the repo's actual package root. Document findings. | [ ] |
+| 2 | Verify thread-safety preconditions from §2. Convert any per-request global mutations to thread-local designs. | [ ] |
+| 3 | Convert gunicorn worker class to gthread (§2). Update startup.sh and ConfigMap. | [ ] |
+| 4 | Apply sizing parameters from §3. Set --threads; identify SSE/streaming endpoints and plan thread count. | [ ] |
+| 5 | Add `Cache-Control: no-store` hook to the app (§6). | [ ] |
+| 6 | Pin `beautifulsoup4==4.13.5` in requirements.txt (§7). | [ ] |
+| 7 | Set `SEEKER_SOURCE_CODE_INST_ENABLED=false` default in startup.sh (§4). | [ ] |
+| 8 | Verify collector reachability from the target environment (§5). Record result in §5 table. | [ ] |
+| 9 | Set `SEEKER_ENABLED=false` in base ConfigMap and `SEEKER_ENABLED=true` in the target overlay only (§4). | [ ] |
+| 10 | Deploy to TEST. Watch pod startup logs for registration success. Check for looping `bad_record_mac` (§8). | [ ] |
+| 11 | Confirm that `/health` or `/healthz` becomes ready and the app serves authenticated requests. | [ ] |
+| 12 | Run a load test confirming workers * threads handles peak concurrency including open SSE streams. | [ ] |
+| 13 | Review the Seeker console for this project key. Triage any new findings against SAST_Scan_Dispositions.md. | [ ] |
 
 ---
 
 ## Attestation
 
-- [x] Gunicorn worker class is sync on all Seeker-instrumented services.
-- [x] `SEEKER_ENABLED=false` is the base ConfigMap default for all repos.
-- [x] `SEEKER_SOURCE_CODE_INST_ENABLED=false` is set before Seeker loads.
-- [x] Fail-safe startup wrapper verified: app starts without `seeker-exec` on PATH.
-- [x] `Cache-Control: no-store` applied to all dynamic authenticated responses.
-- [x] `beautifulsoup4==4.13.5` pinned in requirements.txt for all Seeker-instrumented repos.
-- [x] Collector reachability verified per environment before enabling agent.
+- [ ] Gunicorn worker class is gthread on all Seeker-instrumented services.
+- [ ] Thread-safety preconditions verified: no per-request global socket/ssl/sys mutation.
+- [ ] `SEEKER_ENABLED=false` is the base ConfigMap default for all repos.
+- [ ] `SEEKER_SOURCE_CODE_INST_ENABLED=false` is set before Seeker loads.
+- [ ] Fail-safe startup wrapper verified: app starts without `seeker-exec` on PATH.
+- [ ] `Cache-Control: no-store` applied to all dynamic authenticated responses.
+- [ ] `beautifulsoup4==4.13.5` pinned in requirements.txt for all Seeker-instrumented repos.
+- [ ] Collector reachability verified per environment before enabling agent.
+- [ ] Load test completed; --workers and --threads values confirmed for PROD.
 
 **Authorized Official:** ________________________________
 **Date:** ________________________________
@@ -371,3 +436,4 @@ prerequisites are verified.
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | June 2026 | Derek Gordon / OIT | Initial release |
+| 1.1 | June 2026 | Derek Gordon / OIT | Worker standard: sync replaced by gthread; thread-safety preconditions added; sizing updated for workers*threads model; Flask after_request guard handles blueprint static and None endpoint; FastAPI middleware excludes static path prefix; pre-scan grep updated to use actual package roots; attestation checkboxes reset to unchecked for per-repo use |
