@@ -322,12 +322,15 @@ for requests handled by that Blueprint.
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-STATIC_PATH_PREFIX = "/static"  # adjust to match your StaticFiles mount path
+STATIC_MOUNT = "/static"  # adjust to match your StaticFiles mount path
 
 class CacheControlMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
-        if request.url.path.startswith(STATIC_PATH_PREFIX):
+        path = request.url.path
+        # Match the mount exactly or as a path segment; a bare startswith
+        # would also skip dynamic routes like /static-report or /statistics.
+        if path == STATIC_MOUNT or path.startswith(STATIC_MOUNT + "/"):
             # Static assets are content-hashed; leave them cacheable.
             return response
         if not response.headers.get("Cache-Control"):
@@ -339,8 +342,10 @@ app.add_middleware(CacheControlMiddleware)
 
 Starlette's `StaticFiles` sets no `Cache-Control` header by default, so
 without the path exclusion the middleware would apply `no-store` to hashed
-assets and break browser caching. Adjust `STATIC_PATH_PREFIX` to match the
-mount path used in `app.mount(...)`.
+assets and break browser caching. Match the mount exactly or as a path
+segment, not a bare prefix, so dynamic routes that share the prefix (for
+example `/static-report`) still receive `no-store`. Adjust `STATIC_MOUNT` to
+match the mount path used in `app.mount(...)`.
 
 ### Azure Functions (DAES Function Apps)
 
