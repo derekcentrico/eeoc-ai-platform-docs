@@ -72,7 +72,7 @@ eeoc-data-analytics-and-dashboard/ai-assistant/
     fixture_app.py      -- Flask fixture with /healthz /slow /sse-stream
 ```
 
-Both test runneres require only `httpx` (already installed on the platform host)
+Both test runners require only `httpx` (already installed on the platform host)
 and standard-library `asyncio`. No additional dependencies.
 
 #### Fixture app boot (gthread config):
@@ -221,9 +221,14 @@ EEOC staff). At 16 concurrent the fixture runs showed zero errors and p99
 latency within 10% of p50. Increase `GUNICORN_THREADS` to 8 (ceiling 32)
 only if sustained concurrent sessions exceed 12 (75% of the 16-thread pool).
 
-**Headroom formula:** `peak_concurrent_users x avg_hold_seconds / avg_response_seconds`.
-For ADR, assume 10 concurrent mediators x 3 s average response = 30 thread-seconds
-needed; 16 threads x (avg_active_fraction) covers this with margin.
+**Sizing formula (Little's Law):** peak threads in use = arrival_rate x avg_hold_seconds.
+`required_threads = ceil(arrival_rate * avg_hold_seconds / target_occupancy / workers)`
+
+For ADR: assume 5 req/s peak arrival rate, 3 s average hold time, 80% target
+occupancy. Peak in-flight = 5 x 3 = 15 threads. Required threads per worker =
+ceil(15 / 0.8 / 4) = ceil(4.7) = 5. The current 4 threads/worker (16 total)
+sits just under that -- adequate at this arrival rate, marginal if arrival rate
+climbs to 6 req/s. At that point raise threads to 6 (24 total ceiling).
 
 To increase ceiling on Azure App Service:
 
@@ -252,14 +257,21 @@ thread occupancy at 20 concurrent analysts = 20 x 10 s / server_time; the
 pool occupancy at expected peak (20 concurrent analysts), raise threads to 12
 or workers to 6.
 
-**Ceiling formula:**
+**Sizing formula (Little's Law):** threads in use = arrival_rate x avg_hold_seconds.
 
 ```
-max_sse_streams = workers * threads * (1 - fast_request_overhead_fraction)
+peak_inflight = arrival_rate_req_per_s * avg_hold_seconds
+required_threads = ceil(peak_inflight / target_occupancy)
+threads_per_worker = ceil(required_threads / workers)
 ```
 
-At 10% overhead fraction: `4 * 8 * 0.9 = 28` safe concurrent SSE streams.
-For N target concurrent analysts: `required_threads = ceil(N / 0.9 / workers)`.
+For AI Assistant: assume 2 SSE req/s peak arrival rate (20 analysts, each
+sending one message every 10 s), avg SSE hold = 12 s, 80% target occupancy.
+Peak in-flight = 2 x 12 = 24 threads. `required_threads = ceil(24 / 0.8)` = 30.
+`threads_per_worker = ceil(30 / 4)` = 8. The current 8 threads/worker (32 total)
+exactly meets this. If avg hold time rises to 15 s (longer AI responses),
+peak in-flight = 30, required = ceil(30/0.8) = 38, threads_per_worker = 10 --
+raise threads to 10 or workers to 5.
 
 ---
 
@@ -332,7 +344,7 @@ staging validation.**
 ## 6. Attestation
 
 - [x] Empirical results captured against local gunicorn fixture app
-- [x] Harness scripts committed to each repo's `loadtest/` directory
+- [x] Load test scripts committed to each repo's `loadtest/` directory
 - [x] All test runner Python passes `ruff check`
 - [x] Sizing recommendations derived from measured saturation points
 - [x] Staging validation checklist reflects the full Azure integration surface
